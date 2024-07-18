@@ -8,12 +8,14 @@ updates:
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/packages/*" # Location of package manifests
     registries: "*"
-    allow: "*"
+    allow:
+      - dependency-type: "all"
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/apps/*" # Location of package manifests
     registries: "*"
-    allow: "*"
+    allow:
+      - dependency-type: "all"
     schedule:
       interval: "weekly"
