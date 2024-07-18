@@ -6,14 +6,56 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/packages/*" # Location of package manifests
+    directory: "/packages/rtckit" # Location of package manifests
     registries: "*"
     allow:
       - dependency-type: "all"
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/apps/*" # Location of package manifests
+    directory: "/packages/rtckit-node" # Location of package manifests
+    registries: "*"
+    allow:
+      - dependency-type: "all"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/apps/basic" # Location of package manifests
+    registries: "*"
+    allow:
+      - dependency-type: "all"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/apps/embedded-ingest-demo" # Location of package manifests
+    registries: "*"
+    allow:
+      - dependency-type: "all"
+    schedule:
+      interval: "weekly"
+- package-ecosystem: "npm" # See documentation for possible values
+    directory: "/apps/gvcdemo" # Location of package manifests
+    registries: "*"
+    allow:
+      - dependency-type: "all"
+    schedule:
+      interval: "weekly"
+- package-ecosystem: "npm" # See documentation for possible values
+    directory: "/apps/ingest-demo" # Location of package manifests
+    registries: "*"
+    allow:
+      - dependency-type: "all"
+    schedule:
+      interval: "weekly"
+- package-ecosystem: "npm" # See documentation for possible values
+    directory: "/apps/rtckit-node-demo" # Location of package manifests
+    registries: "*"
+    allow:
+      - dependency-type: "all"
+    schedule:
+      interval: "weekly"
+- package-ecosystem: "npm" # See documentation for possible values
+    directory: "/apps/webrtc-demo" # Location of package manifests
     registries: "*"
     allow:
       - dependency-type: "all"
