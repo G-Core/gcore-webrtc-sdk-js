@@ -1,0 +1,26 @@
+{
+  "name": "@gcorevideo/rtckit-node",
+  "version": "0.2.0",
+  "description": "Node.js SDK for the Gcore WebRTC",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "lint": "oxlint -c ../../.oxlintrc.json --tsconfig=./tsconfig.json --fix --ignore-path=../../.gitignore src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "webrtc"
+  ],
+  "author": "Dmitrii Tkach <dmitrii.tkach@gcore.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/debug": "^4.1.12",
+    "oxlint": "^0.5.3",
+    "typescript": "^5.5.3"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "debug": "^4.3.5"
+  }
+}

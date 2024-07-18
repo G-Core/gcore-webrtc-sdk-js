@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Embedded Ingest Demo</title>
+    <meta charset="utf-8">
+</head>
+<body>
+    <style>
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            gap: 1rem;
+        }
+        .preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+        .preview .label {
+            position: absolute;
+            top: 50%;
+            line-height: 1;
+            margin-top: -1rem;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 0.5rem;
+        }
+        .preview video {
+            background-color: black;
+            max-width: 100%;
+        }
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+        /* TODO */
+    </style>
+    <main>
+        <div class="preview">
+            <span class="label">Preview</span>
+            <video id="preview" playsinline muted />
+        </div>
+        <div class="controls">
+            <label for="camera">Camera</label>
+            <select id="camera" hidden disabled title="Camera"></select>
+            <label for="audio">Mic <input type="checkbox" checked id="audio" /></label>
+            <button id="start">Start</button>
+            <button id="stop" hidden>Stop</button>
+            <button id="toggle" hidden>Toggle</button>
+        </div>
+        <div id="status">Loading...</div>
+    </main>
+    <script src="index.js"></script>
+</body>
+</html>

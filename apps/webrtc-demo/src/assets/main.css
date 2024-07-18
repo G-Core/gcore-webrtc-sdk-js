@@ -1,0 +1,79 @@
+@import './base.css';
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+  align-items: center;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+main {
+  padding: 4rem 0;
+  box-sizing: border-box;
+}
+main,
+section,
+footer {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 1rem;
+}
+.block {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+.block .label,
+.block__label,
+.block__label label {
+  flex: 1 0 120px;
+  text-align: left;
+  /* font-weight: bold; */
+}
+.block__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: start;
+}
+.block_error {
+  color: #911;
+}
+@media (max-width: 600px) {
+  .block {
+    flex-direction: column;
+  }
+  .block .label,
+  .block__label {
+    flex-basis: auto;
+  }
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem;
+  }
+}

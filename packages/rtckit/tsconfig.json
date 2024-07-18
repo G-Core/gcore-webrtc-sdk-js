@@ -1,0 +1,25 @@
+{
+  "include": ["src/**/*", "src/**/*.ts"],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "target": "es2022",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Bundler",
+
+    "outDir": "lib",
+    "rootDir": "src",
+    "declaration": true,
+    "lib": ["es2022", "dom", "DOM.Iterable"],
+    "module":"ESNext",
+    "types": []
+  }
+}

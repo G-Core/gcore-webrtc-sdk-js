@@ -1,0 +1,60 @@
+:root {
+  // base colors
+  --white: #ffffff;
+  --black: #000000;
+
+  // project colors
+  --coral-pink: #F78079;
+  --mint-cream: #F6FFF6;
+  --tea-green: #C7F9CC;
+  --light-green: #80ED99;
+  --verdigris: #38A3A5;
+  --lapis-lazuli: #22577A;
+  --prussian-blue: #112C3D;
+  --rich-black: #09161F;
+
+  // opacity
+  --l-opacity: 0.8;
+  --m-opacity: 0.6;
+}
+
+/* semantic color variables for this project */
+:root {
+  --bg: var(--verdigris);
+  --text: var(--prussian-blue);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--prussian-blue);
+    --text: var(--verdigris);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: var(--text);
+  background: var(--bg);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  line-height: 1.2;
+  font-family:
+    Inter,
+    -apple-system,
+    sans-serif;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

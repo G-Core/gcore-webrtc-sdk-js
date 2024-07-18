@@ -1,0 +1,21 @@
+@import "./base.scss";
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  max-width: 1280px;
+  flex-grow: 1;
+  height: 100%; 
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
