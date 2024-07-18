@@ -10,7 +10,7 @@ for p in $packages ; do
 done
 
 if which detect-secrets &> /dev/null; then
-  $ git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
+  git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
 else
   echo "detect-secrets is not found. Install it https://github.com/Yelp/detect-secrets?tab=readme-ov-file#installation"
 fi
