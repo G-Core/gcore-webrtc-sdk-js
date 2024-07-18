@@ -1,0 +1,16 @@
+packages=("rtckit" "rtckit-node")
+
+for p in $packages ; do
+  git diff --name-only --cached | grep -F "packages/$p/package\(-lock\)\?.json" && {
+    ./node_modules/.bin/license-checker \
+        --onlyAllow 'Apache-1.0;Apache-1.1;Apache-2.0;0BSD;BSD-2-Clause;BSD-3-Clause;ISC;MIT' \
+        --start packages/$p \
+        --summary
+  }
+done
+
+if which detect-secrets &> /dev/null; then
+  $ git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline
+else
+  echo "detect-secrets is not found. Install it https://github.com/Yelp/detect-secrets?tab=readme-ov-file#installation"
+fi
