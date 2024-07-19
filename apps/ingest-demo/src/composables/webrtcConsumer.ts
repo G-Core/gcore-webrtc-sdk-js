@@ -6,6 +6,10 @@ type WebrtcConsumeParams = {
   iceServers?: RTCIceServer[]
 }
 
+const noop = () => {}
+
+const T = 'webrtcConsumer'
+
 export const useWebrtcConsumer =
   (function () {
     let player: WebRTCPlayer | null =
@@ -22,24 +26,7 @@ export const useWebrtcConsumer =
       | number
       | null = null
 
-    const onConnectError = (
-      e: string,
-    ) => {
-      console.error(
-        'webrtcConsumer connect error',
-        e,
-      )
-      scheduleReconnect()
-      // TODO try reconnect
-    }
-
-    const onNoMedia = () => {
-      noMedia.value = true
-    }
-
-    const onMediaRecovered = () => {
-      noMedia.value = false
-    }
+    let resetListeners = noop
 
     function scheduleReconnect() {
       if (reconnectTimerId) {
@@ -69,6 +56,65 @@ export const useWebrtcConsumer =
     ) {
       if (player) {
         await stop()
+        resetListeners()
+        resetListeners = noop
+        player.destroy()
+      }
+      player = new WebRTCPlayer({
+        video: elem,
+        type: 'whep',
+        iceServers: params.iceServers,
+        timeoutThreshold: 10000,
+      })
+
+      const onConnectError = (
+        e: string,
+      ) => {
+        console.error(
+          `${T} connect error`,
+          e,
+        )
+        resetVideoElement(elem)
+        scheduleReconnect()
+      }
+      const onPeerConnectionFailed =
+        () => {
+          console.error(
+            `${T} peer connection failed`,
+          )
+          resetVideoElement(elem)
+        }
+      const onNoMedia = () => {
+        noMedia.value = true
+      }
+      const onMediaRecovered = () => {
+        noMedia.value = false
+      }
+
+      // @ts-expect-error odd type
+      player.on(
+        'initial-connection-failed',
+        onConnectError,
+      )
+      // @ts-expect-error odd type
+      player.on(
+        'connect-error',
+        onConnectError,
+      )
+      // @ts-expect-error odd type
+      player.on('no-media', onNoMedia)
+      // @ts-expect-error odd type
+      player.on(
+        'media-recovered',
+        onMediaRecovered,
+      )
+      // @ts-expect-error odd type
+      player.on(
+        'peer-connection-failed',
+        onPeerConnectionFailed,
+      )
+
+      resetListeners = () => {
         // @ts-expect-error odd type
         player.off(
           'initial-connection-failed',
@@ -89,31 +135,12 @@ export const useWebrtcConsumer =
           'media-recovered',
           onMediaRecovered,
         )
-        player.destroy()
+        // @ts-expect-error odd type
+        player.off(
+          'peer-connection-failed',
+          onPeerConnectionFailed,
+        )
       }
-      player = new WebRTCPlayer({
-        video: elem,
-        type: 'whep',
-        iceServers: params.iceServers,
-        timeoutThreshold: 10000,
-      })
-      // @ts-expect-error odd type
-      player.on(
-        'initial-connection-failed',
-        onConnectError,
-      )
-      // @ts-expect-error odd type
-      player.on(
-        'connect-error',
-        onConnectError,
-      )
-      // @ts-expect-error odd type
-      player.on('no-media', onNoMedia)
-      // @ts-expect-error odd type
-      player.on(
-        'media-recovered',
-        onMediaRecovered,
-      )
     }
 
     async function stop() {
@@ -174,4 +201,22 @@ export const useWebrtcConsumer =
       setup,
       stop,
     })
+
+    function resetVideoElement(
+      elem: HTMLVideoElement,
+    ) {
+      if (
+        elem.srcObject instanceof
+        MediaStream
+      ) {
+        const stream = elem.srcObject
+        stream
+          .getTracks()
+          .forEach((track) => {
+            stream.removeTrack(track)
+            track.stop()
+          })
+        elem.srcObject = null
+      }
+    }
   })()

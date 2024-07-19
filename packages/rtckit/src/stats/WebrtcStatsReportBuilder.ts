@@ -86,11 +86,9 @@ export class WebrtcStatsReportBuilder {
     await Promise.all(
       conn.getSenders().map(async (sender) => {
         if (!sender.transport) {
-          logger.debug(`${T} processSendStats sender transport not initialized`);
           return;
         }
         if (!sender.track) {
-          logger.debug(`${T} processSendStats sender track not initialized`);
           return;
         }
         const track = sender.track;
