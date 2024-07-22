@@ -11,7 +11,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@gcorevideo/rtckit": "^0.54.4",
+    "@gcorevideo/rtckit": "^0.55.0",
     "axios": "^1.6.2",
     "debug": "^4.3.4",
     "eventemitter3": "^5.0.1",
