@@ -10,7 +10,7 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
-    "@gcorevideo/rtckit": "^0.54.4",
+    "@gcorevideo/rtckit": "^0.55.0",
     "vue": "^3.4.15"
   },
   "devDependencies": {
