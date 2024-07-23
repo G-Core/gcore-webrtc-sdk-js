@@ -17,6 +17,6 @@
     "sirv": "^2.0.4"
   },
   "dependencies": {
-    "@gcorevideo/rtckit": "^0.54.4"
+    "@gcorevideo/rtckit": "^0.56.0"
   }
 }
