@@ -3,6 +3,8 @@ import { LiveStreamDto } from "./types.js";
 import { logger } from "./logger.js";
 import { RTSP_PULL_URL, WHEP_ENDPOINT_URL, WHIP_ENDPOINT_URL } from "./settings.js";
 
+type StreamId = number;
+
 export type WebrtcStream = {
   active: boolean;
   id: number;
@@ -40,7 +42,6 @@ export class WebrtcApi {
         },
       },
     )) as LiveStreamDto;
-    logger.debug("Created a stream: %o", r);
     await this.service.request(
       `streams/${r.id}`,
       {
@@ -67,7 +68,17 @@ export class WebrtcApi {
     );
   }
 
-  // TODO switch off webrtc
+  async toggleStream(id: StreamId, active: boolean) {
+    await this.service.request(
+      `streams/${id}`,
+      {
+        method: "patch",
+        data: {
+          active,
+        },
+      },
+    )
+  }
 
   setCustomOptions(options: CustomOptions) {
     this.customOptions = options;

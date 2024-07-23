@@ -19,6 +19,13 @@ export default async function useStream() {
       )
     }
     cookie.value = data.value.body
+  } else {
+    await useFetch('/api/keepalive', {
+      method: 'POST',
+      body: {
+        stream: cookie.value.id,
+      },
+    })
   }
   return cookie.value
 }
