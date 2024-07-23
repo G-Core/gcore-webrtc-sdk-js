@@ -4,23 +4,30 @@ import { logger } from "./logger.js";
 import { RTSP_PULL_URL, WHEP_ENDPOINT_URL, WHIP_ENDPOINT_URL } from "./settings.js";
 
 export type WebrtcStream = {
-  id: number;
   active: boolean;
+  id: number;
+  playerUrl: string;
   whepEndpoint: string;
   whipEndpoint: string;
 };
 
-const QUALITY_SET_ID = 675;
+type CustomOptions = {
+  qualitySetId: number | null;
+}
 
 export class WebrtcApi {
+  private customOptions: CustomOptions = {
+    qualitySetId: null,
+  };
+
   constructor(
-    private api: PlatformApiService,
+    private service: PlatformApiService,
   ) {}
 
   async createStream(
     name: string,
   ): Promise<WebrtcStream> {
-    const r = (await this.api.request(
+    const r = (await this.service.request(
       "streams",
       {
         method: "post",
@@ -29,12 +36,12 @@ export class WebrtcApi {
           active: true,
           pull: true,
           uri: buildWebrtcStreamPullUrl("-", "-"),
-          quality_set_id: QUALITY_SET_ID,
+          quality_set_id: this.customOptions.qualitySetId,
         },
       },
     )) as LiveStreamDto;
     logger.debug("Created a stream: %o", r);
-    await this.api.request(
+    await this.service.request(
       `streams/${r.id}`,
       {
         method: "patch",
@@ -52,7 +59,7 @@ export class WebrtcApi {
   async deleteStream(
     id: number,
   ): Promise<void> {
-    return this.api.request(
+    return this.service.request(
       `streams/${id}`,
       {
         method: "delete",
@@ -61,6 +68,10 @@ export class WebrtcApi {
   }
 
   // TODO switch off webrtc
+
+  setCustomOptions(options: CustomOptions) {
+    this.customOptions = options;
+  }
 }
 
 function buildWebrtcStreamPullUrl(
@@ -92,6 +103,7 @@ function toWebrtcStream(
   return {
     id: r.id,
     active: r.active,
+    playerUrl: r.iframe_url,
     whipEndpoint,
     whepEndpoint,
   };

@@ -66,7 +66,7 @@ export const useWebrtcConsumer =
         iceServers: params.iceServers,
         timeoutThreshold: 10000,
       })
-
+      // TODO call resetVideoElement on reconnect
       const onConnectError = (
         e: string,
       ) => {

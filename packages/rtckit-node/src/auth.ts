@@ -1,21 +1,27 @@
 export interface AuthKey {
-  toString(): string;
+  header: string;
 }
 
-export class BearerToken
-  implements AuthKey
-{
-  constructor(private token: string) {}
+export class AuthHeader implements AuthKey {
+  constructor(private secret: string, private schema: string) {}
 
-  toString(): string {
-    return `Bearer ${this.token}`;
+  get header(): string {
+    return `${this.schema} ${this.secret}`;
+  }
+
+  toString() {
+    return this.header;
   }
 }
 
-export class ApiKey implements AuthKey {
-  constructor(private key: string) {}
+export class BearerToken extends AuthHeader{
+  constructor(token: string) {
+    super(token, "Bearer");
+  }
+}
 
-  toString(): string {
-    return `APIKey ${this.key}`;
+export class ApiKey extends AuthHeader {
+  constructor(token: string) {
+    super(token, "APIKey");
   }
 }

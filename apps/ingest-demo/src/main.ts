@@ -6,6 +6,12 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
+console.log(
+  `version: ${
+    import.meta.env.VITE_APP_VERSION
+  }`,
+)
+
 const app = createApp(App)
 
 app.use(createPinia())

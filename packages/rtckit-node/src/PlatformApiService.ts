@@ -56,7 +56,7 @@ export class PlatformApiService {
     );
     headers.setAccept("application/json", false);
     headers.setContentType("application/json", false);
-    headers.setAuthorization(this.auth.toString(), false);
+    headers.setAuthorization(this.auth.header, false);
     const axOpts: AxiosRequestConfig = {
       url,
       method: options?.method || "get",

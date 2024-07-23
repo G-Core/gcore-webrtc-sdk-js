@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a {
+  text-decoration: underline;
+}
+
+/* @layer components {
+  nav a {
+    text-decoration: none;
+    text-transform: lowercase;
+    @apply text-slate-700 hover:text-slate-900 rounded py-1 px-2 bg-slate-100;
+  }
+  .router-link-active {
+    @apply text-orange-950 hover:text-orange-950;
+  }
+} */
