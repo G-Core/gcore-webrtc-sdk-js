@@ -27,20 +27,10 @@ const video =
 watch(
   [() => userMedia.value.stream, video],
   ([s, v]) => {
-    console.log(
-      'camera-settings: watch',
-      s,
-      v,
-    )
     if (!v) return
     if (s) {
       v.srcObject = s
-      v.play().then(
-        () => {
-          console.log(
-            'Video element now playing',
-          )
-        },
+      v.play().catch(
         (e) => {
           console.error(
             'Video element play',
@@ -57,10 +47,6 @@ watch(
 watch(
   () => userMedia.value.videoTrack,
   (track) => {
-    console.log(
-      'camera-settings: watch videoTrack',
-      track,
-    )
     if (!track) return
     const { width = 0, height = 0 } =
       track.getSettings()

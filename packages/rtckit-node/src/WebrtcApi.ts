@@ -34,11 +34,12 @@ export class WebrtcApi {
       {
         method: "post",
         data: {
-          name,
           active: true,
+          name,
           pull: true,
           uri: buildWebrtcStreamPullUrl("-", "-"),
           quality_set_id: this.customOptions.qualitySetId,
+          transcode_from_pull: true,
         },
       },
     )) as LiveStreamDto;

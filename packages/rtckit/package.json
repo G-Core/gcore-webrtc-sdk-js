@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.56.0",
+  "version": "0.57.0",
   "private": false,
   "license": "Apache-2.0",
   "types": "lib/index.d.ts",
@@ -20,12 +20,12 @@
     "cbor-x": "^1.5.9",
     "debug": "^4.3.4",
     "eventemitter3": "^5.0.1",
-    "mediasoup-client": "^3.7.6",
     "sdp-transform": "^2.14.2",
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
     "@sinonjs/fake-timers": "^11.2.2",
+    "@types/debug": "^4.1.12",
     "@types/sdp-transform": "^2.4.9",
     "@types/sinonjs__fake-timers": "^8.1.5",
     "jsdom": "^24.1.0",
