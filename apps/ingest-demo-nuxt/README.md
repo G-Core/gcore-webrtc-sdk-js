@@ -1,4 +1,19 @@
-# Nuxt 3 Minimal Starter
+# Gcore WebRTC ingest demo app
+
+## Configuration
+
+Obtain an [API key](https://api.gcore.com/docs/iam#section/Authentication/APIKey) an assign it to `NUXT_API_KEY` env var.
+
+Consult the technical support regarding the [quality set ID parameter](https://api.gcore.com/docs/streaming#tag/QualitySets). Once obtained, set it to `NEXT_QUALITY_SET_ID` env.
+
+Built with [Nuxt](https://nuxt.com/docs/getting-started/introduction).
+You can use [Vercel](https://vercel.com/) to deploy to the Internet.
+
+## UI
+
+Add the `token=XXX` URL query parameter to reveal the **host** tab in the UI. Parameter value can be arbitrary non-empty character string.
+
+## Nuxt starter app
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
