@@ -10,8 +10,11 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
-    apiKey: '', //
-    qualitySetId: '', //
+    // Key to access Gcore API https://api.gcore.com/docs/iam#section/Authentication/APIKey,
+    // must be kept secret
+    apiKey: '',
+    // Consult Gcore technical support regarding this parameter
+    qualitySetId: '',
     public: {
       appVersion: '',
     },

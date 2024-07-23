@@ -1,6 +1,7 @@
 import { defineEventHandler } from "h3"
 import { ApiKey, GcoreApi } from '@gcorevideo/rtckit-node'
 
+// Generate a live stream
 export default defineEventHandler(
   async (event) => {
     const config = useRuntimeConfig()
@@ -12,7 +13,7 @@ export default defineEventHandler(
       api.webrtc.setCustomOptions({
         qualitySetId: Number(config.qualitySetId) || null,
       })
-      const { id, whipEndpoint, whepEndpoint, playerUrl } =
+      const { whipEndpoint, whepEndpoint, playerUrl } =
         await api.webrtc.createStream(
           name,
         )

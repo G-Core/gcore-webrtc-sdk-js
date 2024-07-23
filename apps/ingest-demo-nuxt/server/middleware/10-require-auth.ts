@@ -2,7 +2,7 @@ const T = "require-auth";
 
 export default defineEventHandler(
   (e) => {
-    console.log(`${T} path:%s`, e.path)
+    // Implement authorization according to the app business logic
     if (e.path !== '/host') {
       return
     }

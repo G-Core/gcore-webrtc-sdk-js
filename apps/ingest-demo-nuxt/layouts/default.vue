@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// import { isAuthenticated } from '~/composables/use-auth'
-
 
 const auth = useAuth()
 </script>
@@ -69,9 +67,6 @@ const auth = useAuth()
 @tailwind components;
 
 @layer components {
-  /* nav {
-    
-  } */
   nav a {
     text-decoration: none;
     text-transform: lowercase;

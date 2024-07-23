@@ -2,10 +2,10 @@ import useAuth from '~/composables/use-auth'
 
 export default defineNuxtRouteMiddleware(
   (to) => {
-    console.log('middleware/auth path:%s', to.path)
+    // Prevent navigation to /host if not authenticated
+    // Implement your custom authorization route guards here
     if (to.path === '/host') {
       const auth = useAuth()
-      console.log('middleware/auth %o', auth.value)
       if (!auth.value) {
         return abortNavigation(
           createError({

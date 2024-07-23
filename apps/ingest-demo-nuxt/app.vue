@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
 
-console.log("version: ", config.appVersion)
+console.log("Version: ", config.appVersion)
 </script>
 
 <template>
