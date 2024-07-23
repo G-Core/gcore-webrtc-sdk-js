@@ -9,11 +9,9 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-  // ssr
   runtimeConfig: {
-    // The private keys which are only available within server-side
-    apiKey: '',
-    qualitySetId: '',
+    apiKey: '', //
+    qualitySetId: '', //
     public: {
       appVersion: '',
     },
