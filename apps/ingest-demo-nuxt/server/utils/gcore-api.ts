@@ -1,8 +1,38 @@
-import { ApiKey, GcoreApi } from '@gcorevideo/rtckit-node'
+import {
+  ApiKey,
+  GcoreApi,
+} from '@gcorevideo/rtckit-node'
+import { WebrtcStream } from '@gcorevideo/rtckit-node/dist/WebrtcApi'
 
 export default function gcoreApi() {
   const config = useRuntimeConfig()
   return new GcoreApi(
     new ApiKey(config.apiKey),
+    config.apiHost
   )
+}
+
+export async function createWebrtcStream(
+  name: string,
+) {
+  const config = useRuntimeConfig()
+  const webrtc = gcoreApi().webrtc
+  webrtc.setCustomOptions({
+    qualitySetId:
+      Number(config.qualitySetId) ||
+      null,
+  })
+  return await webrtc.createStream(name)
+}
+
+export function webrtcStreamCreatedResponse(stream: WebrtcStream) {
+  return {
+    status: 201,
+    body: {
+      id: stream.id,
+      playerUrl: stream.playerUrl,
+      whepEndpoint: stream.whepEndpoint,
+      whipEndpoint: stream.whipEndpoint,
+    },
+  }
 }

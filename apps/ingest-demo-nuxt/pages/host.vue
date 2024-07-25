@@ -18,9 +18,10 @@ const userMedia = useUserMedia()
 const canStart = computed(
   () =>
     userMedia.value.videoTrack &&
-    !air.value.live &&
-    !air.value.ended,
+    userMedia.value.audioTrack &&
+    !started.value,
 )
+const started = computed(() => air.value.live || air.value.ended)
 
 function start() {
   const s = userMedia.value.stream
@@ -87,6 +88,9 @@ function restart() {
         >
           Start
         </button>
+        <div class="py-2 text-slate-600 text-center md:text-left" v-if="!started && !canStart">
+          Turn on your camera <b>and</b> microphone before you start streaming
+        </div>
         <button
           @click="leave"
           v-if="air.live"

@@ -10,6 +10,7 @@ export default defineNuxtConfig({
     },
   },
   runtimeConfig: {
+    apiHost: undefined,
     // Key to access Gcore API https://api.gcore.com/docs/iam#section/Authentication/APIKey,
     // must be kept secret
     apiKey: '',

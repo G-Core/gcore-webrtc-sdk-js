@@ -1,15 +1,17 @@
 import type { StreamInfo } from "~/types/stream"
 
+const STREAM_NAME = 'My damn awesome WebRTC stream'
+
 export default async function useStream() {
   const cookie =
     useCookie<StreamInfo>('stream')
-  if (!cookie.value) {
+  if (!cookie.value || !cookie.value?.id) {
     const { data } = await useFetch(
       '/api/generate',
       {
         method: 'POST',
         body: {
-          name: 'My damn awesome WebRTC stream',
+          name: STREAM_NAME,
         }
       },
     )
@@ -23,7 +25,8 @@ export default async function useStream() {
     await useFetch('/api/keepalive', {
       method: 'POST',
       body: {
-        stream: cookie.value.id,
+        id: cookie.value.id,
+        name: STREAM_NAME,
       },
     })
   }

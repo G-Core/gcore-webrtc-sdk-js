@@ -130,7 +130,23 @@ document.addEventListener(
           resolution: 1080,
         })
         .catch((e) => {
+          if (e instanceof DOMException) {
+            if (e.name === "NotReadableError") {
+              statusNode.textContent =
+                'Failed to open a device stream: The camera is already in use'
+              return
+            }
+            if (e.name === "NotAllowedError") {
+              statusNode.textContent =
+                'Failed to open a device stream: Permission denied'
+              return
+            }
+            // TODO handle other cases
+            // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#exceptions
+          }
           statusNode.textContent = `Failed to open a device stream: ${e}`
+        })
+        .finally(() => {
           cameraSelect.disabled = false
         })
       statusNode.textContent =

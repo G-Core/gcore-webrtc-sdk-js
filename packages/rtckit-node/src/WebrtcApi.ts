@@ -1,6 +1,5 @@
 import { PlatformApiService } from "./PlatformApiService.js";
 import { LiveStreamDto } from "./types.js";
-import { logger } from "./logger.js";
 import { RTSP_PULL_URL, WHEP_ENDPOINT_URL, WHIP_ENDPOINT_URL } from "./settings.js";
 
 type StreamId = number;
@@ -36,7 +35,7 @@ export class WebrtcApi {
         data: {
           active: true,
           name,
-          pull: true,
+          pull: false,
           uri: buildWebrtcStreamPullUrl("-", "-"),
           quality_set_id: this.customOptions.qualitySetId,
           transcode_from_pull: true,

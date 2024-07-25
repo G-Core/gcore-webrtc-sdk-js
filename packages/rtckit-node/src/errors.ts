@@ -2,6 +2,7 @@ export type ErrorDetails = {
   errors?: string[];
 };
 
+// Broadcaster or other Platform API error, status and details are forwarded as is
 export class GcoreApiError extends Error {
   constructor(
     public readonly status: number,
@@ -15,6 +16,7 @@ export class GcoreApiError extends Error {
   }
 }
 
+// an API method returned unexpected response
 export class MalformedApiResponseError extends Error {
   constructor(expected: string) {
     super(expected);
