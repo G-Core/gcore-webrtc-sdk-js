@@ -2,6 +2,7 @@
   "name": "nuxt-app",
   "private": true,
   "type": "module",
+  "version": "0.1.0",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -11,7 +12,7 @@
   },
   "dependencies": {
     "@gcorevideo/rtckit": "^0.57.0",
-    "@gcorevideo/rtckit-node": "^0.7.0",
+    "@gcorevideo/rtckit-node": "^0.8.0",
     "@heroicons/vue": "^2.1.5",
     "nuxt": "^3.12.4",
     "vue": "latest"

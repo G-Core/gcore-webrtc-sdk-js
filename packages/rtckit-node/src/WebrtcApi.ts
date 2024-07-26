@@ -13,13 +13,11 @@ export type WebrtcStream = {
 };
 
 type CustomOptions = {
-  qualitySetId: number | null;
+  qualitySetId?: number;
 }
 
 export class WebrtcApi {
-  private customOptions: CustomOptions = {
-    qualitySetId: null,
-  };
+  private customOptions: CustomOptions = {};
 
   constructor(
     private service: PlatformApiService,
@@ -37,7 +35,6 @@ export class WebrtcApi {
           name,
           pull: false,
           uri: buildWebrtcStreamPullUrl("-", "-"),
-          quality_set_id: this.customOptions.qualitySetId,
           transcode_from_pull: true,
         },
       },

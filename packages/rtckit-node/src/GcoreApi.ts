@@ -11,9 +11,9 @@ export class GcoreApi {
 
   public readonly webrtc: WebrtcApi;
 
-  constructor(auth: AuthKey, host = API_HOST) {
+  constructor(auth: AuthKey, host?: string) {
     this.service =
-      new PlatformApiService(host, auth);
+      new PlatformApiService(host || API_HOST, auth);
     this.webrtc = new WebrtcApi(this.service);
   }
 }

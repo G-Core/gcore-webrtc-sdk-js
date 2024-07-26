@@ -4,8 +4,6 @@
 
 Obtain an [API key](https://api.gcore.com/docs/iam#section/Authentication/APIKey) an assign it to `NUXT_API_KEY` env var.
 
-Consult the technical support regarding the [quality set ID parameter](https://api.gcore.com/docs/streaming#tag/QualitySets). Once obtained, set it to `NEXT_QUALITY_SET_ID` env.
-
 Built with [Nuxt](https://nuxt.com/docs/getting-started/introduction).
 You can use [Vercel](https://vercel.com/) to deploy to the Internet.
 

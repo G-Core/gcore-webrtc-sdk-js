@@ -1,6 +1,13 @@
 <script setup lang="ts">
-
+const air = useAir()
 const auth = useAuth()
+const route = useRoute()
+const query = route.query
+const locked = computed(
+  () =>
+    route.path === '/host' &&
+    air.value.live,
+)
 </script>
 
 <template>
@@ -26,14 +33,22 @@ const auth = useAuth()
         </div>
       </div>
       <nav class="my-2 flex gap-2 mb-4">
-        <router-link to="/" class="r"
+        <router-link
+          :to="{ path: '/', query }"
+          class="r"
+          :class="{ disabled: locked }"
           >Home</router-link
         >
-        <router-link to="/settings"
+        <router-link
+          :to="{
+            path: '/settings',
+            query,
+          }"
+          :class="{ disabled: locked }"
           >Settings</router-link
         >
         <router-link
-          :to="`/host?token=${auth?.token}`"
+          :to="{ path: '/host', query }"
           v-if="!!auth"
           >Host</router-link
         >
@@ -77,5 +92,10 @@ const auth = useAuth()
     cursor: default;
     @apply text-slate-700 hover:text-slate-700 bg-slate-100;
   }
+  .disabled {
+    pointer-events: none;
+    @apply text-slate-300;
+  }
 }
+
 </style>

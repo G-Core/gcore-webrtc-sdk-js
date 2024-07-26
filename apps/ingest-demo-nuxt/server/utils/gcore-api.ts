@@ -15,13 +15,10 @@ export default function gcoreApi() {
 export async function createWebrtcStream(
   name: string,
 ) {
-  const config = useRuntimeConfig()
   const webrtc = gcoreApi().webrtc
-  webrtc.setCustomOptions({
-    qualitySetId:
-      Number(config.qualitySetId) ||
-      null,
-  })
+  // webrtc.setCustomOptions({
+  //   ...
+  // })
   return await webrtc.createStream(name)
 }
 

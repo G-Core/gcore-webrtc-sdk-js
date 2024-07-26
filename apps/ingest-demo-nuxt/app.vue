@@ -1,7 +1,17 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
+import pkg from './package.json' with { type: 'json' }
+import rtckit from '@gcorevideo/rtckit/package.json' with { type: 'json' }
+import rtckitNode from '@gcorevideo/rtckit-node/package.json' with { type: 'json' }
 
-console.log("Version:", config.appVersion)
+if (typeof window !== 'undefined') {
+  console.log(
+    '%s %s/rtckit %s %s ',
+    pkg.name,
+    pkg.version,
+    rtckit.version,
+    rtckitNode.version,
+  )
+}
 </script>
 
 <template>
