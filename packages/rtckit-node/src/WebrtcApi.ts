@@ -31,7 +31,7 @@ export class WebrtcApi {
       {
         method: "post",
         data: {
-          active: true,
+          active: false,
           name,
           pull: false,
           uri: buildWebrtcStreamPullUrl("-", "-"),
@@ -44,6 +44,7 @@ export class WebrtcApi {
       {
         method: "patch",
         data: {
+          active: true,
           uri: buildWebrtcStreamPullUrl(
             String(r.id),
             r.token,

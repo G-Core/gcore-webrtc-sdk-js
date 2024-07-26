@@ -80,7 +80,7 @@ function restart() {
         </camera-preview>
         <mic-control />
       </div>
-      <div class="block my-2">
+      <div class="block my-2 flex gap-2 items-center">
         <button
           @click="start"
           v-if="canStart"
@@ -98,6 +98,7 @@ function restart() {
         >
           Leave
         </button>
+        <a v-if="air.live" :href="stream.playerUrl" target="_blank">watch</a>
       </div>
     </nuxt-layout>
   </div>
