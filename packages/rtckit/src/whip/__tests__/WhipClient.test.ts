@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, MockedFunction, vi } from "vitest";
-import { WhipClient } from "../WhipClient.js";
+import { WhipClient, WhipClientEvents } from "../WhipClient.js";
 import { createMockMediaStream } from "../../testUtils.js";
 
 describe("WhipClient", () => {
@@ -18,6 +18,7 @@ describe("WhipClient", () => {
       status: 200,
       text: () => Promise.resolve("v=0\r\n"),
     } as any);
+    // @ts-ignore
     globalThis.RTCPeerConnection = MockRTCPeerConnection;
     client = new WhipClient("https://example.com/whip", {
       canTrickleIce: true,

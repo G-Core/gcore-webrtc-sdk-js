@@ -1,4 +1,5 @@
 // Based on https://github.com/medooze/whip-whep-js/blob/main/whip.js
+import { EventEmitter } from "eventemitter3";
 
 import { reportError, trace } from "../trace/index.js";
 import { restrictCodecs } from "./utils.js";
@@ -30,6 +31,12 @@ class NetworkError extends Error {
   }
 }
 
+class ReconnectAttemptsExceededError extends Error {
+  constructor() {
+    super("Reconnect attempts exceeded");
+  }
+}
+
 class ServerError extends Error {
   constructor(public readonly status: number) {
     super(`Request HTTP status ${status}`);
@@ -54,7 +61,26 @@ class AssertionError extends Error {
   }
 }
 
+export enum WhipClientEvents {
+  // The client has successfully connected, probabaly after an ICE restart or a full session restart
+  Connected = "connected",
+  // Initial connect or reconnect has failed after a series of retries
+  ConnectionFailed = "connection_failed",
+  // The client abruptly disconnected and will try to reconnect
+  Disconnected = "disconnected",
+}
+
+type EventListener<E extends WhipClientEvents> = E extends WhipClientEvents.Disconnected
+  ? () => void
+  : E extends WhipClientEvents.Connected
+  ? () => void
+  : E extends WhipClientEvents.ConnectionFailed
+  ? () => void
+  : never;
+
 export class WhipClient {
+  private emitter = new EventEmitter<WhipClientEvents>();
+
   private closed = false;
 
   private iceUsername: string | null = null;
@@ -84,6 +110,8 @@ export class WhipClient {
   private iceRestartTs: number = 0;
 
   private mediaStream: MediaStream | null = null;
+
+  private reconnects = 0;
 
   constructor(private endpoint: string, private options?: WhipClientOptions) {
     if (options?.canTrickleIce) {
@@ -123,6 +151,10 @@ export class WhipClient {
     await this.runStart(mediaStream);
   }
 
+  on<E extends WhipClientEvents>(event: E, listener: EventListener<E>) {
+    this.emitter.on(event, listener);
+  }
+
   /**
    * Made public for testing purposes
    */
@@ -137,6 +169,15 @@ export class WhipClient {
     if (!pc) {
       throw new AssertionError("No peer connection");
     }
+
+    trace(`${T} restart`, {
+      reconnects: this.reconnects,
+      maxReconnects: this.options?.maxReconnects,
+    });
+    if (this.options?.maxReconnects && this.reconnects >= this.options.maxReconnects) {
+      throw new ReconnectAttemptsExceededError();
+    }
+    this.reconnects++;
 
     this.clearIceTrickTimeout();
     this.resetCandidates();
@@ -168,6 +209,7 @@ export class WhipClient {
         await this.fullRestart();
         return;
       }
+      throw e;
     }
   }
 
@@ -199,13 +241,19 @@ export class WhipClient {
       switch (pc.connectionState) {
         case "connected":
           // The connection has become fully connected
+          this.connected();
           break;
         case "disconnected":
+          this.disconnected();
           break; // TODO
         case "failed":
+          this.disconnected();
           // One or more transports has terminated with an error
           // TODO set randomized delay
-          this.restart();
+          this.restart().catch((e) => {
+            reportError(e);
+            this.connectionFailed();
+          });
           break;
         case "closed":
           // The connection has been closed
@@ -481,6 +529,7 @@ export class WhipClient {
         headers: { ...this.getCommonHeaders(), ...headers },
         body,
       }),
+      this.options?.maxWhipRetries
     ).then(
       (resp: Response) => {
         if (!resp.ok) {
@@ -595,6 +644,21 @@ export class WhipClient {
       }
       throw e;
     }
+  }
+
+  private disconnected() {
+    trace(`${T} disconnected`);
+    this.emitter.emit(WhipClientEvents.Disconnected);
+  }
+
+  private connected() {
+    this.reconnects = 0;
+    this.emitter.emit(WhipClientEvents.Connected);
+  }
+
+  private connectionFailed() {
+    trace(`${T} connectionFailed`);
+    this.emitter.emit(WhipClientEvents.ConnectionFailed);
   }
 }
 

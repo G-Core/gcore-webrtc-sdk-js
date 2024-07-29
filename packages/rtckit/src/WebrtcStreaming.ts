@@ -79,7 +79,7 @@ export class WebrtcStreaming {
     targetNode.play();
   }
 
-  async run(): Promise<void> {
+  async run(): Promise<WhipClient> {
     trace(`${T} run`);
     if (this.whipClient) {
       this.closeWhipClient();
@@ -99,8 +99,10 @@ export class WebrtcStreaming {
       }),
       videoCodecs: ["H264"],
     };
-    this.whipClient = new WhipClient(this.endpoint, opts);
-    await this.whipClient.start(mediaStream);
+    const whipClient = new WhipClient(this.endpoint, opts);
+    this.whipClient = whipClient;
+    await whipClient.start(mediaStream);
+    return whipClient;
   }
 
   toggleAudio(active: boolean) {

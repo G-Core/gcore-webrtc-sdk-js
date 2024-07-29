@@ -8,5 +8,7 @@ export type WhipClientOptions = {
   canRestartIce?: boolean;
   canTrickleIce?: boolean;
   iceServers?: RTCIceServer[];
+  maxReconnects?: number;
+  maxWhipRetries?: number;
   videoCodecs?: Array<string | CodecMatch>;
 };

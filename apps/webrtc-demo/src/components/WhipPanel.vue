@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { WhipClient } from "@gcorevideo/rtckit/lib/whip";
+import { WhipClient, WhipClientEvents } from "@gcorevideo/rtckit/lib/whip";
 
 const emit = defineEmits(['close'])
 
@@ -29,6 +29,10 @@ const status = computed(() => {
 const resourceUrl = ref('')
 const resourceExtensions = ref<string[]>([])
 
+type ConnectionStatus = "disconnected" | "connected" | "connection_failed";
+const connStatus = ref<ConnectionStatus>("disconnected");
+const reconnects = ref(0);
+
 let client: WhipClient | null = null
 let stream: MediaStream | null = null
 
@@ -46,9 +50,22 @@ onMounted(async () => {
       canRestartIce: props.canRestartIce,
       iceServers: ICE_SERVERS,
       videoCodecs: ["H264"],
+      // maxReconnects: 1,
+      // maxWhipRetries: 1,
     })
     stream = await navigator.mediaDevices.getUserMedia(getMediaConstraints())
+    client.on(WhipClientEvents.Disconnected, () => {
+      connStatus.value = "disconnected";
+    });
+    client.on(WhipClientEvents.Connected, () => {
+      reconnects.value++;
+      connStatus.value = "connected";
+    });
+    client.on(WhipClientEvents.ConnectionFailed, () => {
+      connStatus.value = "connection_failed";
+    });
     await client.start(stream);
+    // TODO get resource URL
     running.value = true
   } catch (e) {
     error.value = String(e)
@@ -88,7 +105,10 @@ function restart() {
 <template>
   <div class="block">
     <span class="label">Status</span>
-    <span>{{ status }}</span>
+    <span>
+      {{ status }} {{ connStatus }}
+      <template v-if="connStatus === 'connected' && reconnects > 1">({{ reconnects }})</template>
+    </span>
   </div>
   <div class="block details">
     <span class="label">Resource URL</span>
