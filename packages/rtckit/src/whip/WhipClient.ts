@@ -715,7 +715,6 @@ function withRetries(
 
 function getResponseErrorDetail(resp: Response): Promise<unknown> {
   if (resp.headers.get("content-type")?.startsWith("application/json")) {
-    console.log("getResponseErrorDetail, JSON");
     return resp.json();
   }
   return Promise.resolve();

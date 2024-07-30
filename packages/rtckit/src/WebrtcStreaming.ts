@@ -1,4 +1,4 @@
-import { WhipClient } from "./whip.js";
+import { WhipClient } from "./whip/WhipClient.js";
 import { WhipClientOptions } from "./whip/types.js";
 
 import { MediaDevices } from "./MediaDevices.js";

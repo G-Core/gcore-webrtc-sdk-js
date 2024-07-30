@@ -17,7 +17,7 @@ document.addEventListener(
       WHIP_ENDPOINT,
       {
         iceServers: [{
-          urls: "stun:drc-c2-93-115-196.fe.gc.onl",
+          urls: "stun:ed-c16-95-128-175.fe.gc.onl",
         }],
       }
     )
