@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { WhipClient, WhipClientEvents } from "@gcorevideo/rtckit/lib/whip";
+import { ServerRequestError, WhipClient, WhipClientEvents } from "@gcorevideo/rtckit/lib/whip";
 
 const emit = defineEmits(['close'])
 
@@ -68,6 +68,9 @@ onMounted(async () => {
     // TODO get resource URL
     running.value = true
   } catch (e) {
+    if (e instanceof ServerRequestError) {
+      console.error("Media server error status:%d detail:%o", e.status, e.detail)
+    }
     error.value = String(e)
     running.value = false
     setTimeout(() => {

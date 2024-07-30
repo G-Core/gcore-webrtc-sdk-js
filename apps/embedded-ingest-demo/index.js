@@ -1,7 +1,10 @@
 import { WebrtcStreaming } from '@gcorevideo/rtckit/lib/whip'
 
+// Get the endpoint URL from the CCP
+// Link path made of the integer stream ID and a token, which is a random hash value in hex format
 const WHIP_ENDPOINT =
-  'https://whip.preprod.gvideo.co/streamone/whip'
+  'https://whip.preprod.gvideo.co/7144575_d99d58f644d4cc55cca16c97000dda71/whip'
+
 
 document.addEventListener(
   'DOMContentLoaded',

@@ -4,6 +4,16 @@ import { EventEmitter } from "eventemitter3";
 import { reportError, trace } from "../trace/index.js";
 import { restrictCodecs } from "./utils.js";
 import { WhipClientOptions } from "./types.js";
+import {
+  ConflictError,
+  AssertionError,
+  ReconnectAttemptsExceededError,
+  SessionClosedError,
+  ServerRequestError,
+  TimeoutError,
+  MalformedResponseError,
+  NetworkError,
+} from "./errors.js";
 
 const T = "WhipClient";
 
@@ -12,54 +22,6 @@ const ICE_CANDIDATES_WAIT_TIME = 5000;
 const MIN_RETRY_DELAY = 100;
 const MAX_RETRY_DELAY = 3000;
 const START_RETRY_DELAY = 500;
-
-class ConflictError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-class MalformedResponseError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-class NetworkError extends Error {
-  constructor(message = "Network error") {
-    super(message);
-  }
-}
-
-class ReconnectAttemptsExceededError extends Error {
-  constructor() {
-    super("Reconnect attempts exceeded");
-  }
-}
-
-class ServerError extends Error {
-  constructor(public readonly status: number) {
-    super(`Request HTTP status ${status}`);
-  }
-}
-
-class SessionClosedError extends Error {
-  constructor() {
-    super("Session closed on media server");
-  }
-}
-
-class TimeoutError extends Error {
-  constructor() {
-    super("Timeout");
-  }
-}
-
-class AssertionError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
 
 export enum WhipClientEvents {
   // The client has successfully connected, probabaly after an ICE restart or a full session restart
@@ -205,7 +167,7 @@ export class WhipClient {
         await this.fullRestart();
         return;
       }
-      if (e instanceof ServerError && e.status === 405) {
+      if (e instanceof ServerRequestError && e.status === 405) {
         await this.fullRestart();
         return;
       }
@@ -297,7 +259,10 @@ export class WhipClient {
         return resolve();
       }
       this.cbResolveCandidates = resolve;
-      setTimeout(() => reject(new TimeoutError()), ICE_CANDIDATES_WAIT_TIME);
+      setTimeout(
+        () => reject(new TimeoutError("Timeout waiting for ICE candidates")),
+        ICE_CANDIDATES_WAIT_TIME,
+      );
     });
   }
 
@@ -503,7 +468,7 @@ export class WhipClient {
       }
     } catch (e) {
       reportError(e);
-      if (e instanceof ServerError) {
+      if (e instanceof ServerRequestError) {
         if (e.status === 404) {
           // TODO check with MediaMTX
           this.resourceUrl = null;
@@ -523,17 +488,21 @@ export class WhipClient {
     body?: string,
   ): Promise<Response> {
     // TODO retry on: domain resolution error, timeout error, 502, 503, 504
-    return withRetries(() =>
-      fetch(url, {
-        method,
-        headers: { ...this.getCommonHeaders(), ...headers },
-        body,
-      }),
-      this.options?.maxWhipRetries
+    return withRetries(
+      () =>
+        fetch(url, {
+          method,
+          headers: { ...this.getCommonHeaders(), ...headers },
+          body,
+        }),
+      this.options?.maxWhipRetries,
     ).then(
       (resp: Response) => {
         if (!resp.ok) {
-          return Promise.reject(new ServerError(resp.status));
+          return getResponseErrorDetail(resp).then(
+            (detail: unknown) => Promise.reject(new ServerRequestError(resp.status, detail)),
+            () => Promise.reject(new ServerRequestError(resp.status)),
+          );
         }
         return resp;
       },
@@ -639,7 +608,7 @@ export class WhipClient {
     try {
       await this.patch();
     } catch (e) {
-      if (e instanceof ServerError) {
+      if (e instanceof ServerRequestError) {
         return;
       }
       throw e;
@@ -742,4 +711,12 @@ function withRetries(
       }, nextDelay);
     });
   });
+}
+
+function getResponseErrorDetail(resp: Response): Promise<unknown> {
+  if (resp.headers.get("content-type")?.startsWith("application/json")) {
+    console.log("getResponseErrorDetail, JSON");
+    return resp.json();
+  }
+  return Promise.resolve();
 }
