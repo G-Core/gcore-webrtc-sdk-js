@@ -66,16 +66,20 @@ export class WebrtcStreaming {
 
   async preview(targetNode: HTMLVideoElement) {
     trace(`${T} preview`);
-    const stream = await this.openSourceStream();
-    const videoTrack = stream.getVideoTracks()[0];
+    const srcStream = await this.openSourceStream();
+    const videoTrack = srcStream.getVideoTracks()[0];
     if (!videoTrack) {
       throw new Error("No video track in the source stream");
     }
-    if (targetNode.srcObject && targetNode.srcObject === stream) {
-      trace(`${T} preview already playing the stream`);
-      return;
+    if (targetNode.srcObject && targetNode.srcObject instanceof MediaStream) {
+      const t = targetNode.srcObject.getVideoTracks()[0];
+      if (t && t.id === videoTrack.id) {
+        trace(`${T} preview already playing the same stream`);
+        return;
+      }
     }
-    targetNode.srcObject = stream;
+    const previewStream = new MediaStream([videoTrack]);
+    targetNode.srcObject = previewStream;
     targetNode.play();
   }
 
