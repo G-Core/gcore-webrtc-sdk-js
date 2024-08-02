@@ -1,4 +1,7 @@
-import { defineEventHandler } from 'h3'
+import {
+  defineEventHandler,
+  setResponseStatus,
+} from 'h3'
 
 import gcore, {
   createWebrtcStream,
@@ -20,22 +23,29 @@ export default defineEventHandler(
         id,
         true,
       )
-      return {
-        status: 204,
-      }
+      setResponseStatus(event, 204)
+      return null
     } catch (e) {
       if (e instanceof GcoreApiError) {
         if (
           e.status === 404 &&
           body.name
         ) {
+          console.warn(
+            'keepalive stream %s not found, creating a new one',
+            id,
+          )
           return createWebrtcStream(
             body.name,
-          ).then((stream) =>
-            webrtcStreamCreatedResponse(
+          ).then((stream) => {
+            setResponseStatus(
+              event,
+              201,
+            )
+            return webrtcStreamCreatedResponse(
               stream,
-            ),
-          )
+            )
+          })
         }
         return createError(e)
       }

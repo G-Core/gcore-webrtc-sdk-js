@@ -9,6 +9,7 @@ export default defineEventHandler(
       event,
     )
     const stream = await createWebrtcStream(name)
+    setResponseStatus(event, 201)
     return webrtcStreamCreatedResponse(stream)
   },
 )

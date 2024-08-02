@@ -24,12 +24,9 @@ export async function createWebrtcStream(
 
 export function webrtcStreamCreatedResponse(stream: WebrtcStream) {
   return {
-    status: 201,
-    body: {
-      id: stream.id,
-      playerUrl: stream.playerUrl,
-      whepEndpoint: stream.whepEndpoint,
-      whipEndpoint: stream.whipEndpoint,
-    },
+    id: stream.id,
+    playerUrl: stream.playerUrl,
+    whepEndpoint: stream.whepEndpoint,
+    whipEndpoint: stream.whipEndpoint,
   }
 }
