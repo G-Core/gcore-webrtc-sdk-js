@@ -1,7 +1,10 @@
 # Gcore WebRTC SDK demo
 
+
+## Usage
+
 ```
-% npm i @gcorevideo/rtckit
+% npm i @gcorevideo/rtckit-node
 % npm run build
 % export API_KEY='123$0aeb...'
 % node dist/index.js create My test stream

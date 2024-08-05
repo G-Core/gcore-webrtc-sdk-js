@@ -16,7 +16,7 @@ https://api.gcore.com/docs/iam#section/Authentication
 ### 3. Use it
 
 ```
-const rtckit = await import("@gcorevideo/rtckit-node");
+const rtckit = require("@gcorevideo/rtckit-node");
 
 const apiKey = new rtckit.ApiKey("4887$deadbeef...");
 const api = new rtckit.GcoreApi(apiKey);

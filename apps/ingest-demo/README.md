@@ -1,6 +1,10 @@
-# aylo-demo
+# WebRTC ingestion and playback demo
 
-This template should help get you started developing with Vue 3 in Vite.
+It opens a UI with the following tabs:
+- **Host** to start streaming as a host, receiving any available guest stream
+- **Guest** to start receiving hosts' stream with the possibility to stream one's own
+- **Settings** tab allows configuring the connection parameters
+- **Howto** gives some explanation and advice
 
 ## Recommended IDE Setup
 
