@@ -14,7 +14,7 @@
   "dependencies": {
     "@eyevinn/webrtc-player": "^0.13.0",
     "@gcorevideo/rtckit": "^0.62.0",
-    "vue": "^3.4.21",
+    "vue": "^3.4.35",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
