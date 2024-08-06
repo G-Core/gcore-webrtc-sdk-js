@@ -2,12 +2,19 @@ const APP_NAME = "gcore-webrtc";
 
 type WriteFn = (...args: any[]) => void;
 
-type Debugger = WriteFn;
+/**
+ * @internal
+ */
+export type Debugger = WriteFn;
 
 type Pattern = RegExp;
 
 const currentPatterns: Pattern[] = [];
 
+/**
+ * @beta
+ * @param patterns - comma-separated list of patterns, can contain '*' as a wildcard
+ */
 export function enable(patterns: string) {
   currentPatterns.splice(
     0,
@@ -16,6 +23,9 @@ export function enable(patterns: string) {
   );
 }
 
+/**
+ * @beta
+ */
 export function disable() {
   currentPatterns.splice(0, currentPatterns.length);
 }
@@ -37,6 +47,10 @@ function debug(namespace: string, writer: WriteFn): Debugger {
 
 function nullWriter() {}
 
+/**
+ * Logging utility with [debug](https://www.npmjs.com/package/debug)-like API
+ * @internal
+ */
 export class Logger {
   public readonly info: Debugger;
   public readonly warn: Debugger;
@@ -44,9 +58,10 @@ export class Logger {
   public readonly debug: Debugger;
 
   constructor(namespace: string, appName = APP_NAME) {
-    this.info = debug(`${appName}:INFO:${namespace}`, console.info.bind(console));
-    this.warn = debug(`${appName}:WARN:${namespace}`, console.warn.bind(console));
-    this.error = debug(`${appName}:ERROR:${namespace}`, console.error.bind(console));
-    this.debug = debug(`${appName}:DEBUG:${namespace}`, console.debug.bind(console));
+    const ns = namespace ? `:${namespace}` : "";
+    this.info = debug(`${appName}:INFO${ns}`, console.info.bind(console));
+    this.warn = debug(`${appName}:WARN${ns}`, console.warn.bind(console));
+    this.error = debug(`${appName}:ERROR${ns}`, console.error.bind(console));
+    this.debug = debug(`${appName}:DEBUG${ns}`, console.debug.bind(console));
   }
 }

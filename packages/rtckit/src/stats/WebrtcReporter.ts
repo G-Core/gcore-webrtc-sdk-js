@@ -3,11 +3,14 @@ import { encode } from "cbor-x";
 import { WebrtcPeerConnectionWatcher } from "./WebrtcPeerConnectionWatcher.js";
 import { WebrtcStatsReporter } from "./WebrtcStatsReporter.js";
 import type { WebrtcConciseReport } from "./types.js";
-import { ApiService } from "@/internal/ApiService.js";
+import { ApiService } from "../internal/ApiService.js";
 import { logger } from "./utils.js";
 
 const T = "WebrtcReporter";
 
+/**
+ * @internal
+ */
 export class WebrtcReporter {
   private token: string | undefined;
 
@@ -34,7 +37,7 @@ export class WebrtcReporter {
 
   private async sendReport(report: WebrtcConciseReport) {
     try {
-      await this.api.call("sessions/webrtc-stats", {
+      await this.api.request("sessions/webrtc-stats", {
         method: "POST",
         headers: {
           authorization: `Bearer ${this.token}`,

@@ -9,11 +9,15 @@
     "lib"
   ],
   "type": "module",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "build:bundle": "rollup -c",
-    "lint": "oxlint -c ../../.oxlintrc.json --tsconfig=./tsconfig.json --fix --ignore-path=../../.gitignore src",
+    "docs": "npm run docs:extract && npm run docs:build",
+    "docs:extract": "api-extractor run --local --verbose",
+    "docs:build": "api-documenter markdown --input-folder=temp --output-folder=docs/api",
     "format": "prettier --write src/",
+    "lint": "oxlint -c ../../.oxlintrc.json --tsconfig=./tsconfig.json --fix --ignore-path=../../.gitignore src",
     "test": "vitest --environment=jsdom run",
     "test:watch": "vitest --environment=jsdom watch"
   },
@@ -24,12 +28,15 @@
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.47.5",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@sentry/types": "^8.23.0",
     "@sinonjs/fake-timers": "^11.2.2",
     "@types/debug": "^4.1.12",
     "@types/sdp-transform": "^2.4.9",
     "@types/sinonjs__fake-timers": "^8.1.5",
+    "api-documenter": "^99.99.99",
     "jsdom": "^24.1.0",
     "oxlint": "^0.3.5",
     "prettier": "^2.8.8",

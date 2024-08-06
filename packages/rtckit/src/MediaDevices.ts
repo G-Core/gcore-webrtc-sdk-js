@@ -24,6 +24,10 @@ const VIDEORES: Record<
   },
 }
 
+/**
+ * A wrapper around browser's `navigator.mediaDevices` to simplify getting access to the devices
+ * @public
+ */
 export class MediaDevices {
   private devices: MediaDeviceInfo[] = [];
 

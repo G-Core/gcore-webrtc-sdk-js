@@ -7,32 +7,40 @@ import { WhipClientOptions } from "./types.js";
 import {
   ConflictError,
   AssertionError,
-  ReconnectAttemptsExceededError,
-  SessionClosedError,
   ServerRequestError,
   TimeoutError,
   MalformedResponseError,
-  NetworkError,
-} from "./errors.js";
+} from "../errors.js";
+import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
+import { handleFetchResponse, withRetries } from "../helpers/fetch.js";
 
 const T = "WhipClient";
 
 const ICE_CANDIDATES_WAIT_TIME = 5000;
 
-const MIN_RETRY_DELAY = 100;
-const MAX_RETRY_DELAY = 3000;
-const START_RETRY_DELAY = 500;
-
+/**
+ * @example client.on(WhipClientEvents.Dicsonnected, () => showError(__('Reconnecting...')));
+ * @public
+ */
 export enum WhipClientEvents {
-  // The client has successfully connected, probabaly after an ICE restart or a full session restart
+  /**
+   * The client has successfully connected, probabaly after an ICE restart or a full session restart
+   */
   Connected = "connected",
-  // Initial connect or reconnect has failed after a series of retries
+  /**
+   * Initial connect or reconnect has failed after a series of retries
+   */
   ConnectionFailed = "connection_failed",
-  // The client abruptly disconnected and will try to reconnect
+  /**
+   * The client abruptly disconnected and will try to reconnect
+   */
   Disconnected = "disconnected",
 }
 
-type EventListener<E extends WhipClientEvents> = E extends WhipClientEvents.Disconnected
+/**
+ * @public
+ */
+export type EventListener<E extends WhipClientEvents> = E extends WhipClientEvents.Disconnected
   ? () => void
   : E extends WhipClientEvents.Connected
   ? () => void
@@ -40,6 +48,10 @@ type EventListener<E extends WhipClientEvents> = E extends WhipClientEvents.Disc
   ? () => void
   : never;
 
+/**
+ * WHIP client for streaming with WebRTC from a browser
+ * @public
+ */
 export class WhipClient {
   private emitter = new EventEmitter<WhipClientEvents>();
 
@@ -497,15 +509,7 @@ export class WhipClient {
         }),
       this.options?.maxWhipRetries,
     ).then(
-      (resp: Response) => {
-        if (!resp.ok) {
-          return getResponseErrorDetail(resp).then(
-            (detail: unknown) => Promise.reject(new ServerRequestError(resp.status, detail)),
-            () => Promise.reject(new ServerRequestError(resp.status)),
-          );
-        }
-        return resp;
-      },
+      (resp: Response) => handleFetchResponse(resp),
       (e) => {
         trace(`${T} fetch ${method} ${url} failed ${e}`);
         return Promise.reject(e);
@@ -684,38 +688,4 @@ function matchIceParams(sdp: string): [string, string] {
   const iceu = sdp.match(/a=ice-ufrag:(.*)\r\n/);
   const icep = sdp.match(/a=ice-pwd:(.*)\r\n/);
   return [iceu ? iceu[1] : "", icep ? icep[1] : ""];
-}
-
-function withRetries(
-  f: () => Promise<Response>,
-  retriesLeft = 100,
-  delay = START_RETRY_DELAY,
-): Promise<Response> {
-  return f().catch((e) => {
-    console.error("withRetries fetch failed retriesLeft:%d", retriesLeft, e);
-    if (!(e instanceof TypeError)) {
-      return Promise.reject(e);
-    }
-    if (!retriesLeft) {
-      return Promise.reject(new NetworkError(e.message));
-    }
-    return new Promise((resolve, reject) => {
-      const nextDelay = Math.min(
-        MAX_RETRY_DELAY,
-        Math.max(MIN_RETRY_DELAY, delay * (0.75 + Math.random() * 0.5)),
-      );
-      setTimeout(() => {
-        withRetries(f, retriesLeft - 1, delay * 2)
-          .then(resolve)
-          .catch(reject);
-      }, nextDelay);
-    });
-  });
-}
-
-function getResponseErrorDetail(resp: Response): Promise<unknown> {
-  if (resp.headers.get("content-type")?.startsWith("application/json")) {
-    return resp.json();
-  }
-  return Promise.resolve();
 }

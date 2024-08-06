@@ -1,48 +1,24 @@
-export class ConflictError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class MalformedResponseError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class NetworkError extends Error {
-  constructor(message = "Network error") {
-    super(message);
-  }
-}
-
+/**
+ * @beta
+ * Number of reconnect attempts exceeded.
+ * Reconects happen automatically when a WebRTC session is abruptly closed.
+ */
 export class ReconnectAttemptsExceededError extends Error {
   constructor() {
     super("Reconnect attempts exceeded");
+    Object.setPrototypeOf(this, ReconnectAttemptsExceededError.prototype);
   }
 }
 
-export class ServerRequestError extends Error {
-  constructor(public readonly status: number, public readonly detail?: unknown) {
-    super(`Server request failed with status ${status}`);
-    Object.setPrototypeOf(this, ServerRequestError.prototype);
-  }
-}
-
+/**
+ * @beta
+ * An attemt to use a session closed on the server side.
+ * Media server can close a session on its discretion because of:
+ * - inactivity (expired ICE consent)
+ */
 export class SessionClosedError extends Error {
   constructor() {
     super("Session closed on media server");
-  }
-}
-
-export class TimeoutError extends Error {
-  constructor(msg = "Timeout") {
-    super(msg);
-  }
-}
-
-export class AssertionError extends Error {
-  constructor(message: string) {
-    super(message);
+    Object.setPrototypeOf(this, SessionClosedError.prototype);
   }
 }

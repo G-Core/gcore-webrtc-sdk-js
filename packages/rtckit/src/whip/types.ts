@@ -1,8 +1,17 @@
+/**
+ * @public
+ */
 export type CodecMatch = {
   codec: string;
+  /**
+   * @beta
+   */
   params?: Record<string, string>;
 };
 
+/**
+ * @public
+ */
 export type WhipClientOptions = {
   auth?: string;
   canRestartIce?: boolean;

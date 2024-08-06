@@ -18,6 +18,20 @@ const DEFAULT_STREAM_PARAMS = {
 
 const T = "WebrtcStreaming";
 
+/**
+ * A wrapper around WhipClient to facilitate creating WebRTC streams in a browser
+ * @public
+ * @example
+ * ```typescript
+ * const webrtc = new WebrtcStreaming('https://example.com/whip/0aeb');
+ * await webrtc.openSourceStream();
+ * await webrtc.preview(document.querySelector('video'));
+ * await webrtc.run();
+ * webrtc.toggleVideo(false);
+ * ...
+ * webrtc.close();
+ * ```
+ */
 export class WebrtcStreaming {
   public readonly mediaDevices = new MediaDevices();
 

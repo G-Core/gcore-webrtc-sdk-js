@@ -2,15 +2,21 @@ import type { SessionConfig, SessionInitParams } from "./internal/api/types.js";
 import { ApiService } from "./internal/ApiService.js";
 import type { ApiClientConfig } from "./types.js";
 
-type SessionParams = Omit<SessionInitParams, "hostname">;
+/**
+ * @internal
+ */
+export type SessionParams = Omit<SessionInitParams, "hostname">;
 
 const DEFAULT_CONFIG = {
   host: "https://api.gcore.com/streaming/videocalls",
   clientHost: "meet.gcorelabs.com",
 }
 
+/**
+ * @internal
+ */
 export class ApiClient {
-  public readonly service: ApiService;
+  private service: ApiService;
 
   constructor(private config: ApiClientConfig) {
     this.service = new ApiService(this.config.host || DEFAULT_CONFIG.host);

@@ -1,3 +1,6 @@
+/**
+ * @internal
+ */
 export type ApiClientConfig = {
   host?: string;
   clientHost?: string;

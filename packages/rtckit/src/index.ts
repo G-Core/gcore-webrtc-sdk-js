@@ -1,8 +1,12 @@
 export * from "./ApiClient.js";
 export * from "./Logger.js";
 export * from "./WebrtcStreaming.js";
+export * from "./errors.js";
+export * from "./internal/api/types.js";
 export * from "./stats/WebrtcReporter.js";
 export { setTracer } from "./trace/index.js";
 export { LogTracer } from "./trace/LogTracer.js";
+export * from "./types.js";
 export * from "./whip/WhipClient.js";
 export * from "./whip/errors.js";
+export * from "./whip/types.js";
