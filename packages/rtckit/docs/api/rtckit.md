@@ -41,6 +41,17 @@ Description
 </td></tr>
 <tr><td>
 
+[Logger](./rtckit.logger.md)
+
+
+</td><td>
+
+**_(BETA)_** Logging utility with \[debug\](https://www.npmjs.com/package/debug)-like API
+
+
+</td></tr>
+<tr><td>
+
 [LogTracer](./rtckit.logtracer.md)
 
 
@@ -179,34 +190,37 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[disable()](./rtckit.disable.md)
-
-
-</td><td>
-
-**_(BETA)_**
-
-
-</td></tr>
-<tr><td>
-
-[enable(patterns)](./rtckit.enable.md)
-
-
-</td><td>
-
-**_(BETA)_**
-
-
-</td></tr>
-<tr><td>
-
 [setTracer(t)](./rtckit.settracer.md)
 
 
 </td><td>
 
 Sets a tracer implementation, e.g., LogTracer or SentryTracer
+
+
+</td></tr>
+</tbody></table>
+
+## Interfaces
+
+<table><thead><tr><th>
+
+Interface
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[Tracer](./rtckit.tracer.md)
+
+
+</td><td>
+
 
 
 </td></tr>

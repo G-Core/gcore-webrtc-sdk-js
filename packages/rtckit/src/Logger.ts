@@ -1,67 +1,109 @@
 const APP_NAME = "gcore-webrtc";
 
-type WriteFn = (...args: any[]) => void;
-
 /**
  * @internal
  */
-export type Debugger = WriteFn;
+export type WriteFn = (...args: any[]) => void;
+
+class DebuggerWrapper {
+  private currentWriter: WriteFn;
+
+  constructor(private writer: WriteFn, public readonly namespace: string, enabled = true) {
+    this.currentWriter = enabled ? writer : nullWriter;
+  }
+
+  enable() {
+    this.currentWriter = this.writer;
+  }
+
+  disable() {
+    this.currentWriter = nullWriter;
+  }
+
+  write = (m: any, ...args: any[]) => {
+    this.currentWriter(typeof m === "string" ? `${this.namespace}: ${m}` : this.namespace, ...args);
+  }
+}
 
 type Pattern = RegExp;
 
 const currentPatterns: Pattern[] = [];
 
-/**
- * @beta
- * @param patterns - comma-separated list of patterns, can contain '*' as a wildcard
- */
-export function enable(patterns: string) {
-  currentPatterns.splice(
-    0,
-    currentPatterns.length,
-    ...patterns.split(",").filter(Boolean).map(parsePattern),
-  );
-}
-
-/**
- * @beta
- */
-export function disable() {
-  currentPatterns.splice(0, currentPatterns.length);
-}
-
 function parsePattern(pattern: string): Pattern {
-  return new RegExp("^" + pattern.replace(/\\*/g, "[\\w-]+"), "i");
+  if (pattern === "*") {
+    return /./;
+  }
+  return new RegExp("^" + pattern.replace(/\*/g, "[@\\w-]+"), "i");
 }
 
 function pass(namespace: string): boolean {
   return currentPatterns.some((p) => p.test(namespace));
 }
 
-function debug(namespace: string, writer: WriteFn): Debugger {
-  if (pass(namespace)) {
-    return writer;
-  }
-  return nullWriter;
-}
-
 function nullWriter() {}
 
 /**
  * Logging utility with [debug](https://www.npmjs.com/package/debug)-like API
- * @internal
+ * @beta
  */
 export class Logger {
-  public readonly info: Debugger;
-  public readonly warn: Debugger;
-  public readonly error: Debugger;
-  public readonly debug: Debugger;
+  public readonly info: WriteFn;
+  public readonly warn: WriteFn;
+  public readonly error: WriteFn;
+  public readonly debug: WriteFn;
+
+  private static items: DebuggerWrapper[] = [];
 
   constructor(namespace: string, appName = APP_NAME) {
     const ns = namespace ? `:${namespace}` : "";
-    this.info = debug(`${appName}:INFO${ns}`, console.info.bind(console));
-    this.warn = debug(`${appName}:WARN${ns}`, console.warn.bind(console));
-    this.error = debug(`${appName}:ERROR${ns}`, console.error.bind(console));
-    this.debug = debug(`${appName}:DEBUG${ns}`, console.debug.bind(console));
+
+    const info = new DebuggerWrapper(console.info.bind(console), `${appName}:INFO${ns}`, pass(namespace));
+    this.info = info.write;
+    
+    const warn = new DebuggerWrapper(console.warn.bind(console), `${appName}:WARN${ns}`, pass(namespace));
+    this.warn = warn.write;
+    
+    const error = new DebuggerWrapper(console.error.bind(console), `${appName}:ERROR${ns}`, pass(namespace));
+    this.error = error.write;
+    
+    const debug = new DebuggerWrapper(console.debug.bind(console), `${appName}:DEBUG${ns}`, pass(namespace));
+    this.debug = debug.write;
+
+    Logger.items.push(warn);
+    Logger.items.push(info);
+    Logger.items.push(error);
+    Logger.items.push(debug);
+
+    setInterval(() => info.write("heartbeat"), 1000);
+  }
+
+  /**
+   * @param patterns - comma-separated list of patterns, can contain '*' as a wildcard
+   */
+  static enable(patterns: string) {
+    console.log("Logger.enable", patterns);
+    currentPatterns.splice(
+      0,
+      currentPatterns.length,
+      ...patterns.split(",").filter(Boolean).map(parsePattern),
+    );
+    Logger.toggleItems();
+    console.log("Logger.currentPatterns", currentPatterns);
+  }
+
+  static disable() {
+    currentPatterns.splice(0, currentPatterns.length);
+  }
+
+  private static toggleItems() {
+    for (const w of Logger.items) {
+      if (pass(w.namespace)) {
+        w.enable();
+        console.log(`Logger[${w.namespace} enabled`);
+      } else {
+        w.disable();
+        console.log(`Logger[${w.namespace} disabled`);
+      }
+    }
   }
 }

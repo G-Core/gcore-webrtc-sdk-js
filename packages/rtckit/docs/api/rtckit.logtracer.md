@@ -11,7 +11,7 @@ A tracer that logs to the console
 ```typescript
 export declare class LogTracer implements Tracer 
 ```
-**Implements:** Tracer
+**Implements:** [Tracer](./rtckit.tracer.md)
 
 ## Methods
 

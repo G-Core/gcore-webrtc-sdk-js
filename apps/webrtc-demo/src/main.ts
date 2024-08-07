@@ -5,8 +5,7 @@ import pkg from "../package.json" with { type: "json" };
 import App from './App.vue'
 import router from './router'
 
-import { setTracer } from '@gcorevideo/rtckit';
-import { LogTracer } from '@gcorevideo/rtckit';
+import { LogTracer, Logger, setTracer } from '@gcorevideo/rtckit';
 
 console.log(
     `${pkg.name} ${
@@ -14,6 +13,7 @@ console.log(
     }`,
   )
 
+Logger.enable(localStorage.getItem("debug") || "*:ERROR:*,*:WARN:*");
 setTracer(new LogTracer());
 
 const app = createApp(App)

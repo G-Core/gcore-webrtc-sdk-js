@@ -15,6 +15,7 @@ export type WhipClientOptions = {
     iceServers?: RTCIceServer[];
     maxReconnects?: number;
     maxWhipRetries?: number;
+    useHostIceCandidates?: boolean;
     videoCodecs?: Array<string | CodecMatch>;
 };
 ```

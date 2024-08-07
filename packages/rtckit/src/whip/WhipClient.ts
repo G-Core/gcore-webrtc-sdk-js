@@ -19,7 +19,7 @@ const T = "WhipClient";
 const ICE_CANDIDATES_WAIT_TIME = 5000;
 
 /**
- * @example client.on(WhipClientEvents.Dicsonnected, () => showError(__('Reconnecting...')));
+ * @example client.on(WhipClientEvents.Dicsonnected, () =\> showError(__('Reconnecting...')));
  * @public
  */
 export enum WhipClientEvents {
@@ -202,7 +202,7 @@ export class WhipClient {
   }
 
   private async runStart(stream: MediaStream) {
-    trace(`${T} runStart`);
+    trace(`${T} runStart`, this.options);
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
     stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
@@ -236,7 +236,11 @@ export class WhipClient {
     };
 
     this.pc.onicecandidate = (event) => {
-      trace(`${T} onicecandidate ${event.candidate}`);
+      trace(`${T} onicecandidate`, {
+        candidate: event.candidate?.candidate,
+        eol: !event.candidate,
+        mline: event.candidate?.sdpMLineIndex,
+      });
       if (event.candidate) {
         // Ignore candidates not from the first m line
         if (event.candidate.sdpMLineIndex) {
@@ -293,7 +297,7 @@ export class WhipClient {
   }
 
   private canResolveWaitCandidates() {
-    return this.candidates.some((c) => c.type !== "host");
+    return this.candidates.some((c) => this.options?.useHostIceCandidates || c.type !== "host");
   }
 
   private async runInit(pc: RTCPeerConnection) {

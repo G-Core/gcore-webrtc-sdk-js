@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ServerRequestError, WhipClient, WhipClientEvents } from "@gcorevideo/rtckit/lib/whip";
+import { ServerRequestError, WhipClient, WhipClientEvents } from "@gcorevideo/rtckit";
 
 const emit = defineEmits(['close'])
 
@@ -49,6 +49,7 @@ onMounted(async () => {
       canTrickleIce: props.canTrickleIce,
       canRestartIce: props.canRestartIce,
       iceServers: ICE_SERVERS,
+      useHostIceCandidates: new URL(props.endpoint).host === "localhost",
       videoCodecs: ["H264"],
       // maxReconnects: 1,
       // maxWhipRetries: 1,

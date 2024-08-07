@@ -1,4 +1,4 @@
-import type {Tracer} from "./types.js";
+import type { Tracer } from "./types.js";
 
 import { Logger } from "../Logger.js";
 
