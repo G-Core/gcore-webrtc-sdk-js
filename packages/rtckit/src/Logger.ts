@@ -73,22 +73,18 @@ export class Logger {
     Logger.items.push(info);
     Logger.items.push(error);
     Logger.items.push(debug);
-
-    setInterval(() => info.write("heartbeat"), 1000);
   }
 
   /**
    * @param patterns - comma-separated list of patterns, can contain '*' as a wildcard
    */
   static enable(patterns: string) {
-    console.log("Logger.enable", patterns);
     currentPatterns.splice(
       0,
       currentPatterns.length,
       ...patterns.split(",").filter(Boolean).map(parsePattern),
     );
     Logger.toggleItems();
-    console.log("Logger.currentPatterns", currentPatterns);
   }
 
   static disable() {
@@ -99,10 +95,8 @@ export class Logger {
     for (const w of Logger.items) {
       if (pass(w.namespace)) {
         w.enable();
-        console.log(`Logger[${w.namespace} enabled`);
       } else {
         w.disable();
-        console.log(`Logger[${w.namespace} disabled`);
       }
     }
   }

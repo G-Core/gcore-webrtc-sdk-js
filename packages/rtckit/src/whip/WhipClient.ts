@@ -562,10 +562,11 @@ export class WhipClient {
   }
 
   private mungeOffer(sdp: string): string {
+    const s1 = sdp.replace(/a=sendrecv/g, "a=sendonly");
     if (this.options?.videoCodecs?.length) {
-      return restrictCodecs(sdp, "video", this.options.videoCodecs);
+      return restrictCodecs(s1, "video", this.options.videoCodecs);
     }
-    return sdp;
+    return s1;
   }
 
   private updateIceParams(offerSdp: string) {
