@@ -4,9 +4,6 @@
 
 ## ConflictError class
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Some erroneous sequence of operations, e.g.: - attempt to double-produce/consume - attempt to produce/consume when the client is closed
 
 **Signature:**
@@ -44,7 +41,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Constructs a new instance of the `ConflictError` class
+Constructs a new instance of the `ConflictError` class
 
 
 </td></tr>

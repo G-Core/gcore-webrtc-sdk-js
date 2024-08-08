@@ -4,9 +4,6 @@
 
 ## NetworkError class
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Network error during a WHIP/WHEP API request. Reasons: - no internet connection - network is unreachable (due to issues with a firewall, NAT, VPN, etc) - server is down - DNS resolution failed
 
 **Signature:**
@@ -44,7 +41,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Constructs a new instance of the `NetworkError` class
+Constructs a new instance of the `NetworkError` class
 
 
 </td></tr>

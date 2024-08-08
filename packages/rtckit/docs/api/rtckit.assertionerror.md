@@ -4,10 +4,7 @@
 
 ## AssertionError class
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
-Some internal logic is broken. Please report an issue https://github.com/G-Core/gcore-webrtc-sdk-js/issues.
+A misbehavior of some internal logic. Please report an issue https://github.com/G-Core/gcore-webrtc-sdk-js/issues.
 
 **Signature:**
 
@@ -44,7 +41,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Constructs a new instance of the `AssertionError` class
+Constructs a new instance of the `AssertionError` class
 
 
 </td></tr>

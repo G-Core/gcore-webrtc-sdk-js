@@ -9,6 +9,7 @@ export type SessionConfig = {
 
 /**
  * @deprecated - Will use new common Streaming API
+ * @public
  */
 export type SessionInitParams = {
   hostname: string;

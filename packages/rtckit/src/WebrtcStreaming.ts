@@ -1,11 +1,18 @@
 import { WhipClient } from "./whip/WhipClient.js";
 import { WhipClientOptions } from "./whip/types.js";
 
-import { MediaDevices } from "./MediaDevices.js";
+import { MediaDevicesHelper } from "./MediaDevices.js";
 import { trace } from "./trace/index.js";
 
-type DeviceId = string;
-type WebrtcStreamParams = {
+/**
+ * @public
+ */
+export type DeviceId = string;
+
+/**
+ * @public
+ */
+export type WebrtcStreamParams = {
   audio?: boolean | DeviceId;
   video?: boolean | DeviceId;
   resolution?: number;
@@ -33,7 +40,7 @@ const T = "WebrtcStreaming";
  * ```
  */
 export class WebrtcStreaming {
-  public readonly mediaDevices = new MediaDevices();
+  public readonly mediaDevices = new MediaDevicesHelper();
 
   private mediaStream: MediaStream | null = null;
 
@@ -187,7 +194,7 @@ function buildVideoContraints(params: WebrtcStreamParams): boolean | MediaTrackC
     constraints.deviceId = { exact: params.video };
   }
   if (params.resolution) {
-    const parsed = MediaDevices.parseVideoResolution(params.resolution);
+    const parsed = MediaDevicesHelper.parseVideoResolution(params.resolution);
     if (parsed) {
       constraints.width = { ideal: parsed.width };
       constraints.height = { ideal: parsed.height };

@@ -9,7 +9,7 @@ import { logger } from "./utils.js";
 const T = "WebrtcReporter";
 
 /**
- * @internal
+ * @alpha
  */
 export class WebrtcReporter {
   private token: string | undefined;

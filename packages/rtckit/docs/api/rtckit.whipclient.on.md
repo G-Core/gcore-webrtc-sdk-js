@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-on<E extends WhipClientEvents>(event: E, listener: EventListener<E>): void;
+on<E extends WhipClientEvents>(event: E, listener: EventEmitter.EventListener<WhipClientEventTypes, E>): void;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ listener
 
 </td><td>
 
-[EventListener](./rtckit.eventlistener_2.md)<!-- -->&lt;E&gt;
+EventEmitter.EventListener&lt;[WhipClientEventTypes](./rtckit.whipclienteventtypes.md)<!-- -->, E&gt;
 
 
 </td><td>

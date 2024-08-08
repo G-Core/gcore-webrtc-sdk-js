@@ -4,9 +4,6 @@
 
 ## MalformedResponseError class
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 WHIP/WHEP request returned a malformed response. Possible reasons: - misconfigured endpoint URL - server-side configuration issues
 
 **Signature:**
@@ -44,7 +41,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Constructs a new instance of the `MalformedResponseError` class
+Constructs a new instance of the `MalformedResponseError` class
 
 
 </td></tr>

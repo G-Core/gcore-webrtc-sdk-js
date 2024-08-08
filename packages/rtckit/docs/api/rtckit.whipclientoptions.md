@@ -4,6 +4,7 @@
 
 ## WhipClientOptions type
 
+Options affecting the behaviour of WhipClient
 
 **Signature:**
 

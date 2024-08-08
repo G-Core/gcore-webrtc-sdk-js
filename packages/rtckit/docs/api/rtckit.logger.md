@@ -84,7 +84,7 @@ Description
 
 </td><td>
 
-WriteFn
+[WriteFn](./rtckit.writefn.md)
 
 
 </td><td>
@@ -105,7 +105,7 @@ WriteFn
 
 </td><td>
 
-WriteFn
+[WriteFn](./rtckit.writefn.md)
 
 
 </td><td>
@@ -126,7 +126,7 @@ WriteFn
 
 </td><td>
 
-WriteFn
+[WriteFn](./rtckit.writefn.md)
 
 
 </td><td>
@@ -147,7 +147,7 @@ WriteFn
 
 </td><td>
 
-WriteFn
+[WriteFn](./rtckit.writefn.md)
 
 
 </td><td>

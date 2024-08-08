@@ -94,7 +94,7 @@ Description
 
 </td><td>
 
-MediaDevices
+[MediaDevicesHelper](./rtckit.mediadeviceshelper.md)
 
 
 </td><td>

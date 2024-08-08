@@ -2,7 +2,7 @@
   "name": "@gcorevideo/rtckit",
   "version": "0.63.3",
   "private": false,
-  "description": "WebRTC client for Gcore Streaming Platform",
+  "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
   "types": "lib/index.d.ts",
   "main": "lib/index.js",

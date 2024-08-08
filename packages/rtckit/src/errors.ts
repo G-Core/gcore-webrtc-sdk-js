@@ -1,5 +1,5 @@
 /**
- * @beta
+ * @public
  * Some erroneous sequence of operations, e.g.:
  * - attempt to double-produce/consume
  * - attempt to produce/consume when the client is closed
@@ -12,7 +12,7 @@ export class ConflictError extends Error {
 }
 
 /**
- * @beta
+ * @public
  * WHIP/WHEP request returned a malformed response.
  * Possible reasons:
  * - misconfigured endpoint URL
@@ -26,7 +26,7 @@ export class MalformedResponseError extends Error {
 }
 
 /**
- * @beta
+ * @public
  * Network error during a WHIP/WHEP API request.
  * Reasons:
  * - no internet connection
@@ -42,7 +42,7 @@ export class NetworkError extends Error {
 }
 
 /**
- * @beta
+ * @public
  * Any API server (WHIP, WHEP or any other) request error response, that is, 4xx and 5xx HTTP statuses.
  */
 export class ServerRequestError extends Error {
@@ -53,7 +53,7 @@ export class ServerRequestError extends Error {
 }
 
 /**
- * @beta
+ * @public
  * Timeout, see the message for the details.
  * Operations that can timeout:
  * - waiting for the ICE candidates
@@ -66,9 +66,9 @@ export class TimeoutError extends Error {
 }
 
 /**
- * Some internal logic is broken.
+ * A misbehavior of some internal logic.
  * Please report an issue https://github.com/G-Core/gcore-webrtc-sdk-js/issues.
- * @beta
+ * @public
  */
 export class AssertionError extends Error {
   constructor(message: string) {

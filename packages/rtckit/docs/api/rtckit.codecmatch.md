@@ -4,6 +4,7 @@
 
 ## CodecMatch type
 
+A codec match condition to filter the available codecs
 
 **Signature:**
 

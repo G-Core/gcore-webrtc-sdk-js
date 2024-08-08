@@ -3,7 +3,6 @@ import { EventEmitter } from "eventemitter3";
 import { WebrtcPeerConnectionWatcher } from "./WebrtcPeerConnectionWatcher.js";
 import { WebrtcStatsReportBuilder } from "./WebrtcStatsReportBuilder.js";
 import type { WebrtcConciseReport } from "./types.js";
-import { logger } from "./utils.js";
 
 const T = "WebrtcStatsReporter";
 

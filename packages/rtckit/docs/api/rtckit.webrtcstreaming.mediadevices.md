@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-readonly mediaDevices: MediaDevices;
+readonly mediaDevices: MediaDevicesHelper;
 ```

@@ -35,7 +35,7 @@ params
 
 </td><td>
 
-WebrtcStreamParams
+[WebrtcStreamParams](./rtckit.webrtcstreamparams.md)
 
 
 </td><td>

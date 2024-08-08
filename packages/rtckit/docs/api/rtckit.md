@@ -24,7 +24,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Some internal logic is broken. Please report an issue https://github.com/G-Core/gcore-webrtc-sdk-js/issues.
+A misbehavior of some internal logic. Please report an issue https://github.com/G-Core/gcore-webrtc-sdk-js/issues.
 
 
 </td></tr>
@@ -35,7 +35,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Some erroneous sequence of operations, e.g.: - attempt to double-produce/consume - attempt to produce/consume when the client is closed
+Some erroneous sequence of operations, e.g.: - attempt to double-produce/consume - attempt to produce/consume when the client is closed
 
 
 </td></tr>
@@ -68,7 +68,18 @@ A tracer that logs to the console
 
 </td><td>
 
-**_(BETA)_** WHIP/WHEP request returned a malformed response. Possible reasons: - misconfigured endpoint URL - server-side configuration issues
+WHIP/WHEP request returned a malformed response. Possible reasons: - misconfigured endpoint URL - server-side configuration issues
+
+
+</td></tr>
+<tr><td>
+
+[MediaDevicesHelper](./rtckit.mediadeviceshelper.md)
+
+
+</td><td>
+
+A wrapper around browser's `navigator.mediaDevices` to simplify getting access to the devices
 
 
 </td></tr>
@@ -79,7 +90,7 @@ A tracer that logs to the console
 
 </td><td>
 
-**_(BETA)_** Network error during a WHIP/WHEP API request. Reasons: - no internet connection - network is unreachable (due to issues with a firewall, NAT, VPN, etc) - server is down - DNS resolution failed
+Network error during a WHIP/WHEP API request. Reasons: - no internet connection - network is unreachable (due to issues with a firewall, NAT, VPN, etc) - server is down - DNS resolution failed
 
 
 </td></tr>
@@ -101,7 +112,7 @@ A tracer that logs to the console
 
 </td><td>
 
-**_(BETA)_** Any API server (WHIP, WHEP or any other) request error response, that is, 4xx and 5xx HTTP statuses.
+Any API server (WHIP, WHEP or any other) request error response, that is, 4xx and 5xx HTTP statuses.
 
 
 </td></tr>
@@ -123,7 +134,18 @@ A tracer that logs to the console
 
 </td><td>
 
-**_(BETA)_** Timeout, see the message for the details. Operations that can timeout: - waiting for the ICE candidates
+Timeout, see the message for the details. Operations that can timeout: - waiting for the ICE candidates
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcReporter](./rtckit.webrtcreporter.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
 
 
 </td></tr>
@@ -246,12 +268,13 @@ Description
 
 </td><td>
 
+A codec match condition to filter the available codecs
 
 
 </td></tr>
 <tr><td>
 
-[EventListener\_2](./rtckit.eventlistener_2.md)
+[DeviceId](./rtckit.deviceid.md)
 
 
 </td><td>
@@ -270,11 +293,44 @@ Description
 </td></tr>
 <tr><td>
 
+[WebrtcStreamParams](./rtckit.webrtcstreamparams.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
+[WhipClientEventTypes](./rtckit.whipclienteventtypes.md)
+
+
+</td><td>
+
+Event name =<!-- -->&gt; arguments mapping
+
+
+</td></tr>
+<tr><td>
+
 [WhipClientOptions](./rtckit.whipclientoptions.md)
 
 
 </td><td>
 
+Options affecting the behaviour of WhipClient
+
+
+</td></tr>
+<tr><td>
+
+[WriteFn](./rtckit.writefn.md)
+
+
+</td><td>
+
+**_(BETA)_**
 
 
 </td></tr>

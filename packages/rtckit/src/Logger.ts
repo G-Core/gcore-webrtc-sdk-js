@@ -1,7 +1,7 @@
 const APP_NAME = "gcore-webrtc";
 
 /**
- * @internal
+ * @beta
  */
 export type WriteFn = (...args: any[]) => void;
 

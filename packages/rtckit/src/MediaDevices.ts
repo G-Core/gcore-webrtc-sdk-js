@@ -28,7 +28,7 @@ const VIDEORES: Record<
  * A wrapper around browser's `navigator.mediaDevices` to simplify getting access to the devices
  * @public
  */
-export class MediaDevices {
+export class MediaDevicesHelper {
   private devices: MediaDeviceInfo[] = [];
 
   async getCameras(): Promise<MediaDeviceInfo[]> {

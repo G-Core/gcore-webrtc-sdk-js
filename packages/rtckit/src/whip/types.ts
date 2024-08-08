@@ -1,4 +1,5 @@
 /**
+ * A codec match condition to filter the available codecs
  * @public
  */
 export type CodecMatch = {
@@ -10,6 +11,7 @@ export type CodecMatch = {
 };
 
 /**
+ * Options affecting the behaviour of WhipClient
  * @public
  */
 export type WhipClientOptions = {

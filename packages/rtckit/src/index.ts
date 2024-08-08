@@ -1,5 +1,6 @@
 export * from "./ApiClient.js";
 export * from "./Logger.js";
+export * from "./MediaDevices.js";
 export * from "./WebrtcStreaming.js";
 export * from "./errors.js";
 export * from "./internal/api/types.js";

@@ -37,16 +37,14 @@ export enum WhipClientEvents {
   Disconnected = "disconnected",
 }
 
-/**
+/** Event name =\> arguments mapping
  * @public
  */
-export type EventListener<E extends WhipClientEvents> = E extends WhipClientEvents.Disconnected
-  ? () => void
-  : E extends WhipClientEvents.Connected
-  ? () => void
-  : E extends WhipClientEvents.ConnectionFailed
-  ? () => void
-  : never;
+export type WhipClientEventTypes = {
+  [WhipClientEvents.Connected]: [];
+  [WhipClientEvents.Disconnected]: [];
+  [WhipClientEvents.ConnectionFailed]: [];
+};
 
 /**
  * WHIP client for streaming with WebRTC from a browser
@@ -125,7 +123,7 @@ export class WhipClient {
     await this.runStart(mediaStream);
   }
 
-  on<E extends WhipClientEvents>(event: E, listener: EventListener<E>) {
+  on<E extends WhipClientEvents>(event: E, listener: EventEmitter.EventListener<WhipClientEventTypes, E>) {
     this.emitter.on(event, listener);
   }
 
