@@ -32,7 +32,7 @@
     "@microsoft/api-extractor": "^7.47.5",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@sentry/types": "^8.23.0",
+    "@sentry/types": "^8.25.0",
     "@sinonjs/fake-timers": "^11.2.2",
     "@types/debug": "^4.1.12",
     "@types/sdp-transform": "^2.4.9",
