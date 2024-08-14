@@ -123,7 +123,10 @@ export class WhipClient {
     await this.runStart(mediaStream);
   }
 
-  on<E extends WhipClientEvents>(event: E, listener: EventEmitter.EventListener<WhipClientEventTypes, E>) {
+  on<E extends WhipClientEvents>(
+    event: E,
+    listener: EventEmitter.EventListener<WhipClientEventTypes, E>,
+  ) {
     this.emitter.on(event, listener);
   }
 
@@ -575,6 +578,11 @@ export class WhipClient {
   }
 
   private async runPreflight() {
+    // TODO don't run unnecessarily, i.e., when ICE servers and other options are known
+    if (!this.needPreflight()) {
+      trace(`${T} runPreflight skipping`);
+      return;
+    }
     try {
       const resp = await this.fetch(this.endpoint, "OPTIONS");
       this.checkAllowedMethods(resp);
@@ -584,6 +592,17 @@ export class WhipClient {
         endpoint: this.endpoint,
       });
     }
+  }
+
+  private needPreflight() {
+    return (
+      !this.options ||
+      !this.options.iceServers?.length ||
+      (
+        this.options.canRestartIce === undefined &&
+        this.options.canTrickleIce === undefined
+      )
+    );
   }
 
   private checkAllowedMethods(resp: Response) {

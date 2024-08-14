@@ -83,6 +83,7 @@ export const useWebrtcConsumer =
             `${T} peer connection failed`,
           )
           resetVideoElement(elem)
+          // TODO schedule iceRestart and/or reconnect?
         }
       const onNoMedia = () => {
         noMedia.value = true

@@ -52,6 +52,8 @@ let timerId: number | null = null
 async function initPlayer(
   videoElem: HTMLVideoElement,
 ) {
+  console.log("PeerVideo initPlayer")
+
   await setup(videoElem, {
     iceServers: settings.iceServers,
   })
@@ -66,6 +68,7 @@ async function tryConsume() {
 }
 
 onMounted(() => {
+  console.log("PeerVideo onMounted")
   nextTick(async () => {
     const v: HTMLVideoElement =
       video.value!
@@ -95,6 +98,7 @@ onUnmounted(async () => {
     clearInterval(timerId)
     timerId = null
   }
+  console.log("PeerVideo onUnmounted")
   await stop()
 })
 </script>
