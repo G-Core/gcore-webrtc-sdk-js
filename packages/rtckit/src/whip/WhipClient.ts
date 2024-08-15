@@ -361,6 +361,7 @@ export class WhipClient {
     }
   }
 
+  // TODO rename
   private async patch() {
     this.clearIceTrickTimeout();
 
@@ -467,7 +468,7 @@ export class WhipClient {
           .replaceAll(/(a=ice-ufrag:)(.*)\r\n/gm, "$1" + iceUsername + "\r\n")
           .replaceAll(/(a=ice-pwd:)(.*)\r\n/gm, "$1" + icePassword + "\r\n")
           .replaceAll(/(a=candidate:.*\r\n)/gm, "")
-          .replaceAll(/(m=.*\r\n)/gm, "$1" + candidates.join());
+          .replaceAll(/(m=.*\r\n)/gm, "$1" + candidates.join(""));
 
         await pc.setRemoteDescription({
           type: "answer",
@@ -595,6 +596,9 @@ export class WhipClient {
   }
 
   private needPreflight() {
+    if (isLocalhost(this.endpoint)) {
+      return false;
+    }
     return (
       !this.options ||
       !this.options.iceServers?.length ||
@@ -710,4 +714,8 @@ function matchIceParams(sdp: string): [string, string] {
   const iceu = sdp.match(/a=ice-ufrag:(.*)\r\n/);
   const icep = sdp.match(/a=ice-pwd:(.*)\r\n/);
   return [iceu ? iceu[1] : "", icep ? icep[1] : ""];
+}
+
+function isLocalhost(endpoint: string) {
+  return new URL(endpoint).hostname === "localhost";
 }
