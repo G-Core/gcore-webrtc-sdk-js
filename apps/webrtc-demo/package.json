@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@eyevinn/webrtc-player": "^0.13.0",
-    "@gcorevideo/rtckit": "^0.63.2",
+    "@gcorevideo/rtckit": "^0.63.6",
     "vue": "^3.4.36",
     "vue-router": "^4.3.0"
   },
