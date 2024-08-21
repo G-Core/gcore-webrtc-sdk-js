@@ -12,7 +12,7 @@ import {
   MalformedResponseError,
 } from "../errors.js";
 import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
-import { handleFetchResponse, withRetries } from "../helpers/fetch.js";
+import { withRetries } from "../helpers/fetch.js";
 
 const T = "WhipClient";
 
@@ -85,6 +85,8 @@ export class WhipClient {
 
   private reconnects = 0;
 
+  private pendingOps: AbortController[] = [];
+
   constructor(private endpoint: string, private options?: WhipClientOptions) {
     if (options?.canTrickleIce) {
       this.canTrickleIce = true;
@@ -98,7 +100,11 @@ export class WhipClient {
   }
 
   async close() {
+    trace(`${T} close`, { closed: this.closed });
+
     this.closed = true;
+
+    this.pendingOps.splice(0, this.pendingOps.length).forEach((op) => op.abort());
 
     this.clearIceTrickTimeout();
 
@@ -195,7 +201,10 @@ export class WhipClient {
       this.pc = null;
     }
     if (this.resourceUrl) {
-      await this.fetch(this.resourceUrl, "DELETE").catch((e) => {
+      await fetch(this.resourceUrl, {
+        method: "DELETE",
+        headers: this.getCommonHeaders(),
+      }).catch((e) => {
         reportError(e);
       });
       this.resourceUrl = null;
@@ -204,6 +213,10 @@ export class WhipClient {
 
   private async runStart(stream: MediaStream) {
     trace(`${T} runStart`, this.options);
+    if (this.closed) {
+      throw new ConflictError("Client is closed");
+    }
+
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
     stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
@@ -505,22 +518,31 @@ export class WhipClient {
     headers: Record<string, string> = {},
     body?: string,
   ): Promise<Response> {
-    // TODO retry on: domain resolution error, timeout error, 502, 503, 504
+    const abort = new AbortController();
+    this.pendingOps.push(abort);
     return withRetries(
       () =>
         fetch(url, {
           method,
           headers: { ...this.getCommonHeaders(), ...headers },
           body,
+          signal: abort.signal,
         }),
       this.options?.maxWhipRetries,
-    ).then(
-      (resp: Response) => handleFetchResponse(resp),
-      (e) => {
+      undefined,
+      undefined,
+      abort.signal,
+    )
+      .catch((e) => {
         trace(`${T} fetch ${method} ${url} failed ${e}`);
         return Promise.reject(e);
-      },
-    );
+      })
+      .finally(() => {
+        const index = this.pendingOps.indexOf(abort);
+        if (index !== -1) {
+          this.pendingOps.splice(index, 1);
+        }
+      });
   }
 
   private getCommonHeaders(): Record<string, string> {
@@ -602,10 +624,7 @@ export class WhipClient {
     return (
       !this.options ||
       !this.options.iceServers?.length ||
-      (
-        this.options.canRestartIce === undefined &&
-        this.options.canTrickleIce === undefined
-      )
+      (this.options.canRestartIce === undefined && this.options.canTrickleIce === undefined)
     );
   }
 

@@ -15,27 +15,36 @@ export function withRetries(
   retriesLeft = 100,
   delay = START_RETRY_DELAY,
   delayMax = MAX_RETRY_DELAY,
+  abortSignal?: AbortSignal,
 ): Promise<Response> {
-  return f().catch((e) => {
-    reportError(e);
-    if (!(e instanceof TypeError)) {
-      return Promise.reject(e);
+  return new Promise<void>((resolve) => {
+    if (abortSignal) {
+      abortSignal.throwIfAborted();
     }
-    if (!retriesLeft) {
-      return Promise.reject(new NetworkError(e.message));
-    }
-    return new Promise((resolve, reject) => {
-      const nextDelay = Math.min(
-        delayMax,
-        Math.max(MIN_RETRY_DELAY, delay * (0.75 + Math.random() * 0.5)),
-      );
-      setTimeout(() => {
-        withRetries(f, retriesLeft - 1, delay * 2)
-          .then(resolve)
-          .catch(reject);
-      }, nextDelay);
+    resolve();
+  })
+    .then(f)
+    .then((resp: Response) => handleFetchResponse(resp))
+    .catch((e) => {
+      reportError(e);
+      if (!canRetry(e)) {
+        return Promise.reject(e);
+      }
+      if (!retriesLeft) {
+        return Promise.reject(new NetworkError(e.message));
+      }
+      return new Promise((resolve, reject) => {
+        const nextDelay = Math.min(
+          delayMax,
+          Math.max(MIN_RETRY_DELAY, delay * (0.75 + Math.random() * 0.5)),
+        );
+        setTimeout(() => {
+          withRetries(f, retriesLeft - 1, delay * 2, delayMax, abortSignal)
+            .then(resolve)
+            .catch(reject);
+        }, nextDelay);
+      });
     });
-  });
 }
 
 function getResponseErrorDetail(resp: Response): Promise<unknown> {
@@ -65,7 +74,7 @@ export async function handleFetchResponse(resp: Response): Promise<Response> {
  * @param e
  * @returns
  */
-export function handleFetchErrorResponse(e: Error): Promise<never> {
+function handleFetchErrorResponse(e: Error): Promise<never> {
   return Promise.reject(e instanceof TypeError ? new NetworkError(e.message) : e);
 }
 
@@ -107,4 +116,14 @@ export function calcRetryDuration(duration: number): {
     delayMax: 2000,
     retriesCount: 4 + Math.floor(duration / 2000 - 1),
   };
+}
+
+function canRetry(e: Error): boolean {
+  if (e instanceof TypeError) {
+    return true;
+  }
+  if (e instanceof ServerRequestError) {
+    return [500, 502, 503, 504].includes(e.status);
+  }
+  return false;
 }
