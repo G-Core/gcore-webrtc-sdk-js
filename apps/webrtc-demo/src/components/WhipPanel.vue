@@ -49,7 +49,7 @@ onMounted(async () => {
       canTrickleIce: props.canTrickleIce,
       canRestartIce: props.canRestartIce,
       // iceServers: ICE_SERVERS,
-      useHostIceCandidates: new URL(props.endpoint).host === "localhost",
+      useHostIceCandidates: new URL(props.endpoint).hostname === "localhost",
       videoCodecs: ["H264"],
       // maxReconnects: 1,
       // maxWhipRetries: 1,

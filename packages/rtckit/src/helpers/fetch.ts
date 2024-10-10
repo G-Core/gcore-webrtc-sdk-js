@@ -1,8 +1,8 @@
 import { NetworkError, ServerRequestError } from "../errors.js";
 
-const MIN_RETRY_DELAY = 100;
-const MAX_RETRY_DELAY = 3000;
-const START_RETRY_DELAY = 500;
+const MIN_RETRY_DELAY = 500;
+const MAX_RETRY_DELAY = 5000;
+const START_RETRY_DELAY = 1000;
 
 /**
  * @internal

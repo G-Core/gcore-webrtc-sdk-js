@@ -140,6 +140,9 @@ export class WhipClient {
    * Made public for testing purposes
    */
   async restart() {
+    if (this.options?.noRestart) {
+      throw new WontRestartError()
+    }
     if (this.closed) {
       trace(`${T} restart: client is closed`);
       return;
@@ -737,4 +740,11 @@ function matchIceParams(sdp: string): [string, string] {
 
 function isLocalhost(endpoint: string) {
   return new URL(endpoint).hostname === "localhost";
+}
+
+export class WontRestartError extends Error {
+  constructor() {
+    super("Won't restart");
+    Object.setPrototypeOf(this, WontRestartError.prototype);
+  }
 }
