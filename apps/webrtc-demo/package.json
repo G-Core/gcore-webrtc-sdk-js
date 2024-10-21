@@ -24,7 +24,7 @@
     "@vue/tsconfig": "^0.5.1",
     "oxlint": "^0.9.7",
     "prettier": "^3.2.5",
-    "typescript": "~5.6.2",
+    "typescript": "~5.6.3",
     "vite": "^5.4.9",
     "vue-tsc": "^2.0.11"
   }
