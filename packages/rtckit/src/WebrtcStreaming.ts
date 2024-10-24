@@ -65,7 +65,7 @@ export class WebrtcStreaming {
     };
     this.mediaStreamPromise = new Promise<MediaStream>((resolve, reject) => {
       if (this.mediaStream) {
-        if (!params || sameStreamParams(params, this.streamParams)) {
+        if (!params || sameStreamParams(this.streamParams, params)) {
           return resolve(this.mediaStream);
         }
         this.closeMediaStream();

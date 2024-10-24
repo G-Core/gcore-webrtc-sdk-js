@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WebrtcStreaming } from "../WebrtcStreaming.js";
 
 describe("WebrtcStreaming", () => {
+  let webrtc: WebrtcStreaming;
   describe("preview", () => {
-    let webrtc: WebrtcStreaming;
     let video: HTMLVideoElement;
     beforeEach(async () => {
       webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
@@ -32,6 +32,107 @@ describe("WebrtcStreaming", () => {
         0,
       );
       webrtc.close();
+    });
+  });
+  describe("openSourceStream", () => {
+    describe("open twice", () => {
+      describe.each([
+        [
+          {
+            audio: true,
+            video: true,
+          },
+          {
+            audio: true,
+            video: true,
+            resolution: 1080,
+          },
+          {
+            audio: true,
+            video: {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
+          }
+        ],
+        [
+          {
+            audio: true,
+            video: true,
+          },
+          {
+            audio: true,
+            video: "camera1",
+          },
+          {
+            audio: true,
+            video: {
+              deviceId: {
+                exact: "camera1",
+              }
+            },
+          }
+        ],
+        [
+          {
+            audio: true,
+            video: true,
+          },
+          {
+            audio: true,
+            video: true,
+          },
+          undefined,
+        ],
+        [
+          {
+            audio: "mic1",
+            video: true,
+          },
+          {
+            audio: true,
+            video: true,
+          },
+          undefined,
+        ],
+        [
+          {
+            audio: true,
+            video: true,
+            resolution: 1080,
+          },
+          {
+            audio: true,
+            video: true,
+          },
+          undefined,
+        ],
+      ])("", (firstParams, secondParams, expectedConstraints) => {
+        beforeEach(async () => {
+          webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
+          const mockStream = createMockMediaStream([
+            createMockMediaTrack("audio") as any,
+            createMockMediaTrack("video") as any,
+          ]);
+          window.MediaStream = createMockMediaStream as any;
+          // @ts-ignore
+          window.navigator.mediaDevices = {
+            getUserMedia: vi.fn().mockResolvedValue(mockStream),
+          };
+          await webrtc.openSourceStream(firstParams);
+          await webrtc.openSourceStream(secondParams);
+        });
+        if (expectedConstraints) {
+          it("should call getUserMedia second time with the new constraints", () => {
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(2, expectedConstraints);
+          });
+        } else {
+          it("should not call getUserMedia second time", () => {
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+          });
+        }
+      });
     });
   });
 });
