@@ -221,7 +221,19 @@ export class WhipClient {
     }
 
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
-    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+    stream.getTracks().forEach(
+      (track) => {
+        if (this.options?.encodingParameters) {
+          pc.addTransceiver(track, {
+            direction: "sendonly",
+            sendEncodings: this.options?.encodingParameters,
+            streams: [stream],
+          });
+        } else {
+          pc.addTrack(track, stream)
+        }
+      }
+    );
 
     this.pc = pc;
 

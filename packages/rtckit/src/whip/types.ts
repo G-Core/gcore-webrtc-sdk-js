@@ -24,4 +24,5 @@ export type WhipClientOptions = {
   noRestart?: boolean;
   useHostIceCandidates?: boolean;
   videoCodecs?: Array<string | CodecMatch>;
+  encodingParameters?: RTCRtpEncodingParameters[];
 };

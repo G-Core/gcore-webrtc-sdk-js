@@ -111,7 +111,8 @@ export class WebrtcStreaming {
     }
     const mediaStream = await this.openSourceStream();
     const opts = {
-      auth: this.options?.auth,
+      videoCodecs: ["H264"],
+      ...(this.options || {}),
       iceServers: this.options?.iceServers?.flatMap(({ urls, username, credential }) => {
         if (Array.isArray(urls)) {
           return urls.map((url) => ({ urls: url, username, credential }));
@@ -122,7 +123,6 @@ export class WebrtcStreaming {
           credential,
         };
       }),
-      videoCodecs: ["H264"],
     };
     const whipClient = new WhipClient(this.endpoint, opts);
     this.whipClient = whipClient;
