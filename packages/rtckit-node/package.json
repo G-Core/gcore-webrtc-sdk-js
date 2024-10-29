@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit-node",
-  "version": "0.9.1",
+  "version": "0.10.3",
   "description": "Node.js SDK for the Gcore WebRTC",
   "main": "dist/index.js",
   "type": "module",

@@ -1,6 +1,5 @@
 import { PlatformApiService } from "./PlatformApiService.js";
 import { LiveStreamDto } from "./types.js";
-import { WHEP_ENDPOINT_URL, WHIP_ENDPOINT_URL } from "./settings.js";
 
 type StreamId = number;
 
@@ -12,9 +11,7 @@ export type WebrtcStream = {
   whipEndpoint: string;
 };
 
-type CustomOptions = {
-  qualitySetId?: number;
-}
+type CustomOptions = {}
 
 export class WebrtcApi {
   private customOptions: CustomOptions = {};
@@ -67,30 +64,14 @@ export class WebrtcApi {
   }
 }
 
-function putUrlSlugs(tpl: string, streamId: string, token: string): string {
-  return tpl.replace('{stream_id}', streamId).replace('{token}', token);
-}
-
-function buildWebrtcEndpointUrls(
-  streamId: string,
-  token: string
-): [string, string] {
-  return [
-    putUrlSlugs(WHIP_ENDPOINT_URL, streamId, token),
-    putUrlSlugs(WHEP_ENDPOINT_URL, streamId, token),
-  ];
-}
-
 function toWebrtcStream(
   r: LiveStreamDto,
 ): WebrtcStream {
-  const [whipEndpoint, whepEndpoint] =
-    buildWebrtcEndpointUrls(String(r.id), r.token);
   return {
-    id: r.id,
     active: r.active,
+    id: r.id,
     playerUrl: r.iframe_url,
-    whipEndpoint,
-    whepEndpoint,
+    whepEndpoint: "",
+    whipEndpoint: r.push_url_whip,
   };
 }
