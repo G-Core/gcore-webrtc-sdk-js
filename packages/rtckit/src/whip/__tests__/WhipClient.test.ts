@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, MockedFunction, vi } from "vitest";
 import { WhipClient, WhipClientEvents } from "../WhipClient.js";
-import { createMockMediaStream, createMockMediaStreamTrack } from "../../testUtils.js";
+import { createMockMediaStream, createMockMediaStreamTrack, MockedMediaStreamTrack } from "../../testUtils.js";
 
 describe("WhipClient", () => {
   let client: WhipClient;
@@ -25,19 +25,24 @@ describe("WhipClient", () => {
     });
   });
   // TODO unskip
-  describe.skip("start", () => {
+  describe("start", () => {
+    let audioTrack: MockedMediaStreamTrack;
+    let videoTrack: MockedMediaStreamTrack;
     beforeEach(async () => {
-      const audioTrack = createMockMediaStreamTrack("audio");
-      const videoTrack = createMockMediaStreamTrack("video");
+      audioTrack = createMockMediaStreamTrack("audio");
+      videoTrack = createMockMediaStreamTrack("video");
 
       const stream = createMockMediaStream([audioTrack, videoTrack]);
       await client.start(stream as MediaStream);
     });
-    it("should run preflight request", () => { // because ICE servers are not specified
+    it.skip("should run preflight request", () => { // because ICE servers are not specified
       expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/whip", expect.objectContaining({
         method: "OPTIONS",
       }));
     });
+    it("should set content hint for the video track", () => {
+      expect(videoTrack.contentHint).toBe("detail");
+    })
   });
 });
 
@@ -50,6 +55,10 @@ class MockRTCPeerConnection {
   constructor(config) {
     this.configuration = config;
   }
+
+  addTrack(track, ...streams) {}
+
+  addTransceiver(trackOrKind, init) {}
 
   createAnswer() {
     return {

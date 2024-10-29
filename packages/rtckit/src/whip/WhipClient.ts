@@ -223,6 +223,9 @@ export class WhipClient {
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
     stream.getTracks().forEach(
       (track) => {
+        if (track.kind === "video" && !track.contentHint) {
+          track.contentHint = "detail";
+        }
         if (this.options?.encodingParameters) {
           pc.addTransceiver(track, {
             direction: "sendonly",
