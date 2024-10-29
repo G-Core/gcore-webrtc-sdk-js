@@ -1,6 +1,6 @@
 import { PlatformApiService } from "./PlatformApiService.js";
 import { LiveStreamDto } from "./types.js";
-import { RTSP_PULL_URL, WHEP_ENDPOINT_URL, WHIP_ENDPOINT_URL } from "./settings.js";
+import { WHEP_ENDPOINT_URL, WHIP_ENDPOINT_URL } from "./settings.js";
 
 type StreamId = number;
 
@@ -31,27 +31,11 @@ export class WebrtcApi {
       {
         method: "post",
         data: {
-          active: false,
+          active: true,
           name,
-          pull: false,
-          uri: buildWebrtcStreamPullUrl("-", "-"),
-          transcode_from_pull: true,
         },
       },
     )) as LiveStreamDto;
-    await this.service.request(
-      `streams/${r.id}`,
-      {
-        method: "patch",
-        data: {
-          active: true,
-          uri: buildWebrtcStreamPullUrl(
-            String(r.id),
-            r.token,
-          ),
-        },
-      },
-    );
     return toWebrtcStream(r);
   }
 
@@ -81,13 +65,6 @@ export class WebrtcApi {
   setCustomOptions(options: CustomOptions) {
     this.customOptions = options;
   }
-}
-
-function buildWebrtcStreamPullUrl(
-  streamId: string,
-  token: string,
-): string {
-  return putUrlSlugs(RTSP_PULL_URL, streamId, token);
 }
 
 function putUrlSlugs(tpl: string, streamId: string, token: string): string {
