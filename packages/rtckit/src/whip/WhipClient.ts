@@ -87,6 +87,10 @@ export class WhipClient {
 
   private pendingOps: AbortController[] = [];
 
+  private silentAudioTrack: MediaStreamTrack | null = null;
+
+  private audioContext: AudioContext | null = null;
+
   constructor(private endpoint: string, private options?: WhipClientOptions) {
     if (options?.canTrickleIce) {
       this.canTrickleIce = true;
@@ -109,6 +113,16 @@ export class WhipClient {
     this.clearIceTrickTimeout();
 
     await this.closeSession();
+
+    if (this.silentAudioTrack) {
+      this.silentAudioTrack.stop();
+      this.silentAudioTrack = null;
+    }
+
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
 
     this.mediaStream = null;
   }
@@ -221,10 +235,15 @@ export class WhipClient {
     }
 
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
+    let hasAudioTrack = false;
     stream.getTracks().forEach(
       (track) => {
-        if (track.kind === "video" && !track.contentHint && this.options?.videoPreserveInitialResolution) {
-          track.contentHint = "detail";
+        if (track.kind === "video") {
+          if (!track.contentHint && this.options?.videoPreserveInitialResolution) {
+            track.contentHint = "detail";
+          }
+        } else {
+          hasAudioTrack = true;
         }
         if (this.options?.encodingParameters) {
           pc.addTransceiver(track, {
@@ -237,6 +256,10 @@ export class WhipClient {
         }
       }
     );
+
+    if (!hasAudioTrack) {
+      this.insertSilentAudioTrack(pc);
+    }
 
     this.pc = pc;
 
@@ -695,6 +718,15 @@ export class WhipClient {
   private connectionFailed() {
     trace(`${T} connectionFailed`);
     this.emitter.emit(WhipClientEvents.ConnectionFailed);
+  }
+
+  private insertSilentAudioTrack(pc: RTCPeerConnection) {
+    if (!this.silentAudioTrack) {
+      const audioContext = this.audioContext || new AudioContext();
+      const dest = audioContext.createMediaStreamDestination();
+      this.silentAudioTrack = dest.stream.getAudioTracks()[0];
+    }
+    pc.addTrack(this.silentAudioTrack);
   }
 }
 

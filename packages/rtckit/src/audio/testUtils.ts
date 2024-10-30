@@ -1,7 +1,7 @@
 import { Mock, vi } from "vitest";
-import { type MockedMediaStream } from "../testUtils.js";
+import { type MockedMediaStream as MockMediaStream } from "../testUtils.js";
 
-export function createMockAudioContext(): MockedAudioContext {
+export function createMockAudioContext(): MockAudioContext {
   return {
     state: "suspended",
     close: vi.fn(),
@@ -16,7 +16,7 @@ export function createMockAudioContext(): MockedAudioContext {
 
 export type AudioContextState = "suspended" | "interrupted" | "running" | "closed";
 
-export type MockedAudioContext = {
+export type MockAudioContext = {
   state: AudioContextState;
   onstatechange: (() => void) | null;
   close: Mock;
@@ -27,7 +27,7 @@ export type MockedAudioContext = {
   resume: Mock;
 };
 
-export type MockedGainNode = {
+export type MockGainNode = {
   connect: Mock;
   disconnect: Mock;
   gain: {
@@ -36,18 +36,18 @@ export type MockedGainNode = {
   };
 };
 
-export type MockedMediaStreamAudioSourceNode = {
-  mediaStream: MockedMediaStream;
+export type MockMediaStreamAudioSourceNode = {
+  mediaStream: MockMediaStream;
   connect: Mock;
   disconnect: Mock;
 };
 
-export type MockedAudioDestinationNode = {
-  stream: MockedMediaStream;
+export type MockAudioDestinationNode = {
+  stream: MockMediaStream;
   disconnect: Mock;
 };
 
-export type MockedAnalyserNode = {
+export type MockAnalyserNode = {
   connect: Mock;
   disconnect: Mock;
   frequencyBinCount: number;

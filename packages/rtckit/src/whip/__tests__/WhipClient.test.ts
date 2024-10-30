@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, MockedFunction, vi } from "vitest";
-import { WhipClient, WhipClientEvents } from "../WhipClient.js";
+import { WhipClient } from "../WhipClient.js";
 import { createMockMediaStream, createMockMediaStreamTrack, MockedMediaStreamTrack } from "../../testUtils.js";
+import { createMockAudioContext, MockAudioContext } from "../../audio/testUtils.js";
 
 describe("WhipClient", () => {
+  let audioTrack: MockedMediaStreamTrack;
+  let videoTrack: MockedMediaStreamTrack;
   let client: WhipClient;
-  // let spyFetch: MockedFunction<typeof fetch>;
   beforeEach(() => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
       ok: true,
@@ -18,13 +20,8 @@ describe("WhipClient", () => {
       status: 200,
       text: () => Promise.resolve("v=0\r\n"),
     } as any);
-    // @ts-ignore
-    globalThis.RTCPeerConnection = MockRTCPeerConnection;
   });
-  // TODO unskip
-  describe("start", () => {
-    let audioTrack: MockedMediaStreamTrack;
-    let videoTrack: MockedMediaStreamTrack;
+  describe("contentHint", () => {
     describe.each([
       ["explicitly on", { videoPreserveInitialResolution: true }, "detail"],
       ["explicitly off", { videoPreserveInitialResolution: false }, ""],
@@ -39,6 +36,8 @@ describe("WhipClient", () => {
           canTrickleIce: true,
           ...opts
         });
+        // @ts-ignore
+        globalThis.RTCPeerConnection = MockRTCPeerConnection;
         await client.start(stream as MediaStream);
       });
       it.skip("should run preflight request", () => { // because ICE servers are not specified
@@ -48,54 +47,82 @@ describe("WhipClient", () => {
       });
       it("should set content hint for the video track accordingly", () => {
         expect(videoTrack.contentHint).toBe(contentHint);
-      })
-    })
+      });
+    });
+  });
+  describe("insertSilentAudio", () => {
+    let mockConn: any;
+    let audioContext: MockAudioContext;
+    beforeEach(async () => {
+      audioContext = createMockAudioContext();
+      audioTrack = createMockMediaStreamTrack("audio");
+      let audioStream = createMockMediaStream([audioTrack]);
+      let mockDestNode = createMockMediaStreamDestinationNode(audioStream);
+      audioContext.createMediaStreamDestination.mockReturnValue(mockDestNode);
+      window.AudioContext = vi.fn().mockImplementation(() => audioContext);
+      videoTrack = createMockMediaStreamTrack("video");
+
+      const stream = createMockMediaStream([videoTrack]);
+      client = new WhipClient("https://example.com/whip", {
+        canTrickleIce: true,
+      });
+      mockConn = new MockRTCPeerConnection({});
+      // @ts-ignore
+      globalThis.RTCPeerConnection = vi.fn().mockReturnValue(mockConn);
+      // TODO mock audio context
+      await client.start(stream as MediaStream);
+    });
+    it("should create and send a silent audio track", () => {
+      expect(window.AudioContext).toHaveBeenCalled();
+      expect(audioContext.createMediaStreamDestination).toHaveBeenCalled();
+      expect(mockConn.addTrack).toHaveBeenCalledWith(audioTrack)
+    });
   });
 });
 
-class MockRTCPeerConnection {
-  configuration = null
-  localDescription = null
+function MockRTCPeerConnection(configuration: any = null) {
+  const retval = {
+    configuration,
+    localDescription: null,
+    remoteDescription: null,
   
-  remoteDescription = null
-
-  constructor(config) {
-    this.configuration = config;
-  }
-
-  addTrack(track, ...streams) {}
-
-  addTransceiver(trackOrKind, init) {}
-
-  createAnswer() {
-    return {
+    addTrack: vi.fn(),
+    addTransceiver: vi.fn(),
+    createAnswer: vi.fn().mockReturnValue({
       sdp: "v=0\r\n",
       type: "answer",
-    }
-  }
-
-  close() {}
-
-  createOffer() {
-    return {
+    }),
+    close: vi.fn(),
+  
+    createOffer: vi.fn().mockReturnValue({
       sdp: "v=0\r\n",
       type: "offer",
+    }),
+  
+    generateCertificate: vi.fn().mockImplementation(() => {
+      return Promise.reject(new Error("Not implemented"));
+    }),
+  
+    getConfiguration() {
+      return this.configuration;
+    },
+  
+    setLocalDescription(ld) {
+      this.localDescription = ld
+    },
+  
+    setRemoteDescription(rd) {
+      this.remoteDescription = rd;
     }
-  }
+  };
+  Object.assign(this, retval);
+  // return this;
+}
 
-  generateCertificate() {
-    return Promise.reject(new Error("Not implemented"));
-  }
-
-  getConfiguration() {
-    return this.configuration;
-  }
-
-  setLocalDescription(ld) {
-    this.localDescription = ld
-  }
-
-  setRemoteDescription(rd) {
-    this.remoteDescription = rd;
+function createMockMediaStreamDestinationNode(stream) {
+  return {
+    get stream() {
+      return stream;
+    }
   }
 }
