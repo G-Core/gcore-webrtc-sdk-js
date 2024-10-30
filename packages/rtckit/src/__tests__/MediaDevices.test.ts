@@ -61,6 +61,7 @@ describe("MediaDevices", () => {
       setupMockUserMedia(devices)
       window.navigator.mediaDevices.getUserMedia
         .mockReset()
+        .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // before updateDevices
         .mockRejectedValueOnce(new Error("Overconstrained")) // 1080
         .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // 720
         .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // 480
@@ -68,7 +69,7 @@ describe("MediaDevices", () => {
         .mockRejectedValueOnce(new Error("Overconstrained")) // 240
       mediaDevices = new MediaDevicesHelper()
     })
-    it("should return the only the resolutions available", async () => {
+    it("should return only the resolutions available", async () => {
       await mediaDevices.getCameras()
       const resolutions = mediaDevices.getAvailableVideoResolutions("camera01")
       expect(resolutions).toEqual([

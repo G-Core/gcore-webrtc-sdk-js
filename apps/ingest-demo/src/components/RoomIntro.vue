@@ -43,7 +43,7 @@ const canJoin = computed(
 )
 
 const videoQuality = ref<string>(
-  props.host ? '1080p' : '480p',
+  props.host ? '1080' : '480',
 )
 
 watch(videoQuality, (newVal) => {

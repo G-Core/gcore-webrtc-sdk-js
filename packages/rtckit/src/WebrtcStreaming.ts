@@ -58,6 +58,14 @@ export class WebrtcStreaming {
     this.closeMediaStream();
   }
 
+  configure(endpoint: string, options?: WhipClientOptions) {
+    trace(`${T} configure`, { endpoint, options });
+    this.endpoint = endpoint;
+    if (options) {
+      this.options = options;
+    }
+  }
+
   async openSourceStream(params?: WebrtcStreamParams): Promise<MediaStream> {
     trace(`${T} openSourceStream`, params);
     if (this.mediaStreamPromise) {
@@ -106,6 +114,9 @@ export class WebrtcStreaming {
 
   async run(): Promise<WhipClient> {
     trace(`${T} run`);
+    if (!this.endpoint) {
+      throw new Error("Endpoint is not set");
+    }
     if (this.whipClient) {
       this.closeWhipClient();
     }

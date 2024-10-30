@@ -3,7 +3,7 @@ import { WebrtcStreaming } from '@gcorevideo/rtckit/lib/whip'
 // Get the endpoint URL from the CCP
 // Link path made of the integer stream ID and a token, which is a random hash value in hex format
 const WHIP_ENDPOINT =
-  'https://whip.preprod.gvideo.co/7144575_d99d58f644d4cc55cca16c97000dda71/whip'
+  'https://whip.gvideo.co/1960197_c58577f645c03d5b5c5dc1876c660bf5/whip'
 
 
 document.addEventListener(
@@ -11,6 +11,7 @@ document.addEventListener(
   () => {
     const videoElement =
       document.getElementById('preview')
+    const previewPlate = document.getElementById('preview-plate')
     const statusNode =
       document.getElementById('status')
     const webrtc = new WebrtcStreaming(
@@ -31,6 +32,7 @@ document.addEventListener(
       document.getElementById('camera')
     const micOn =
       document.getElementById('audio')
+    const videoresSelect = document.getElementById('videores')
 
     start.onclick = () => {
       startStreaming();
@@ -49,27 +51,34 @@ document.addEventListener(
     }
 
     cameraSelect.onchange = () => {
-      changeCameraDevice();
+      changeCameraDevice()
     }
 
-    updateDevicesList();
+    videoresSelect.onchange = () => {
+      changeVideoResolution()
+    }
 
-    function changeCameraDevice() {
-      const deviceId =
-        cameraSelect.value
+    updateDevicesList()
+
+    function changeVideoResolution() {
+      requestVideoStream();
+    }
+
+    function requestVideoStream() {
+      const deviceId = cameraSelect.value
+      const resolution = Number(videoresSelect.value)
       statusNode.textContent =
         'Reconnecting the devices...'
       start.disabled = true
-      console.log(
-        'onCameraSelect deviceId:%s',
-        deviceId,
-      )
+      cameraSelect.disabled = true
+      videoresSelect.disabled = true
       webrtc
         .openSourceStream({
           video: deviceId,
+          resolution,
         })
         .then(
-          () => {
+          (s) => {
             statusNode.textContent =
               'Ready'
             runPreview()
@@ -80,14 +89,28 @@ document.addEventListener(
         )
         .finally(() => {
           start.disabled = false
+          cameraSelect.disabled = false
+          videoresSelect.disabled = false
         })
     }
 
+    function setEffectiveVideoResolution({ width, height }) {
+      for (const item of webrtc.mediaDevices.getAvailableVideoResolutions(cameraSelect.value)) {
+        if (item.height === height && item.width === width) {
+          videoresSelect.value = item.height
+          return
+        }
+      }
+      videoresSelect.value = ''
+    }
+
+    function changeCameraDevice() {
+      updateResolutionsList(cameraSelect.value)
+      requestVideoStream()
+    }
+
     function updateDevicesList() {
-      webrtc
-      .openSourceStream()
-      .then(() => {
-        webrtc.mediaDevices
+      webrtc.mediaDevices
           .getCameras()
           .then((items) => {
             for (const item of items) {
@@ -107,30 +130,66 @@ document.addEventListener(
             cameraSelect.hidden = false
             cameraSelect.disabled = false
             micOn.disabled = false
+            if (items.length) {
+              updateResolutionsList(items[0].deviceId)
+            }
             statusNode.textContent =
               'Ready'
           })
           .then(() => runPreview())
-      })
     }
 
-    function runPreview() {
-      webrtc.preview(videoElement)
+    function updateResolutionsList(deviceId) {
+      const items =  webrtc.mediaDevices
+        .getAvailableVideoResolutions(deviceId);
+      videoresSelect.innerHTML = ''
+      const defaultOption = document.createElement('option')
+      defaultOption.value = ''
+      defaultOption.textContent = 'Default'
+      defaultOption.disabled = true
+      videoresSelect.appendChild(defaultOption)
+      for (const item of items) {
+        const option =
+          document.createElement(
+            'option',
+          )
+        option.value =
+          item.height
+        option.textContent =
+          item.width + '×' + item.height
+        videoresSelect.appendChild(
+          option,
+        )
+      }
+      videoresSelect.hidden = false
+      videoresSelect.disabled = false
+    }
+
+    async function runPreview() {
+      await webrtc.preview(videoElement)
+      const s = await webrtc.openSourceStream()
+      const t = s.getVideoTracks()[0]
+      if (t) {
+        const settings = t.getSettings()
+        updatePreviewPlate(settings)
+        setEffectiveVideoResolution(settings)
+      }
+    }
+
+    async function updatePreviewPlate({ width, height }) {
+      previewPlate.textContent = `${width}×${height}`
     }
 
     function startStreaming() {
       start.hidden = true
       cameraSelect.disabled = true
       micOn.disabled = true
-      console.log(
-        'onStart micOn:%s',
-        micOn.checked,
-      )
+      const resolution = Number(videoresSelect.value)
       webrtc
         .openSourceStream({
           audio: !!micOn.checked,
           video: cameraSelect.value,
-          resolution: 1080,
+          resolution,
         })
         .catch((e) => {
           if (e instanceof DOMException) {

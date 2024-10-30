@@ -3,20 +3,20 @@
     @change="$e => value = ($e.target as HTMLSelectElement).value "
   >
     <option
-      v-for="item of ITEMS"
-      :key="item"
-      :value="item"
+      v-for="item of mediaDevices.videores"
+      :key="item.height"
+      :value="item.height"
       :selected="item === value"
     >
-      {{ item }}
+      {{ item.width }}×{{ item.height }}
     </option>
   </select>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { useMediaDevicesStore } from '@/stores/mediaDevices';
 
+const mediaDevices = useMediaDevicesStore()
 const value = defineModel()
 
-const ITEMS = ['480p', '720p', '1080p']
 </script>

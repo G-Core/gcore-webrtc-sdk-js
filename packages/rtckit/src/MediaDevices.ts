@@ -29,6 +29,8 @@ const VIDEORES: Record<
   },
 }
 
+const MAX_RESOLUTION = VIDEORES['1080']
+
 /**
  * A wrapper around browser's `navigator.mediaDevices` to simplify getting access to the devices
  * @public
@@ -36,6 +38,7 @@ const VIDEORES: Record<
 export class MediaDevicesHelper {
   private devices: MediaDeviceInfo[] = [];
 
+  private hasVideoResolutions = false;
   private videoResolutions: Record<string, VideoResolution[]> = {};
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
@@ -47,6 +50,8 @@ export class MediaDevicesHelper {
   async getCameras(): Promise<MediaDeviceInfo[]> {
     if (!this.devices.length) {
       await this.updateDevices();
+    }
+    if (!this.hasVideoResolutions) {
       await this.updateVideoResolutions();
     }
     return this.devices.filter((devInfo) => devInfo.kind === "videoinput");
@@ -65,10 +70,7 @@ export class MediaDevicesHelper {
 
   static async probeAvailableVideoResolutions(deviceId: string): Promise<VideoResolution[]> {
     const result: VideoResolution[] = [];
-    console.log("probeAvailableVideoResolutions deviceId:%s", deviceId);
     for (const res of Object.values(VIDEORES)) { // entries are sorted in ascending order of keys
-      console.log("probeAvailableVideoResolutions deviceId:%s %o", deviceId, res);
-
       await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: {
@@ -77,14 +79,16 @@ export class MediaDevicesHelper {
           width: { exact: res.width },
           height: { exact: res.height },
         },
-      }).then(() => {
-        // TODO check stream's actual resolution
+      }).then((s) => {
         result.push({
           width: res.width,
           height: res.height,
         });
-      }, (e) => {
-        console.error("probeAvailableVideoResolutions deviceId:%s res:%o error:%o", deviceId, res, e);
+        s.getTracks().forEach((t) => {
+          t.stop();
+          s.removeTrack(t);
+        });
+      }, () => {
         // TODO check error, it can be NotReadableError
       });
     }
@@ -98,12 +102,25 @@ export class MediaDevicesHelper {
   }
 
   private async updateDevices() {
-    await this.enumerateDevices
-      .run()
-      .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
-      .then((devices) => {
-        this.devices = devices;
-      });
+    return navigator.mediaDevices.getUserMedia({
+      video: {
+        width: MAX_RESOLUTION.width,
+        height: MAX_RESOLUTION.height,
+      },
+    }).then(s => {
+      return this.enumerateDevices
+        .run()
+        .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
+        .then((devices) => {
+          this.devices = devices;
+        })
+        .finally(() => {
+          s.getTracks().forEach((t) => {
+            t.stop();
+            s.removeTrack(t);
+          });
+        })
+    })
   }
 
   private async updateVideoResolutions() {
@@ -112,6 +129,7 @@ export class MediaDevicesHelper {
         this.videoResolutions[device.deviceId] = await MediaDevicesHelper.probeAvailableVideoResolutions(device.deviceId);
       }
     }
+    this.hasVideoResolutions = true;
   }
 }
 

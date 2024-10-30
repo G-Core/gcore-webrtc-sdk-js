@@ -42,12 +42,15 @@
     </style>
     <main>
         <div class="preview">
-            <span class="label">Preview</span>
+            <span class="label" id="preview-plate">Preview</span>
             <video id="preview" playsinline muted />
         </div>
         <div class="controls">
-            <label for="camera">Camera</label>
-            <select id="camera" hidden disabled title="Camera"></select>
+            <div>
+                <label for="camera">Camera</label>
+                <select id="camera" hidden disabled title="Camera"></select>
+                <select id="videores" hidden disabled title="Resolution"></select>
+            </div>
             <label for="audio">Mic <input type="checkbox" checked id="audio" /></label>
             <button id="start">Start</button>
             <button id="stop" hidden>Stop</button>

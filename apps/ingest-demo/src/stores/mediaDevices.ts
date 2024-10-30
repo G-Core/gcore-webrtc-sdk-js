@@ -6,31 +6,44 @@ import {
   watch,
 } from 'vue'
 
+import { useWebrtcStreaming } from "../composables/webrtcStreaming";
+
+type VideoResolution = {
+  width: number
+  height: number
+}
+
+type StdVRes = 1080 | 720 | 480 | 360 | 240
+
 const VIDEORES: Record<
-  string,
-  { width: number; height: number }
+  StdVRes,
+  VideoResolution
 > = {
-  '1080p': {
+  '1080': {
     width: 1920,
     height: 1080,
   },
-  '720p': {
+  '720': {
     width: 1280,
     height: 720,
   },
-  '480p': {
+  '480': {
     width: 854,
     height: 480,
   },
-  '360p': {
+  '360': {
     width: 640,
     height: 360,
   },
-  '240p': {
+  '240': {
     width: 426,
     height: 240,
   },
 }
+
+const MAX_VIDEORES: VideoResolution = VIDEORES['1080']
+
+const webrtcStreaming = useWebrtcStreaming()
 
 export const useMediaDevicesStore =
   defineStore('mediaDevices', () => {
@@ -41,15 +54,14 @@ export const useMediaDevicesStore =
       MediaDeviceInfo[]
     >([])
 
+    const videores = ref<VideoResolution[]>([])
+
     const pending = ref(false)
 
     const videoConstraints = ref<{
       width: number
       height: number
-    }>({
-      width: 1920,
-      height: 1080,
-    })
+    }>(MAX_VIDEORES)
 
     const cameraEnabled = ref(false)
 
@@ -85,22 +97,18 @@ export const useMediaDevicesStore =
       },
     )
 
+    watch(cameraDeviceId, (deviceId) => {
+      if (deviceId) {
+        videores.value = webrtcStreaming.webrtc.mediaDevices.getAvailableVideoResolutions(deviceId)
+      }
+    })
+
     async function updateDevices() {
+      const webrtc = webrtcStreaming.webrtc
       pending.value = true
-      await navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) =>
-          devices.filter(
-            ({ deviceId }) =>
-              !!deviceId,
-          ),
-        )
-        .then((devices) => {
-          const mics = devices.filter(
-            (device) =>
-              device.kind ===
-              'audioinput',
-          )
+      await webrtc.mediaDevices
+        .getMicrophones()
+        .then((mics) => {
           microphoneDevices.value = mics
           if (
             mics.length &&
@@ -109,13 +117,12 @@ export const useMediaDevicesStore =
             micDeviceId.value =
               mics[0].deviceId
           }
-          const cameras =
-            devices.filter(
-              (device) =>
-                device.kind ===
-                'videoinput',
-            )
-
+        })
+        .catch(e => {
+          console.error("getMicrophones", e)
+        })
+        .then(() => webrtc.mediaDevices.getCameras())
+        .then((cameras) => {
           cameraDevices.value = cameras
           if (
             cameras.length &&
@@ -342,6 +349,7 @@ export const useMediaDevicesStore =
         microphoneEnabled,
       ),
       pending: readonly(pending),
+      videores: readonly(videores),
       willUseCamera,
       willUseMic,
 

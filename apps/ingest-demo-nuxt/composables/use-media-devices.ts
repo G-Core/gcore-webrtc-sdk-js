@@ -1,7 +1,4 @@
 import {
-  type Ref,
-  readonly,
-  ref,
   watch,
 } from 'vue'
 
@@ -61,7 +58,7 @@ export default () => {
       willUseMic: false,
       pending: false,
       videoConstraints: {
-        ...VIDEORES['1080p'],
+        ...VIDEORES['1080'],
       },
     }
   })

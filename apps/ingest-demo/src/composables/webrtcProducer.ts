@@ -1,4 +1,4 @@
-import { WhipClient } from "@gcorevideo/rtckit/lib/whip";
+import { useWebrtcStreaming } from "./webrtcStreaming";
 
 export type WebrtcProduceParams = {
   endpoint: string
@@ -7,43 +7,47 @@ export type WebrtcProduceParams = {
 }
 
 export const useWebrtcProducer = (function () {
-  let client: WhipClient | null = null
+  const {
+    close: closeClient,
+    webrtc,
+    init: initClient,
+  } = useWebrtcStreaming();
   
   async function setup(params: WebrtcProduceParams) {
-    if (client) {
-      await client.close();
-    }
-    // TODO data channels
-    client = new WhipClient(params.endpoint, {
+    closeClient()
+    initClient(params.endpoint, {
       auth: params.auth,
       iceServers: params.iceServers,
       videoCodecs: ["H264"],
     })
   }
 
-  async function close() {
-    if (!client) {
-      return
-    }
-    try {
-      const c = client;
-      client = null
-      await c.close();
-    } catch (e) {
-      console.error("close failed:", e)
-    }
-  }
+  // async function close() {
+  //   if (!client) {
+  //     return
+  //   }
+  //   try {
+  //     const c = client;
+  //     client = null
+  //     await c.close();
+  //   } catch (e) {
+  //     console.error("close failed:", e)
+  //   }
+  // }
 
   async function start(stream: MediaStream): Promise<void> {
-    if (!client) {
-      throw new Error("WHIP client is not initialized")
-    }
-    await client.start(stream)
+    setTracks(stream)
+    await webrtc.run()
+  }
+
+  async function setTracks(stream: MediaStream): Promise<void> {
+    // TODO
   }
 
   return () => ({
     close,
     setup,
+    setTracks,
     start,
   })
 })()
