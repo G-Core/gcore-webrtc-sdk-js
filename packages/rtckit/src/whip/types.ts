@@ -18,11 +18,12 @@ export type WhipClientOptions = {
   auth?: string;
   canRestartIce?: boolean;
   canTrickleIce?: boolean;
+  encodingParameters?: RTCRtpEncodingParameters[];
   iceServers?: RTCIceServer[];
   maxReconnects?: number;
   maxWhipRetries?: number;
   noRestart?: boolean;
   useHostIceCandidates?: boolean;
   videoCodecs?: Array<string | CodecMatch>;
-  encodingParameters?: RTCRtpEncodingParameters[];
+  videoPreserveInitialResolution?: boolean;
 };

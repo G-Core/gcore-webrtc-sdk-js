@@ -223,7 +223,7 @@ export class WhipClient {
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
     stream.getTracks().forEach(
       (track) => {
-        if (track.kind === "video" && !track.contentHint) {
+        if (track.kind === "video" && !track.contentHint && this.options?.videoPreserveInitialResolution) {
           track.contentHint = "detail";
         }
         if (this.options?.encodingParameters) {

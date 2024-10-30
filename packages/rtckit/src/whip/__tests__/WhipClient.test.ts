@@ -20,28 +20,35 @@ describe("WhipClient", () => {
     } as any);
     // @ts-ignore
     globalThis.RTCPeerConnection = MockRTCPeerConnection;
-    client = new WhipClient("https://example.com/whip", {
-      canTrickleIce: true,
-    });
   });
   // TODO unskip
   describe("start", () => {
     let audioTrack: MockedMediaStreamTrack;
     let videoTrack: MockedMediaStreamTrack;
-    beforeEach(async () => {
-      audioTrack = createMockMediaStreamTrack("audio");
-      videoTrack = createMockMediaStreamTrack("video");
+    describe.each([
+      ["explicitly on", { videoPreserveInitialResolution: true }, "detail"],
+      ["explicitly off", { videoPreserveInitialResolution: false }, ""],
+      ["implicitly off", {}, ""],
+    ])("%s", (_, opts, contentHint) => {
+      beforeEach(async () => {
+        audioTrack = createMockMediaStreamTrack("audio");
+        videoTrack = createMockMediaStreamTrack("video");
 
-      const stream = createMockMediaStream([audioTrack, videoTrack]);
-      await client.start(stream as MediaStream);
-    });
-    it.skip("should run preflight request", () => { // because ICE servers are not specified
-      expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/whip", expect.objectContaining({
-        method: "OPTIONS",
-      }));
-    });
-    it("should set content hint for the video track", () => {
-      expect(videoTrack.contentHint).toBe("detail");
+        const stream = createMockMediaStream([audioTrack, videoTrack]);
+        client = new WhipClient("https://example.com/whip", {
+          canTrickleIce: true,
+          ...opts
+        });
+        await client.start(stream as MediaStream);
+      });
+      it.skip("should run preflight request", () => { // because ICE servers are not specified
+        expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/whip", expect.objectContaining({
+          method: "OPTIONS",
+        }));
+      });
+      it("should set content hint for the video track accordingly", () => {
+        expect(videoTrack.contentHint).toBe(contentHint);
+      })
     })
   });
 });

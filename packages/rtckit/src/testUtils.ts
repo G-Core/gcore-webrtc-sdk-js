@@ -27,19 +27,29 @@ export function createMockMediaStreamTrack(
   id = nextTrackId(),
   props: Partial<MediaStreamTrackProps> = {}
 ): MockedMediaStreamTrack {
+  let readyState = "live";
   const track: MockedMediaStreamTrack = {
+    contentHint: "",
     label: `Built-in ${kind} device`,
     muted: false,
     enabled: true,
-    readyState: "live",
+    get readyState() {
+      return readyState
+    },
     ...props,
     id,
     kind,
     onended: null,
+    onmuted: null,
     addEventListener: vi.fn(),
+    applyConstraints: vi.fn(),
+    clone: vi.fn().mockImplementation(() => createMockMediaStreamTrack(kind)),
     removeEventListener: vi.fn(),
-    clone: vi.fn(),
-    stop: vi.fn(),
+    getCapabilities: vi.fn(),
+    getConstraints: vi.fn(),
+    stop: vi.fn().mockImplementation(function () {
+      readyState = "ended";
+    }),
   } as any;
   track.clone.mockImplementation(() => {
     const {
@@ -86,34 +96,9 @@ export function createMockMediaStream(tracks: MediaStreamTrack[]) {
   };
 }
 
-export function createMockMediaTrack(kind: "audio" | "video") {
-  let readyState = "live";
-  return {
-    kind,
-    id: nextTrackId(),
-    enabled: true,
-    label: `${kind} label`,
-    muted: false,
-    onended: null,
-    onmuted: null,
-    get readyState() {
-      return readyState
-    },
-    applyConstraints: vi.fn(),
-    clone: vi.fn().mockImplementation(() => createMockMediaTrack(kind)),
-    getCapabilities: vi.fn(),
-    getConstraints: vi.fn(),
-    stop: vi.fn().mockImplementation(function () {
-      readyState = "ended";
-    }),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-  };
-}
-
 export function setupMockUserMedia(devices: MediaDeviceInfo[] = []) {
-  const audioTrack = createMockMediaTrack("audio");
-  const videoTrack = createMockMediaTrack("video");
+  const audioTrack = createMockMediaStreamTrack("audio");
+  const videoTrack = createMockMediaStreamTrack("video");
   const mockStream = createMockMediaStream([
     audioTrack as any,
     videoTrack as any,

@@ -22,19 +22,6 @@ export const useWebrtcProducer = (function () {
     })
   }
 
-  // async function close() {
-  //   if (!client) {
-  //     return
-  //   }
-  //   try {
-  //     const c = client;
-  //     client = null
-  //     await c.close();
-  //   } catch (e) {
-  //     console.error("close failed:", e)
-  //   }
-  // }
-
   async function start(stream: MediaStream): Promise<void> {
     setTracks(stream)
     await webrtc.run()

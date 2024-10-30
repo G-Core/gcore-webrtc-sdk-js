@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WebrtcStreaming } from "../WebrtcStreaming.js";
 
-import { createMockMediaStream, createMockMediaTrack, setupMockUserMedia } from "../testUtils.js";
+import { setupMockUserMedia } from "../testUtils.js";
 
 describe("WebrtcStreaming", () => {
   let webrtc: WebrtcStreaming;
