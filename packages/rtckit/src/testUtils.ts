@@ -44,9 +44,10 @@ export function createMockMediaStreamTrack(
     addEventListener: vi.fn(),
     applyConstraints: vi.fn(),
     clone: vi.fn().mockImplementation(() => createMockMediaStreamTrack(kind)),
-    removeEventListener: vi.fn(),
     getCapabilities: vi.fn(),
     getConstraints: vi.fn(),
+    getSettings: vi.fn(),
+    removeEventListener: vi.fn(),
     stop: vi.fn().mockImplementation(function () {
       readyState = "ended";
     }),
@@ -110,4 +111,39 @@ export function setupMockUserMedia(devices: MediaDeviceInfo[] = []) {
     getUserMedia: vi.fn().mockResolvedValue(mockStream),
   };
   return [mockStream, audioTrack, videoTrack];
+}
+
+export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
+  const retval = {
+    configuration,
+    localDescription: null,
+    remoteDescription: null,
+
+    addTrack: vi.fn(),
+    addTransceiver: vi.fn(),
+    createAnswer: vi.fn().mockReturnValue({
+      sdp: "v=0\r\n",
+      type: "answer",
+    }),
+    close: vi.fn(),
+    createOffer: vi.fn().mockReturnValue({
+      sdp: "v=0\r\n",
+      type: "offer",
+    }),
+    generateCertificate: vi.fn().mockImplementation(() => {
+      return Promise.reject(new Error("Not implemented"));
+    }),
+    getConfiguration() {
+      return this.configuration;
+    },
+    getSenders: vi.fn(),
+    setLocalDescription(ld: any) {
+      this.localDescription = ld
+    },
+    setRemoteDescription(rd: any) {
+      this.remoteDescription = rd;
+    }
+  };
+  // @ts-ignore
+  Object.assign(this, retval);
 }

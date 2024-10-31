@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, MockedFunction, vi } from "vitest";
+import { beforeEach, describe, expect, it, MockedFunction, MockedObject, vi } from "vitest";
 import { WhipClient } from "../WhipClient.js";
-import { createMockMediaStream, createMockMediaStreamTrack, MockedMediaStreamTrack } from "../../testUtils.js";
+import { createMockMediaStream, createMockMediaStreamTrack, MockedMediaStreamTrack, MockRTCPeerConnection } from "../../testUtils.js";
 import { createMockAudioContext, MockAudioContext } from "../../audio/testUtils.js";
+import { WhipClientPlugin } from "../types.js";
 
 describe("WhipClient", () => {
   let audioTrack: MockedMediaStreamTrack;
@@ -78,46 +79,37 @@ describe("WhipClient", () => {
       expect(mockConn.addTrack).toHaveBeenCalledWith(audioTrack)
     });
   });
-});
+  describe("pluigins", () => {
+    let plugin: WhipClientPlugin;
+    let pc: MockedObject<RTCPeerConnection>;
+    beforeEach( () => {
+      // TODO
+      plugin = {
+        close: vi.fn(),
+        init: vi.fn(),
+      };
+      pc = new MockRTCPeerConnection();
+      // @ts-ignore
+      globalThis.RTCPeerConnection = vi.fn().mockReturnValue(pc);
+      client = new WhipClient("https://example.com/whip", {
+        canTrickleIce: true, // don't wait for ICE candidates before starting
+        plugins: [plugin],
+      });
+    })
+    it("should initialize plugins when a peer connection is created", async () => {
+      audioTrack = createMockMediaStreamTrack("audio");
+      videoTrack = createMockMediaStreamTrack("video");
+      const stream = createMockMediaStream([audioTrack, videoTrack]);
 
-function MockRTCPeerConnection(configuration: any = null) {
-  const retval = {
-    configuration,
-    localDescription: null,
-    remoteDescription: null,
-  
-    addTrack: vi.fn(),
-    addTransceiver: vi.fn(),
-    createAnswer: vi.fn().mockReturnValue({
-      sdp: "v=0\r\n",
-      type: "answer",
-    }),
-    close: vi.fn(),
-  
-    createOffer: vi.fn().mockReturnValue({
-      sdp: "v=0\r\n",
-      type: "offer",
-    }),
-  
-    generateCertificate: vi.fn().mockImplementation(() => {
-      return Promise.reject(new Error("Not implemented"));
-    }),
-  
-    getConfiguration() {
-      return this.configuration;
-    },
-  
-    setLocalDescription(ld) {
-      this.localDescription = ld
-    },
-  
-    setRemoteDescription(rd) {
-      this.remoteDescription = rd;
-    }
-  };
-  Object.assign(this, retval);
-  // return this;
-}
+      await client.start(stream);
+      expect(plugin.init).toHaveBeenCalledWith(pc);
+    });
+    it("should close plugins when the client is closed", async () => {
+      await client.close();
+      expect(plugin.close).toHaveBeenCalled();
+    });
+  })
+});
 
 function createMockMediaStreamDestinationNode(stream) {
   return {

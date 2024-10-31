@@ -114,6 +114,10 @@ export class WhipClient {
 
     await this.closeSession();
 
+    if (this.options?.plugins) {
+      this.options.plugins.forEach((plugin) => plugin.close());
+    }
+
     if (this.silentAudioTrack) {
       this.silentAudioTrack.stop();
       this.silentAudioTrack = null;
@@ -262,6 +266,10 @@ export class WhipClient {
     }
 
     this.pc = pc;
+
+    if (this.options?.plugins) {
+      this.options?.plugins.forEach((plugin) => plugin.init(pc));
+    }
 
     this.pc.onconnectionstatechange = () => {
       trace(`${T} onconnectionstatechange`, {

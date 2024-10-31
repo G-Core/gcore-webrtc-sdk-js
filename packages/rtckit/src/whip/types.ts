@@ -10,6 +10,11 @@ export type CodecMatch = {
   params?: Record<string, string>;
 };
 
+export interface WhipClientPlugin {
+  close(): void;
+  init(pc: RTCPeerConnection): void;
+}
+
 /**
  * Options affecting the behaviour of WhipClient
  * @public
@@ -23,6 +28,7 @@ export type WhipClientOptions = {
   maxReconnects?: number;
   maxWhipRetries?: number;
   noRestart?: boolean;
+  plugins?: WhipClientPlugin[];
   useHostIceCandidates?: boolean;
   videoCodecs?: Array<string | CodecMatch>;
   videoPreserveInitialResolution?: boolean;

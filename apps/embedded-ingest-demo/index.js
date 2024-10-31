@@ -1,4 +1,5 @@
 import { WebrtcStreaming } from '@gcorevideo/rtckit/lib/whip'
+import { VideoResolutionChangeDetector } from '@gcorevideo/rtckit/src/aux/VideoResolutionChangeDetector'
 
 // Get the endpoint URL from the CCP
 // Link path made of the integer stream ID and a token, which is a random hash value in hex format
@@ -14,12 +15,24 @@ document.addEventListener(
     const previewPlate = document.getElementById('preview-plate')
     const statusNode =
       document.getElementById('status')
+    const qualityNode = document.getElementById('videoquality')
     const webrtc = new WebrtcStreaming(
       WHIP_ENDPOINT,
       {
         iceServers: [{
           urls: "stun:ed-c16-95-128-175.fe.gc.onl",
         }],
+        plugins: [
+          new VideoResolutionChangeDetector(({downgraded: degraded, height, srcHeight}) => {
+            if (degraded) {
+              qualityNode.textContent = `degraded ${srcHeight}p ↓ ${height}p`
+              qualityNode.style.color = 'red'
+            } else {
+              qualityNode.textContent = `recovered ↑ ${srcHeight}p`
+              qualityNode.style.color = 'green'
+            }
+          }),
+        ]
       }
     )
     const start =
@@ -220,6 +233,7 @@ document.addEventListener(
             'Streaming'
           stop.hidden = false
           toggle.hidden = false
+          qualityNode.textContent = 'measuring...'
         },
         (e) => {
           statusNode.textContent = `Failed to start streaming: ${e}`

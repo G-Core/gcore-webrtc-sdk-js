@@ -10,3 +10,4 @@ export * from "./trace/types.js";
 export * from "./whip/WhipClient.js";
 export * from "./whip/errors.js";
 export * from "./whip/types.js";
+export * from "./aux/VideoResolutionChangeDetector.js";
