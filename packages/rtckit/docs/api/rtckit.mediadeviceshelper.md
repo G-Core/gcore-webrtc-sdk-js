@@ -40,7 +40,9 @@ Description
 
 </td><td>
 
-Gives the list of available video resolutions supported by the device The items from the list of standard resolutions [STD\_VIDEORES](./rtckit.std_videores.md) are probed for the given device
+Get a list of available video resolutions supported by the device
+
+A video resolution is probed for the given device, using the list of standard resolutions [STD\_VIDEORES](./rtckit.std_videores.md)
 
 
 </td></tr>
@@ -54,6 +56,8 @@ Gives the list of available video resolutions supported by the device The items 
 
 </td><td>
 
+Get a list of the camera devices available
+
 
 </td></tr>
 <tr><td>
@@ -66,6 +70,8 @@ Gives the list of available video resolutions supported by the device The items 
 
 </td><td>
 
+Get a list of the microphone devices available
+
 
 </td></tr>
 <tr><td>
@@ -77,6 +83,8 @@ Gives the list of available video resolutions supported by the device The items 
 
 
 </td><td>
+
+Resets the cached information about the devices
 
 
 </td></tr>

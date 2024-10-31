@@ -4,6 +4,8 @@
 
 ## MediaDevicesHelper.getCameras() method
 
+Get a list of the camera devices available
+
 **Signature:**
 
 ```typescript
@@ -12,6 +14,4 @@ getCameras(): Promise<MediaInputDeviceInfo[]>;
 **Returns:**
 
 Promise&lt;[MediaInputDeviceInfo](./rtckit.mediainputdeviceinfo.md)<!-- -->\[\]&gt;
-
-list of available camera devices
 

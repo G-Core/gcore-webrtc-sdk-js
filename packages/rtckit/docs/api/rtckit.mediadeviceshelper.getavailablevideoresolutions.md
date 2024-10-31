@@ -4,7 +4,9 @@
 
 ## MediaDevicesHelper.getAvailableVideoResolutions() method
 
-Gives the list of available video resolutions supported by the device The items from the list of standard resolutions [STD\_VIDEORES](./rtckit.std_videores.md) are probed for the given device
+Get a list of available video resolutions supported by the device
+
+A video resolution is probed for the given device, using the list of standard resolutions [STD\_VIDEORES](./rtckit.std_videores.md)
 
 **Signature:**
 
@@ -42,7 +44,7 @@ string
 
 </td><td>
 
-ID of the camera device from a MediaInputDeviceInfo
+ID of the camera device from [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
 
 
 </td></tr>
@@ -50,6 +52,4 @@ ID of the camera device from a MediaInputDeviceInfo
 **Returns:**
 
 [VideoResolution](./rtckit.videoresolution.md)<!-- -->\[\]
-
-List of available video resolutions for the given device
 

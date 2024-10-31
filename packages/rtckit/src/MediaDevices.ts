@@ -63,17 +63,20 @@ export class MediaDevicesHelper {
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
 
   /**
-   * Gives the list of available video resolutions supported by the device
-   * The items from the list of standard resolutions {@link STD_VIDEORES} are probed for the given device
-   * @param deviceId - ID of the camera device from a MediaInputDeviceInfo
-   * @returns List of available video resolutions for the given device
+   * Get a list of available video resolutions supported by the device
+   *
+   * A video resolution is probed for the given device, using the list of standard resolutions
+   *   {@link STD_VIDEORES}
+   *
+   * @param deviceId - ID of the camera device from
+   *   {@link MediaDevicesHelper.getCameras}
    */
   getAvailableVideoResolutions(deviceId: string): VideoResolution[] {
     return this.videoResolutions[deviceId] || [];
   }
 
   /**
-   * @returns list of available camera devices
+   * Get a list of the camera devices available
    */
   async getCameras(): Promise<MediaInputDeviceInfo[]> {
     if (!this.devices.length) {
@@ -86,7 +89,7 @@ export class MediaDevicesHelper {
   }
 
   /**
-   * @returns list of available microphone devices
+   * Get a list of the microphone devices available
    */
   async getMicrophones(): Promise<MediaInputDeviceInfo[]> {
     if (!this.devices.length) {
@@ -95,6 +98,9 @@ export class MediaDevicesHelper {
     return this.devices.filter((devInfo) => devInfo.kind === "audioinput");
   }
 
+  /**
+   * Resets the cached information about the devices
+   */
   reset() {
     this.devices = [];
   }

@@ -4,6 +4,8 @@
 
 ## MediaDevicesHelper.reset() method
 
+Resets the cached information about the devices
+
 **Signature:**
 
 ```typescript

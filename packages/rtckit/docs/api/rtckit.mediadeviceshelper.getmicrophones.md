@@ -4,6 +4,8 @@
 
 ## MediaDevicesHelper.getMicrophones() method
 
+Get a list of the microphone devices available
+
 **Signature:**
 
 ```typescript
@@ -12,6 +14,4 @@ getMicrophones(): Promise<MediaInputDeviceInfo[]>;
 **Returns:**
 
 Promise&lt;[MediaInputDeviceInfo](./rtckit.mediainputdeviceinfo.md)<!-- -->\[\]&gt;
-
-list of available microphone devices
 
