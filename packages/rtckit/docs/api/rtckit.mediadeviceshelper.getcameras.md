@@ -7,9 +7,11 @@
 **Signature:**
 
 ```typescript
-getCameras(): Promise<MediaDeviceInfo[]>;
+getCameras(): Promise<MediaInputDeviceInfo[]>;
 ```
 **Returns:**
 
-Promise&lt;MediaDeviceInfo\[\]&gt;
+Promise&lt;[MediaInputDeviceInfo](./rtckit.mediainputdeviceinfo.md)<!-- -->\[\]&gt;
+
+list of available camera devices
 

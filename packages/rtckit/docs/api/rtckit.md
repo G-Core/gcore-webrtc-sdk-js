@@ -171,6 +171,17 @@ WHIP client for streaming with WebRTC from a browser
 
 
 </td></tr>
+<tr><td>
+
+[WontRestartError](./rtckit.wontrestarterror.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
 </tbody></table>
 
 ## Enumerations
@@ -248,6 +259,32 @@ Description
 </td></tr>
 </tbody></table>
 
+## Variables
+
+<table><thead><tr><th>
+
+Variable
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[STD\_VIDEORES](./rtckit.std_videores.md)
+
+
+</td><td>
+
+**_(BETA)_** Standard video resolutions
+
+
+</td></tr>
+</tbody></table>
+
 ## Type Aliases
 
 <table><thead><tr><th>
@@ -284,10 +321,32 @@ A codec match condition to filter the available codecs
 </td></tr>
 <tr><td>
 
+[MediaInputDeviceInfo](./rtckit.mediainputdeviceinfo.md)
+
+
+</td><td>
+
+**_(BETA)_** Information about a media input device. It's implicit type is inferred from the method by which it is obtained, e.g., [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
+
+
+</td></tr>
+<tr><td>
+
 [SessionInitParams](./rtckit.sessioninitparams.md)
 
 
 </td><td>
+
+
+</td></tr>
+<tr><td>
+
+[VideoResolution](./rtckit.videoresolution.md)
+
+
+</td><td>
+
+**_(BETA)_**
 
 
 </td></tr>

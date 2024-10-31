@@ -1,9 +1,16 @@
-type VideoResolution = {
+/**
+ * @beta
+ */
+export type VideoResolution = {
   width: number;
   height: number;
 }
 
-const VIDEORES: Record<
+/**
+ * Standard video resolutions
+ * @beta
+ */
+export const STD_VIDEORES: Record<
   string,
   VideoResolution
 > = {
@@ -29,7 +36,19 @@ const VIDEORES: Record<
   },
 }
 
-const MAX_RESOLUTION = VIDEORES['1080']
+const MAX_RESOLUTION = STD_VIDEORES['1080']
+
+/**
+ * Information about a media input device.
+ * It's implicit type is inferred from the method by which it is obtained,
+ * e.g., {@link MediaDevicesHelper.getCameras}
+ * @beta
+ */
+export type MediaInputDeviceInfo = {
+  deviceId: string;
+  groupId: string;
+  label: string;
+}
 
 /**
  * A wrapper around browser's `navigator.mediaDevices` to simplify getting access to the devices
@@ -43,11 +62,20 @@ export class MediaDevicesHelper {
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
 
+  /**
+   * Gives the list of available video resolutions supported by the device
+   * The items from the list of standard resolutions {@link STD_VIDEORES} are probed for the given device
+   * @param deviceId - ID of the camera device from a MediaInputDeviceInfo
+   * @returns List of available video resolutions for the given device
+   */
   getAvailableVideoResolutions(deviceId: string): VideoResolution[] {
     return this.videoResolutions[deviceId] || [];
   }
 
-  async getCameras(): Promise<MediaDeviceInfo[]> {
+  /**
+   * @returns list of available camera devices
+   */
+  async getCameras(): Promise<MediaInputDeviceInfo[]> {
     if (!this.devices.length) {
       await this.updateDevices();
     }
@@ -57,7 +85,10 @@ export class MediaDevicesHelper {
     return this.devices.filter((devInfo) => devInfo.kind === "videoinput");
   }
 
-  async getMicrophones(): Promise<MediaDeviceInfo[]> {
+  /**
+   * @returns list of available microphone devices
+   */
+  async getMicrophones(): Promise<MediaInputDeviceInfo[]> {
     if (!this.devices.length) {
       await this.updateDevices();
     }
@@ -68,9 +99,14 @@ export class MediaDevicesHelper {
     this.devices = [];
   }
 
+  /**
+   * @param deviceId - ID of the device from MediaInputDeviceInfo
+   * @returns list of available standard video resolutions for the given device
+   * @internal
+   */
   static async probeAvailableVideoResolutions(deviceId: string): Promise<VideoResolution[]> {
     const result: VideoResolution[] = [];
-    for (const res of Object.values(VIDEORES)) { // entries are sorted in ascending order of keys
+    for (const res of Object.values(STD_VIDEORES)) { // entries are sorted in ascending order of keys
       await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: {
@@ -95,9 +131,14 @@ export class MediaDevicesHelper {
     return result.reverse(); // return in descending order of resolution
   }
 
-  static parseVideoResolution(resolution: number): { width: number; height: number } | undefined {
-    if (resolution in VIDEORES) {
-      return VIDEORES[resolution];
+  /**
+   * @param height - vertical resolution value
+   * @returns
+   * @internal
+   */
+  static findVideoResolution(height: number): VideoResolution | undefined {
+    if (height in STD_VIDEORES) {
+      return STD_VIDEORES[height];
     }
   }
 

@@ -205,7 +205,7 @@ function buildVideoContraints(params: WebrtcStreamParams): boolean | MediaTrackC
     constraints.deviceId = { exact: params.video };
   }
   if (params.resolution) {
-    const parsed = MediaDevicesHelper.parseVideoResolution(params.resolution);
+    const parsed = MediaDevicesHelper.findVideoResolution(params.resolution);
     if (parsed) {
       constraints.width = { ideal: parsed.width };
       constraints.height = { ideal: parsed.height };

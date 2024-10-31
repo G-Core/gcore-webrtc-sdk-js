@@ -7,9 +7,11 @@
 **Signature:**
 
 ```typescript
-getMicrophones(): Promise<MediaDeviceInfo[]>;
+getMicrophones(): Promise<MediaInputDeviceInfo[]>;
 ```
 **Returns:**
 
-Promise&lt;MediaDeviceInfo\[\]&gt;
+Promise&lt;[MediaInputDeviceInfo](./rtckit.mediainputdeviceinfo.md)<!-- -->\[\]&gt;
+
+list of available microphone devices
 

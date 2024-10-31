@@ -32,6 +32,20 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[getAvailableVideoResolutions(deviceId)](./rtckit.mediadeviceshelper.getavailablevideoresolutions.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Gives the list of available video resolutions supported by the device The items from the list of standard resolutions [STD\_VIDEORES](./rtckit.std_videores.md) are probed for the given device
+
+
+</td></tr>
+<tr><td>
+
 [getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
 
 
@@ -48,20 +62,6 @@ Description
 
 
 </td><td>
-
-
-</td><td>
-
-
-</td></tr>
-<tr><td>
-
-[parseVideoResolution(resolution)](./rtckit.mediadeviceshelper.parsevideoresolution.md)
-
-
-</td><td>
-
-`static`
 
 
 </td><td>

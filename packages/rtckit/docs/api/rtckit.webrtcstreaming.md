@@ -135,6 +135,18 @@ Description
 </td></tr>
 <tr><td>
 
+[configure(endpoint, options)](./rtckit.webrtcstreaming.configure.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [openSourceStream(params)](./rtckit.webrtcstreaming.opensourcestream.md)
 
 

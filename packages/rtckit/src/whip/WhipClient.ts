@@ -789,6 +789,9 @@ function isLocalhost(endpoint: string) {
   return new URL(endpoint).hostname === "localhost";
 }
 
+/**
+ * @alpha
+ */
 export class WontRestartError extends Error {
   constructor() {
     super("Won't restart");
