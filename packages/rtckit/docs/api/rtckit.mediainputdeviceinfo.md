@@ -4,9 +4,6 @@
 
 ## MediaInputDeviceInfo type
 
-> This API is provided as a beta preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
-> 
-
 Information about a media input device. It's implicit type is inferred from the method by which it is obtained, e.g., [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
 
 **Signature:**

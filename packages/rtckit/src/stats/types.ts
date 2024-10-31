@@ -1,3 +1,6 @@
+/**
+ * @alpha
+ */
 export type WebrtcReport = {
   transportInbound: {
     candidatePair: {
@@ -96,11 +99,17 @@ export type WebrtcReport = {
   } | null;
 };
 
+/**
+ * @alpha
+ */
 export type WebrtcTransportStats = {
   abr: number; // Available bitrate in transport's direction, bps
   rtt: number; // seconds
 };
 
+/**
+ * @alpha
+ */
 export type WebrtcStreamStats = {
   kind: MediaKind;
   jitter: number; // seconds
@@ -109,31 +118,57 @@ export type WebrtcStreamStats = {
   traffic: number; // bytes
 }
 
+/**
+ * @alpha
+ */
 export type WebrtcVideoStreamStats = WebrtcStreamStats & {
   fir: number;
   pli: number;
 };
 
+/**
+ * @alpha
+ */
 export type WebrtcProducerStreamStats = WebrtcStreamStats & {
   tbr: number; // target bitrate, bps
 }
 
-
+/**
+ * @alpha
+ */
 export type WebrtcVideoProducerStreamStats = WebrtcProducerStreamStats & WebrtcVideoStreamStats & {
   fps: number;
   vres: number; // px
 };
 
+/**
+ * @alpha
+ */
 export type WebrtcAudioProducerStreamStats = WebrtcProducerStreamStats;
 
+/**
+ * @alpha
+ */
 export type WebrtcConsumerStats = WebrtcStreamStats;
 
+/**
+ * @alpha
+ */
 export type WebrtcVideoConsumerStats = WebrtcVideoStreamStats;
 
+/**
+ * @alpha
+ */
 export type WebrtcAudioConsumerStats = WebrtcStreamStats;
 
+/**
+ * @alpha
+ */
 export type WebrtcVideoProducerStats = WebrtcVideoProducerStreamStats;
 
+/**
+ * @alpha
+ */
 export type WebrtcConciseReport = {
   send: {
     streams: Array<WebrtcVideoProducerStreamStats | WebrtcAudioProducerStreamStats>;
@@ -145,9 +180,15 @@ export type WebrtcConciseReport = {
   };
 };
 
+/**
+ * @alpha
+ */
 export type WebrtcConciseReportDto = {
   server: string;
   data: WebrtcConciseReport;
 }
 
+/**
+ * @public
+ */
 export type MediaKind = "audio" | "video";

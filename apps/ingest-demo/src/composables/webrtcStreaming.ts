@@ -1,5 +1,3 @@
-import { readonly, ref } from "vue";
-
 import { WebrtcStreaming, type WhipClientOptions } from "@gcorevideo/rtckit";
 
 export const useWebrtcStreaming = (function () {

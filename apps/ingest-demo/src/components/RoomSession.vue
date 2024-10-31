@@ -13,7 +13,6 @@ import { useWebrtcProducer } from '@/composables/webrtcProducer'
 import { useSessionStore } from '@/stores/session'
 import { useSettingsStore } from '@/stores/settings'
 import { usePlayerUrl } from '@/composables/playerUrl'
-import { useWebrtcStats } from '@/composables/webrtcStats'
 import PeerVideo from './PeerVideo.vue'
 import PeerView from './PeerView.vue'
 
@@ -68,13 +67,6 @@ onMounted(async () => {
   const roomId = session.roomId
   const peerId = session.peerId
   const mediaServer = new URL(whipEndpoint.value).host
-  cleanup.push(
-    await useWebrtcStats(
-      roomId,
-      peerId as string,
-      mediaServer,
-    ),
-  )
   await producer.setup({
     auth: auth.value,
     endpoint: whipEndpoint.value,

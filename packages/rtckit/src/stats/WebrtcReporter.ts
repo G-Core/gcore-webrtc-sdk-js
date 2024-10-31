@@ -1,9 +1,6 @@
-import { encode } from "cbor-x";
-
 import { WebrtcPeerConnectionWatcher } from "./WebrtcPeerConnectionWatcher.js";
 import { WebrtcStatsReporter } from "./WebrtcStatsReporter.js";
 import type { WebrtcConciseReport } from "./types.js";
-import { ApiService } from "../internal/ApiService.js";
 import { logger } from "./utils.js";
 
 const T = "WebrtcReporter";
@@ -11,17 +8,19 @@ const T = "WebrtcReporter";
 /**
  * @alpha
  */
-export class WebrtcReporter {
-  private token: string | undefined;
+export type WebrtcReportSender = (report: WebrtcConciseReport) => Promise<void>;
 
+/**
+ * @alpha
+ */
+export class WebrtcReporter {
   private watcher = new WebrtcPeerConnectionWatcher();
 
   private reporter = new WebrtcStatsReporter(this.watcher);
 
-  constructor(public readonly api: ApiService, private mediaServer?: string) {}
+  constructor(private send: WebrtcReportSender) {}
 
-  init(token: string) {
-    this.token = token;
+  init() {
     this.reporter.init();
     this.reporter.subscribe(this.onWebrtcStatsReport);
   }
@@ -37,17 +36,7 @@ export class WebrtcReporter {
 
   private async sendReport(report: WebrtcConciseReport) {
     try {
-      await this.api.request("sessions/webrtc-stats", {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${this.token}`,
-          "content-type": "application/senml+cbor",
-        },
-        body: encode({
-          server: this.mediaServer,
-          data: report,
-        }),
-      });
+      await this.send(report);
     } catch (e) {
       logger.error(`${T} sendReport`, e);
     }

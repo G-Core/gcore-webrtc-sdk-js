@@ -279,7 +279,7 @@ Description
 
 </td><td>
 
-**_(BETA)_** Standard video resolutions
+Standard video resolutions
 
 
 </td></tr>
@@ -326,16 +326,17 @@ A codec match condition to filter the available codecs
 
 </td><td>
 
-**_(BETA)_** Information about a media input device. It's implicit type is inferred from the method by which it is obtained, e.g., [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
+Information about a media input device. It's implicit type is inferred from the method by which it is obtained, e.g., [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
 
 
 </td></tr>
 <tr><td>
 
-[SessionInitParams](./rtckit.sessioninitparams.md)
+[MediaKind](./rtckit.mediakind.md)
 
 
 </td><td>
+
 
 
 </td></tr>
@@ -346,7 +347,94 @@ A codec match condition to filter the available codecs
 
 </td><td>
 
-**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcAudioConsumerStats](./rtckit.webrtcaudioconsumerstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcAudioProducerStreamStats](./rtckit.webrtcaudioproducerstreamstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcConciseReport](./rtckit.webrtcconcisereport.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcConciseReportDto](./rtckit.webrtcconcisereportdto.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcConsumerStats](./rtckit.webrtcconsumerstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcProducerStreamStats](./rtckit.webrtcproducerstreamstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcReport](./rtckit.webrtcreport.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcReportSender](./rtckit.webrtcreportsender.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
 
 
 </td></tr>
@@ -357,6 +445,72 @@ A codec match condition to filter the available codecs
 
 </td><td>
 
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcStreamStats](./rtckit.webrtcstreamstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcTransportStats](./rtckit.webrtctransportstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcVideoConsumerStats](./rtckit.webrtcvideoconsumerstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcVideoProducerStats](./rtckit.webrtcvideoproducerstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcVideoProducerStreamStats](./rtckit.webrtcvideoproducerstreamstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcVideoStreamStats](./rtckit.webrtcvideostreamstats.md)
+
+
+</td><td>
+
+**_(ALPHA)_**
 
 
 </td></tr>

@@ -1,5 +1,5 @@
 /**
- * @beta
+ * @public
  */
 export type VideoResolution = {
   width: number;
@@ -8,7 +8,7 @@ export type VideoResolution = {
 
 /**
  * Standard video resolutions
- * @beta
+ * @public
  */
 export const STD_VIDEORES: Record<
   string,
@@ -42,7 +42,7 @@ const MAX_RESOLUTION = STD_VIDEORES['1080']
  * Information about a media input device.
  * It's implicit type is inferred from the method by which it is obtained,
  * e.g., {@link MediaDevicesHelper.getCameras}
- * @beta
+ * @public
  */
 export type MediaInputDeviceInfo = {
   deviceId: string;

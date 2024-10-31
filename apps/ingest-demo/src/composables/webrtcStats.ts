@@ -1,28 +1,16 @@
 import {
-  ApiClient,
   WebrtcReporter,
 } from '@gcorevideo/rtckit'
+import type { WebrtcConciseReport } from '@gcorevideo/rtckit/lib/stats/types'
 
 export async function useWebrtcStats(
   roomId: string,
   peerId: string,
   mediaServer?: string,
 ) {
-  const apiClient = new ApiClient({
-    host: import.meta.env.VITE_API_HOST,
-    clientHost: 'meet.gcorelabs.com',
-  })
   try {
-    const { token } =
-      await apiClient.initSession({
-        roomId,
-        peerId,
-      })
-    const reporter = new WebrtcReporter(
-      apiClient.service,
-      mediaServer,
-    )
-    reporter.init(token)
+    const reporter = new WebrtcReporter((_: WebrtcConciseReport) => Promise.resolve());
+    reporter.init()
     return () => reporter.destroy()
   } catch (e) {
     console.error(e)

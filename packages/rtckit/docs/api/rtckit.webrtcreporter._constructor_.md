@@ -12,7 +12,7 @@ Constructs a new instance of the `WebrtcReporter` class
 **Signature:**
 
 ```typescript
-constructor(api: ApiService, mediaServer?: string | undefined);
+constructor(send: WebrtcReportSender);
 ```
 
 ## Parameters
@@ -35,31 +35,15 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-api
+send
 
 
 </td><td>
 
-ApiService
+[WebrtcReportSender](./rtckit.webrtcreportsender.md)
 
 
 </td><td>
-
-
-</td></tr>
-<tr><td>
-
-mediaServer
-
-
-</td><td>
-
-string \| undefined
-
-
-</td><td>
-
-_(Optional)_
 
 
 </td></tr>

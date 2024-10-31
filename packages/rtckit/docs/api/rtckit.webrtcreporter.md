@@ -34,7 +34,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[(constructor)(api, mediaServer)](./rtckit.webrtcreporter._constructor_.md)
+[(constructor)(send)](./rtckit.webrtcreporter._constructor_.md)
 
 
 </td><td>
@@ -73,27 +73,6 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[api](./rtckit.webrtcreporter.api.md)
-
-
-</td><td>
-
-`readonly`
-
-
-</td><td>
-
-ApiService
-
-
-</td><td>
-
-**_(ALPHA)_**
-
-
-</td></tr>
-<tr><td>
-
 [onWebrtcStatsReport](./rtckit.webrtcreporter.onwebrtcstatsreport.md)
 
 
@@ -104,7 +83,7 @@ ApiService
 
 </td><td>
 
-(report: WebrtcConciseReport) =&gt; void
+(report: [WebrtcConciseReport](./rtckit.webrtcconcisereport.md)<!-- -->) =&gt; void
 
 
 </td><td>
