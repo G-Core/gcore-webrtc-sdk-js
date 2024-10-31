@@ -23,7 +23,7 @@ document.addEventListener(
           urls: "stun:ed-c16-95-128-175.fe.gc.onl",
         }],
         plugins: [
-          new VideoResolutionChangeDetector(({downgraded: degraded, height, srcHeight}) => {
+          new VideoResolutionChangeDetector(({degraded, height, srcHeight}) => {
             if (degraded) {
               qualityNode.textContent = `degraded ${srcHeight}p ↓ ${height}p`
               qualityNode.style.color = 'red'

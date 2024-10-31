@@ -51,8 +51,50 @@ describe("VideoResolutionChangeDetector", () => {
       srcHeight: 1080
     });
   });
+  it("should report the resolution degradation every time it changes", async () => {
+    mockVideoSender.getStats.mockResolvedValueOnce(new Map(
+      [
+        [
+          "2", {
+          type: "outbound-rtp",
+          ssrc: 123,
+          frameWidth: 640,
+          frameHeight: 360
+        }]
+      ]
+    )).mockResolvedValueOnce(new Map(
+      [
+        [
+          "3", {
+          type: "outbound-rtp",
+          ssrc: 123,
+          frameWidth: 854,
+          frameHeight: 480
+        }
+        ]
+      ]
+    ));
+    await clock.tickAsync(1000);
+    expect(onchange).toHaveBeenCalledWith({
+      ssrc: 123,
+      degraded: true,
+      width: 640,
+      height: 360,
+      srcWidth: 1920,
+      srcHeight: 1080
+    });
+    await clock.tickAsync(1000);
+    expect(onchange).toHaveBeenCalledWith({
+      ssrc: 123,
+      degraded: true,
+      width: 854,
+      height: 480,
+      srcWidth: 1920,
+      srcHeight: 1080
+    });
+  });
   it("should report the resolution recovery", async () => {
-    mockVideoSender.getStats.mockResolvedValue(new Map(
+    mockVideoSender.getStats.mockResolvedValueOnce(new Map(
       [
         [
           "2", {

@@ -12,7 +12,7 @@ export type VideoResolutionChangeEventData = {
 export class VideoResolutionChangeDetector {
   private timerId: number | null = null;
 
-  private ssrcState: Record<number, boolean> = {};
+  private ssrcState: Record<number, { width: number; height: number }> = {};
 
   constructor(private onchange: (data: VideoResolutionChangeEventData) => void) {}
 
@@ -54,12 +54,18 @@ export class VideoResolutionChangeDetector {
 
   private detectStreamResolutionChange(ssrc: number, width: number, height: number, srcWidth: number, srcHeight: number) {
     const degraded = width < srcWidth || height < srcHeight;
-    const curState = this.ssrcState[ssrc];
-    this.ssrcState[ssrc] = degraded;
-    if (!degraded && curState === undefined) {
+    const prevState = this.ssrcState[ssrc];
+    this.ssrcState[ssrc] = {
+      width,
+      height,
+    };
+    if (!degraded && prevState === undefined) {
       return;
     }
-    if (degraded === curState) {
+    if (!degraded && prevState?.width === srcWidth && prevState?.height === srcHeight) {
+      return;
+    }
+    if (degraded && prevState?.width === width && prevState?.height === height) {
       return;
     }
     this.onchange({ ssrc, degraded, width, height, srcWidth, srcHeight });
