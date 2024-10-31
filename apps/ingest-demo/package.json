@@ -14,7 +14,7 @@
     "@eyevinn/webrtc-player": "^0.13.0",
     "@gcorevideo/rtckit": "^0.64.0",
     "pinia": "^2.2.4",
-    "vue": "^3.4.21",
+    "vue": "^3.5.12",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
