@@ -1,4 +1,4 @@
-import { WebrtcStreaming } from '@gcorevideo/rtckit/lib/whip'
+import { LogTracer, Logger, WebrtcStreaming, setTracer } from '@gcorevideo/rtckit'
 import { VideoResolutionChangeDetector } from '@gcorevideo/rtckit/src/aux/VideoResolutionChangeDetector'
 
 // Get the endpoint URL from the CCP
@@ -6,10 +6,12 @@ import { VideoResolutionChangeDetector } from '@gcorevideo/rtckit/src/aux/VideoR
 const WHIP_ENDPOINT =
   'https://whip.gvideo.co/1960197_c58577f645c03d5b5c5dc1876c660bf5/whip'
 
+Logger.enable('*')
 
 document.addEventListener(
   'DOMContentLoaded',
   () => {
+    setTracer(new LogTracer())
     const videoElement =
       document.getElementById('preview')
     const previewPlate = document.getElementById('preview-plate')
@@ -19,17 +21,18 @@ document.addEventListener(
     const webrtc = new WebrtcStreaming(
       WHIP_ENDPOINT,
       {
-        iceServers: [{
-          urls: "stun:ed-c16-95-128-175.fe.gc.onl",
-        }],
         plugins: [
           new VideoResolutionChangeDetector(({degraded, height, srcHeight}) => {
             if (degraded) {
-              qualityNode.textContent = `degraded ${srcHeight}p ↓ ${height}p`
+              qualityNode.textContent = `↓${height}p`
               qualityNode.style.color = 'red'
             } else {
-              qualityNode.textContent = `recovered ↑ ${srcHeight}p`
-              qualityNode.style.color = 'green'
+              if (qualityNode.textContent === 'measuring...') {
+                qualityNode.textContent = `${srcHeight}p`
+              } else {
+                qualityNode.textContent = `↑${srcHeight}p`
+                qualityNode.style.color = 'green'
+              }
             }
           }),
         ]

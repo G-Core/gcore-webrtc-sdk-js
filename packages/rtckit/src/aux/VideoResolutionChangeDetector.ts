@@ -25,22 +25,18 @@ export class VideoResolutionChangeDetector {
 
   init(pc: RTCPeerConnection) {
     this.timerId = setInterval(() => {
-      // console.log("Checking video resolution");
       pc.getSenders()
         .filter(s => s.track && s.track.kind === "video")
         .forEach((s) => {
           const track = s.track as MediaStreamTrack;
           const { width, height } = track.getSettings();
-          // console.log(`Video resolution: ${width}x${height}`);
           if (!width || !height) {
             return;
           }
           s.getStats().then(stats => {
-            // console.log("Got WebRTC stats for a sender");
             for (const report of stats.values()) {
               if (report.type === "outbound-rtp") {
                 const {frameHeight, frameWidth, ssrc} = report as RTCOutboundRtpStreamStats;
-                // console.log(`Outgoing video resolution: ${frameWidth}x${frameHeight}`);
                 if (!frameWidth || !frameHeight) {
                   return; // TODO deside what to do in this case
                 }
@@ -59,9 +55,6 @@ export class VideoResolutionChangeDetector {
       width,
       height,
     };
-    if (!degraded && prevState === undefined) {
-      return;
-    }
     if (!degraded && prevState?.width === srcWidth && prevState?.height === srcHeight) {
       return;
     }

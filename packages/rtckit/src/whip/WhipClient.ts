@@ -73,7 +73,7 @@ export class WhipClient {
 
   private canRestartIce = false;
 
-  private canTrickleIce = false;
+  private canTrickleIce = true;
 
   private resourceUrl: URL | null = null;
 
@@ -92,8 +92,8 @@ export class WhipClient {
   private audioContext: AudioContext | null = null;
 
   constructor(private endpoint: string, private options?: WhipClientOptions) {
-    if (options?.canTrickleIce) {
-      this.canTrickleIce = true;
+    if (options?.canTrickleIce === false) {
+      this.canTrickleIce = false;
     }
     if (options?.canRestartIce) {
       this.canRestartIce = true;
@@ -110,7 +110,7 @@ export class WhipClient {
 
     this.pendingOps.splice(0, this.pendingOps.length).forEach((op) => op.abort());
 
-    this.clearIceTrickTimeout();
+    this.clearIceTrickleTimeout();
 
     await this.closeSession();
 
@@ -181,7 +181,7 @@ export class WhipClient {
     }
     this.reconnects++;
 
-    this.clearIceTrickTimeout();
+    this.clearIceTrickleTimeout();
     this.resetCandidates();
 
     if (!this.canRestartIce) {
@@ -198,7 +198,7 @@ export class WhipClient {
 
     this.iceRestartTs = new Date().getTime();
 
-    this.clearIceTrickTimeout();
+    this.clearIceTrickleTimeout();
 
     try {
       await this.patch();
@@ -385,12 +385,10 @@ export class WhipClient {
     const config = pc.getConfiguration();
 
     // If it has ice server info and it is not overriden by the client
-    if (!(config.iceServers && config.iceServers.length) && this.iceServers.length) {
+    if (!config.iceServers?.length && this.iceServers.length) {
       config.iceServers = this.iceServers;
-
-      if (config.iceServers.length)
-        //Set it
-        pc.setConfiguration(config);
+      // Set it
+      pc.setConfiguration(config);
     }
 
     const answer = await resp.text();
@@ -416,7 +414,7 @@ export class WhipClient {
     await pc.setRemoteDescription({ type: "answer", sdp: answer });
   }
 
-  private clearIceTrickTimeout() {
+  private clearIceTrickleTimeout() {
     if (this.trickleIceTimer) {
       window.clearTimeout(this.trickleIceTimer);
       this.trickleIceTimer = null;
@@ -425,7 +423,7 @@ export class WhipClient {
 
   // TODO rename
   private async patch() {
-    this.clearIceTrickTimeout();
+    this.clearIceTrickleTimeout();
 
     if (!this.pc) {
       trace(`${T} patch: no peer connection`);
@@ -650,7 +648,6 @@ export class WhipClient {
   }
 
   private async runPreflight() {
-    // TODO don't run unnecessarily, i.e., when ICE servers and other options are known
     if (!this.needPreflight()) {
       trace(`${T} runPreflight skipping`);
       return;
@@ -672,8 +669,9 @@ export class WhipClient {
     }
     return (
       !this.options ||
-      !this.options.iceServers?.length ||
-      (this.options.canRestartIce === undefined && this.options.canTrickleIce === undefined)
+      (
+        !this.options.iceServers?.length && !this.options.canTrickleIce
+      )
     );
   }
 

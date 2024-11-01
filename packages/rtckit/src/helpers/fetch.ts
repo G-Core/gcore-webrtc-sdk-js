@@ -120,6 +120,7 @@ export function calcRetryDuration(duration: number): {
 
 function canRetry(e: Error): boolean {
   if (e instanceof TypeError) {
+    // might be any network-level or a CORS error, in the former case it's retriable
     return true;
   }
   if (e instanceof ServerRequestError) {

@@ -1,3 +1,7 @@
+/**
+ * Gcore WebRTC Kit
+ */
+
 export * from "./Logger.js";
 export * from "./MediaDevices.js";
 export * from "./WebrtcStreaming.js";
