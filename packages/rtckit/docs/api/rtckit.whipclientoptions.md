@@ -18,10 +18,11 @@ export type WhipClientOptions = {
     maxReconnects?: number;
     maxWhipRetries?: number;
     noRestart?: boolean;
+    plugins?: WhipClientPlugin[];
     useHostIceCandidates?: boolean;
     videoCodecs?: Array<string | CodecMatch>;
     videoPreserveInitialResolution?: boolean;
 };
 ```
-**References:** [CodecMatch](./rtckit.codecmatch.md)
+**References:** [WhipClientPlugin](./rtckit.whipclientplugin.md)<!-- -->, [CodecMatch](./rtckit.codecmatch.md)
 

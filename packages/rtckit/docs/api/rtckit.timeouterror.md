@@ -4,7 +4,7 @@
 
 ## TimeoutError class
 
-Timeout, see the message for the details. Operations that can timeout: - waiting for the ICE candidates
+Timeout, see the message for the details.
 
 **Signature:**
 
@@ -12,6 +12,10 @@ Timeout, see the message for the details. Operations that can timeout: - waiting
 export declare class TimeoutError extends Error 
 ```
 **Extends:** Error
+
+## Remarks
+
+Operations that can timeout: - waiting for the ICE candidates
 
 ## Constructors
 

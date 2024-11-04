@@ -134,7 +134,18 @@ Any API server (WHIP, WHEP or any other) request error response, that is, 4xx an
 
 </td><td>
 
-Timeout, see the message for the details. Operations that can timeout: - waiting for the ICE candidates
+Timeout, see the message for the details.
+
+
+</td></tr>
+<tr><td>
+
+[VideoResolutionChangeDetector](./rtckit.videoresolutionchangedetector.md)
+
+
+</td><td>
+
+**_(BETA)_** Detects the degradation and recovery of the outgoing stream video resolution
 
 
 </td></tr>
@@ -257,6 +268,15 @@ Description
 
 
 </td></tr>
+<tr><td>
+
+[WhipClientPlugin](./rtckit.whipclientplugin.md)
+
+
+</td><td>
+
+
+</td></tr>
 </tbody></table>
 
 ## Variables
@@ -347,6 +367,17 @@ Information about a media input device. It's implicit type is inferred from the 
 
 </td><td>
 
+
+
+</td></tr>
+<tr><td>
+
+[VideoResolutionChangeEventData](./rtckit.videoresolutionchangeeventdata.md)
+
+
+</td><td>
+
+**_(BETA)_** Describes the change of an outgoing stream video resolution
 
 
 </td></tr>

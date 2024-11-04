@@ -1,7 +1,12 @@
 const CHECK_INTERVAL = 1000;
 
+/**
+ * Describes the change of an outgoing stream video resolution
+ * @beta
+ */
 export type VideoResolutionChangeEventData = {
   ssrc: number;
+  // If the resolution is degraded or recovered
   degraded: boolean;
   width: number;
   height: number;
@@ -9,11 +14,19 @@ export type VideoResolutionChangeEventData = {
   srcHeight: number;
 }
 
+/**
+ * Detects the degradation and recovery of the outgoing stream video resolution
+ * @beta
+ */
 export class VideoResolutionChangeDetector {
   private timerId: number | null = null;
 
   private ssrcState: Record<number, { width: number; height: number }> = {};
 
+  /**
+   * @param onchange - The callback to be called when the resolution change is detected
+   * @constructor
+   */
   constructor(private onchange: (data: VideoResolutionChangeEventData) => void) {}
 
   close() {
@@ -23,6 +36,9 @@ export class VideoResolutionChangeDetector {
     }
   }
 
+  /**
+   * @param pc  A WebRTC Peer connection to watch
+   */
   init(pc: RTCPeerConnection) {
     this.timerId = setInterval(() => {
       pc.getSenders()
