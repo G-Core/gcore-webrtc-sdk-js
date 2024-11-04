@@ -15,6 +15,6 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@gcorevideo/rtckit-node": "^0.9.1"
+    "@gcorevideo/rtckit-node": "^0.10.3"
   }
 }
