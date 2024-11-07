@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.68.3",
+  "version": "0.70.0",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
@@ -19,6 +19,7 @@
     "docs:build": "api-documenter markdown --input-folder=temp --output-folder=docs/api",
     "format": "prettier --write src/",
     "lint": "oxlint -c ../../.oxlintrc.json --tsconfig=./tsconfig.json --fix --ignore-path=../../.gitignore src",
+    "ship": "npm run build && npm run build:bundle && npm publish --access public",
     "test": "vitest --environment=jsdom run",
     "test:watch": "vitest --environment=jsdom watch"
   },

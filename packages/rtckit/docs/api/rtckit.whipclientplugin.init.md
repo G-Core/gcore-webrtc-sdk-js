@@ -4,6 +4,8 @@
 
 ## WhipClientPlugin.init() method
 
+Is called when a peer connection is initialized
+
 **Signature:**
 
 ```typescript
@@ -39,6 +41,8 @@ RTCPeerConnection
 
 
 </td><td>
+
+The RTCPeerConnection to be used by the client
 
 
 </td></tr>

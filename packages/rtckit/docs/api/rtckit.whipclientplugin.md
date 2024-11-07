@@ -4,6 +4,7 @@
 
 ## WhipClientPlugin interface
 
+
 **Signature:**
 
 ```typescript
@@ -30,6 +31,8 @@ Description
 
 </td><td>
 
+Is called when the client is closed
+
 
 </td></tr>
 <tr><td>
@@ -38,6 +41,19 @@ Description
 
 
 </td><td>
+
+Is called when a peer connection is initialized
+
+
+</td></tr>
+<tr><td>
+
+[request(url, options)](./rtckit.whipclientplugin.request.md)
+
+
+</td><td>
+
+Is called on any WHIP request
 
 
 </td></tr>

@@ -45,7 +45,7 @@ onchange
 
 </td><td>
 
-The callback to be called when the resolution change is detected 
+The callback to be called when the resolution change is detected
 
 
 </td></tr>

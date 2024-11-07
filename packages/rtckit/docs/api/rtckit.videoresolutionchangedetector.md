@@ -12,8 +12,9 @@ Detects the degradation and recovery of the outgoing stream video resolution
 **Signature:**
 
 ```typescript
-export declare class VideoResolutionChangeDetector 
+export declare class VideoResolutionChangeDetector implements WhipClientPlugin 
 ```
+**Implements:** [WhipClientPlugin](./rtckit.whipclientplugin.md)
 
 ## Constructors
 
@@ -84,6 +85,20 @@ Description
 <tr><td>
 
 [init(pc)](./rtckit.videoresolutionchangedetector.init.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
+[request(url, options)](./rtckit.videoresolutionchangedetector.request.md)
 
 
 </td><td>

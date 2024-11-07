@@ -1,5 +1,11 @@
-import { LogTracer, Logger, WebrtcStreaming, setTracer } from '@gcorevideo/rtckit'
-import { VideoResolutionChangeDetector } from '@gcorevideo/rtckit/src/aux/VideoResolutionChangeDetector'
+import {
+  LogTracer,
+  Logger,
+  StreamMeta,
+  VideoResolutionChangeDetector,
+  WebrtcStreaming,
+  setTracer
+} from '@gcorevideo/rtckit'
 
 // Get the endpoint URL from the CCP
 // Link path made of the integer stream ID and a token, which is a random hash value in hex format
@@ -22,7 +28,8 @@ document.addEventListener(
       WHIP_ENDPOINT,
       {
         plugins: [
-          new VideoResolutionChangeDetector(({degraded, height, srcHeight}) => {
+          new StreamMeta(),
+          new VideoResolutionChangeDetector(({ degraded, height, srcHeight }) => {
             if (degraded) {
               qualityNode.textContent = `↓${height}p`
               qualityNode.style.color = 'red'
@@ -127,36 +134,36 @@ document.addEventListener(
 
     function updateDevicesList() {
       webrtc.mediaDevices
-          .getCameras()
-          .then((items) => {
-            for (const item of items) {
-              const option =
-                document.createElement(
-                  'option',
-                )
-              option.value =
-                item.deviceId
-              option.textContent =
-                item.label ||
-                item.deviceId
-              cameraSelect.appendChild(
-                option,
+        .getCameras()
+        .then((items) => {
+          for (const item of items) {
+            const option =
+              document.createElement(
+                'option',
               )
-            }
-            cameraSelect.hidden = false
-            cameraSelect.disabled = false
-            micOn.disabled = false
-            if (items.length) {
-              updateResolutionsList(items[0].deviceId)
-            }
-            statusNode.textContent =
-              'Ready'
-          })
-          .then(() => runPreview())
+            option.value =
+              item.deviceId
+            option.textContent =
+              item.label ||
+              item.deviceId
+            cameraSelect.appendChild(
+              option,
+            )
+          }
+          cameraSelect.hidden = false
+          cameraSelect.disabled = false
+          micOn.disabled = false
+          if (items.length) {
+            updateResolutionsList(items[0].deviceId)
+          }
+          statusNode.textContent =
+            'Ready'
+        })
+        .then(() => runPreview())
     }
 
     function updateResolutionsList(deviceId) {
-      const items =  webrtc.mediaDevices
+      const items = webrtc.mediaDevices
         .getAvailableVideoResolutions(deviceId);
       videoresSelect.innerHTML = ''
       const defaultOption = document.createElement('option')

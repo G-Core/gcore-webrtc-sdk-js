@@ -4,6 +4,8 @@
 
 ## WhipClientPlugin.close() method
 
+Is called when the client is closed
+
 **Signature:**
 
 ```typescript

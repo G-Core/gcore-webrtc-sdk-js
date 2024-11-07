@@ -69,6 +69,7 @@ describe("WhipClient", () => {
       plugin = {
         close: vi.fn(),
         init: vi.fn(),
+        request: vi.fn(),
       };
       pc = new MockRTCPeerConnection();
       // @ts-ignore
@@ -90,24 +91,27 @@ describe("WhipClient", () => {
       await client.close();
       expect(plugin.close).toHaveBeenCalled();
     });
-  })
-  describe("query params", () => {
-    it("should append query params to the session initiation request", async () => {
+    it("should call the plugins when a request is made", async () => {
       audioTrack = createMockMediaStreamTrack("audio");
       videoTrack = createMockMediaStreamTrack("video");
       const stream = createMockMediaStream([audioTrack, videoTrack]);
-      client = new WhipClient("https://example.com/whip", {
-        canTrickleIce: true,
-        whipQueryParams: {
-          "key": "value",
-        }
-      });
       // @ts-ignore
-      globalThis.RTCPeerConnection = MockRTCPeerConnection;
+      plugin.request.mockImplementation((url, options) => {
+        url.searchParams.set("foo", "bar");
+        options.headers['X-Baz'] = "qux";
+      });
 
-      await client.start(stream as MediaStream);
-
-      expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/whip?key=value", expect.any(Object));
+      await client.start(stream);
+      expect(plugin.request).toHaveBeenCalledWith(expect.toMatchURL(/^https:\/\/example.com\/whip/), expect.objectContaining({
+        method: "POST",
+        headers: expect.any(Object),
+        body: expect.any(String),
+      }));
+      expect(globalThis.fetch).toHaveBeenCalledWith(expect.toMatchURL(/^https:\/\/example.com\/whip\?foo=bar/), expect.objectContaining({
+        headers: expect.objectContaining({
+          "X-Baz": "qux",
+        }),
+      }));
     });
   })
 });
@@ -131,3 +135,23 @@ function setupWhipWithoutPreflight() {
     text: () => Promise.resolve("v=0\r\n"),
   } as any);
 }
+
+interface CustomMatchers<R = unknown> {
+  toMatchURL: (pattern: RegExp) => R
+}
+
+declare module 'vitest' {
+  interface Assertion<T = any> extends CustomMatchers<T> {}
+  interface AsymmetricMatchersContaining extends CustomMatchers {}
+}
+
+expect.extend({
+  toMatchURL(received: URL, expected: RegExp) {
+    const pass = expected.test(received.toString())
+    console.log("toMatchURL", received.toString(), expected, pass);
+    return {
+      message: () => `expected ${received} to match ${expected}`,
+      pass,
+    }
+  },
+});

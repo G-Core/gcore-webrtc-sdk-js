@@ -129,6 +129,17 @@ Any API server (WHIP, WHEP or any other) request error response, that is, 4xx an
 </td></tr>
 <tr><td>
 
+[StreamMeta](./rtckit.streammeta.md)
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
 [TimeoutError](./rtckit.timeouterror.md)
 
 
@@ -274,6 +285,7 @@ Description
 
 
 </td><td>
+
 
 
 </td></tr>

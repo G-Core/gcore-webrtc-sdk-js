@@ -1,3 +1,5 @@
+import type { WhipClientPlugin } from "../whip/types.js";
+
 const CHECK_INTERVAL = 1000;
 
 /**
@@ -18,14 +20,13 @@ export type VideoResolutionChangeEventData = {
  * Detects the degradation and recovery of the outgoing stream video resolution
  * @beta
  */
-export class VideoResolutionChangeDetector {
+export class VideoResolutionChangeDetector implements WhipClientPlugin {
   private timerId: number | null = null;
 
   private ssrcState: Record<number, { width: number; height: number }> = {};
 
   /**
    * @param onchange - The callback to be called when the resolution change is detected
-   * @constructor
    */
   constructor(private onchange: (data: VideoResolutionChangeEventData) => void) {}
 
@@ -37,7 +38,7 @@ export class VideoResolutionChangeDetector {
   }
 
   /**
-   * @param pc  A WebRTC Peer connection to watch
+   * @param pc - A WebRTC Peer connection to watch
    */
   init(pc: RTCPeerConnection) {
     this.timerId = setInterval(() => {
@@ -63,6 +64,8 @@ export class VideoResolutionChangeDetector {
         })
     }, CHECK_INTERVAL);
   }
+
+  request(url: URL, options: RequestInit) {}
 
   private detectStreamResolutionChange(ssrc: number, width: number, height: number, srcWidth: number, srcHeight: number) {
     const degraded = width < srcWidth || height < srcHeight;

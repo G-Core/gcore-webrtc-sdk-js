@@ -22,7 +22,12 @@ export type WhipClientOptions = {
     useHostIceCandidates?: boolean;
     videoCodecs?: Array<string | CodecMatch>;
     videoPreserveInitialResolution?: boolean;
+    whipQueryParams?: Record<string, string>;
 };
 ```
 **References:** [WhipClientPlugin](./rtckit.whipclientplugin.md)<!-- -->, [CodecMatch](./rtckit.codecmatch.md)
+
+## Remarks
+
+Set `canTrickleIce` if your media server supports \[Trickle ICE\](https://bloggeek.me/webrtcglossary/trickle-ice/). This will help to avoid sending a preflight OPTIONS request to learn about the ICE servers. That OPTIONS request is send when both canTrikleIce and iceServers are not set.
 

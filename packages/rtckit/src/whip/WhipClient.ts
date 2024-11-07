@@ -3,7 +3,7 @@ import { EventEmitter } from "eventemitter3";
 
 import { reportError, trace } from "../trace/index.js";
 import { restrictCodecs } from "./utils.js";
-import { WhipClientOptions } from "./types.js";
+import { WhipClientOptions, WhipClientPlugin } from "./types.js";
 import {
   ConflictError,
   AssertionError,
@@ -114,9 +114,7 @@ export class WhipClient {
 
     await this.closeSession();
 
-    if (this.options?.plugins) {
-      this.options.plugins.forEach((plugin) => plugin.close());
-    }
+    this.runPlugins(p => p.close());
 
     if (this.silentAudioTrack) {
       this.silentAudioTrack.stop();
@@ -267,9 +265,7 @@ export class WhipClient {
 
     this.pc = pc;
 
-    if (this.options?.plugins) {
-      this.options?.plugins.forEach((plugin) => plugin.init(pc));
-    }
+    this.runPlugins(p => p.init(pc));
 
     this.pc.onconnectionstatechange = () => {
       trace(`${T} onconnectionstatechange`, {
@@ -371,8 +367,7 @@ export class WhipClient {
       throw new AssertionError("No local description");
     }
 
-    const url = this.buildWhipUrl()
-    const resp = await this.fetch(url, "POST", headers, this.mungeOffer(sdp));
+    const resp = await this.fetch(new URL(this.endpoint), "POST", headers, this.mungeOffer(sdp));
     const loc = resp.headers.get("location");
     if (!loc) {
       throw new MalformedResponseError("Response missing location header");
@@ -561,21 +556,23 @@ export class WhipClient {
   }
 
   private fetch(
-    url: string | URL,
+    url: URL,
     method: string,
     headers: Record<string, string> = {},
     body?: string,
   ): Promise<Response> {
     const abort = new AbortController();
     this.pendingOps.push(abort);
+    const requestInit = {
+      method,
+      headers: { ...this.getCommonHeaders(), ...headers },
+      body,
+      signal: abort.signal,
+    };
+    this.runPlugins(p => p.request(url, requestInit));
     return withRetries(
       () =>
-        fetch(url, {
-          method,
-          headers: { ...this.getCommonHeaders(), ...headers },
-          body,
-          signal: abort.signal,
-        }),
+        fetch(url, requestInit),
       this.options?.maxWhipRetries,
       undefined,
       undefined,
@@ -654,7 +651,7 @@ export class WhipClient {
       return;
     }
     try {
-      const resp = await this.fetch(this.endpoint, "OPTIONS");
+      const resp = await this.fetch(new URL(this.endpoint), "OPTIONS");
       this.checkAllowedMethods(resp);
       this.getIceServers(resp);
     } catch (e) {
@@ -736,15 +733,10 @@ export class WhipClient {
     pc.addTrack(this.silentAudioTrack);
   }
 
-  private buildWhipUrl(): string {
-    if (!this.options?.whipQueryParams) {
-      return this.endpoint
+  private runPlugins(cb: (p: WhipClientPlugin) => void) {
+    if (this.options?.plugins) {
+      this.options.plugins.forEach(cb);
     }
-    const u = new URL(this.endpoint);
-    Object.entries(this.options.whipQueryParams).forEach(([k, v]) => {
-      u.searchParams.set(k, v);
-    });
-    return u.toString();
   }
 }
 
