@@ -32,4 +32,5 @@ export type WhipClientOptions = {
   useHostIceCandidates?: boolean;
   videoCodecs?: Array<string | CodecMatch>;
   videoPreserveInitialResolution?: boolean;
+  whipQueryParams?: Record<string, string>;
 };

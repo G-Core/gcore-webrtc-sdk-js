@@ -371,7 +371,8 @@ export class WhipClient {
       throw new AssertionError("No local description");
     }
 
-    const resp = await this.fetch(this.endpoint, "POST", headers, this.mungeOffer(sdp));
+    const url = this.buildWhipUrl()
+    const resp = await this.fetch(url, "POST", headers, this.mungeOffer(sdp));
     const loc = resp.headers.get("location");
     if (!loc) {
       throw new MalformedResponseError("Response missing location header");
@@ -733,6 +734,17 @@ export class WhipClient {
       this.silentAudioTrack = dest.stream.getAudioTracks()[0];
     }
     pc.addTrack(this.silentAudioTrack);
+  }
+
+  private buildWhipUrl(): string {
+    if (!this.options?.whipQueryParams) {
+      return this.endpoint
+    }
+    const u = new URL(this.endpoint);
+    Object.entries(this.options.whipQueryParams).forEach(([k, v]) => {
+      u.searchParams.set(k, v);
+    });
+    return u.toString();
   }
 }
 

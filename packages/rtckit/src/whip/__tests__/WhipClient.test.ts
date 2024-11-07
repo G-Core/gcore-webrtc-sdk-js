@@ -9,18 +9,7 @@ describe("WhipClient", () => {
   let videoTrack: MockedMediaStreamTrack;
   let client: WhipClient;
   beforeEach(() => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
-      ok: true,
-      headers: new Headers(),
-      status: 200,
-    } as any).mockResolvedValueOnce({
-      ok: true,
-      headers: new Headers({
-        location: "https://m01.video.com/s/123",
-      }),
-      status: 200,
-      text: () => Promise.resolve("v=0\r\n"),
-    } as any);
+    setupWhipWithoutPreflight();
   });
   describe("contentHint", () => {
     describe.each([
@@ -40,11 +29,6 @@ describe("WhipClient", () => {
         // @ts-ignore
         globalThis.RTCPeerConnection = MockRTCPeerConnection;
         await client.start(stream as MediaStream);
-      });
-      it.skip("should run preflight request", () => { // because ICE servers are not specified
-        expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/whip", expect.objectContaining({
-          method: "OPTIONS",
-        }));
       });
       it("should set content hint for the video track accordingly", () => {
         expect(videoTrack.contentHint).toBe(contentHint);
@@ -70,7 +54,6 @@ describe("WhipClient", () => {
       mockConn = new MockRTCPeerConnection({});
       // @ts-ignore
       globalThis.RTCPeerConnection = vi.fn().mockReturnValue(mockConn);
-      // TODO mock audio context
       await client.start(stream as MediaStream);
     });
     it("should create and send a silent audio track", () => {
@@ -83,7 +66,6 @@ describe("WhipClient", () => {
     let plugin: WhipClientPlugin;
     let pc: MockedObject<RTCPeerConnection>;
     beforeEach( () => {
-      // TODO
       plugin = {
         close: vi.fn(),
         init: vi.fn(),
@@ -109,6 +91,25 @@ describe("WhipClient", () => {
       expect(plugin.close).toHaveBeenCalled();
     });
   })
+  describe("query params", () => {
+    it("should append query params to the session initiation request", async () => {
+      audioTrack = createMockMediaStreamTrack("audio");
+      videoTrack = createMockMediaStreamTrack("video");
+      const stream = createMockMediaStream([audioTrack, videoTrack]);
+      client = new WhipClient("https://example.com/whip", {
+        canTrickleIce: true,
+        whipQueryParams: {
+          "key": "value",
+        }
+      });
+      // @ts-ignore
+      globalThis.RTCPeerConnection = MockRTCPeerConnection;
+
+      await client.start(stream as MediaStream);
+
+      expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com/whip?key=value", expect.any(Object));
+    });
+  })
 });
 
 function createMockMediaStreamDestinationNode(stream) {
@@ -117,4 +118,16 @@ function createMockMediaStreamDestinationNode(stream) {
       return stream;
     }
   }
+}
+
+function setupWhipWithoutPreflight() {
+  // Session initiation request only
+  vi.spyOn(globalThis, "fetch").mockReset().mockResolvedValueOnce({
+    ok: true,
+    headers: new Headers({
+      location: "https://m01.video.com/s/123",
+    }),
+    status: 200,
+    text: () => Promise.resolve("v=0\r\n"),
+  } as any);
 }
