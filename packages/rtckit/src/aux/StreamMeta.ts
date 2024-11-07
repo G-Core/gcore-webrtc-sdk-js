@@ -25,7 +25,7 @@ export class StreamMeta implements WhipClientPlugin {
     if (!height || !width) {
       return;
     }
-    url.searchParams.set("width", height.toString());
+    url.searchParams.set("width", width.toString());
     url.searchParams.set("height", height.toString());
   }
 }
