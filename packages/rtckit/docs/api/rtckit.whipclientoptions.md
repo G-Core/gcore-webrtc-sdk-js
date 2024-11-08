@@ -29,7 +29,29 @@ export type WhipClientOptions = {
 
 ## Remarks
 
-- Set `canTrickleIce` if your media server supports \[Trickle ICE\](https://bloggeek.me/webrtcglossary/trickle-ice/). This will help to avoid sending a preflight OPTIONS request to learn about the ICE servers. That OPTIONS request is send when both canTrikleIce and iceServers are not set.
+- `auth` - Authentication token to be passed via the `Authorization` header with every WHIP request
 
-- `icePreferTcp` will make the client prefer TCP transport over UDP.
+- `canTrickleIce` - Allow the client to use [Trickle ICE](https://bloggeek.me/webrtcglossary/trickle-ice/) if the media server supports it. This will help avoid sending a preflight OPTIONS request to learn about the ICE servers. That OPTIONS request is sent when both `canTrickleIce` and `iceServers` are not set. On by default
+
+- `canRestartIce` - Server supports ICE restarts. When it does, automatic restarts after connection failures will be faster
+
+- `encodingParameters` - The [encoding parameters](https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpSender/setParameters#encodings) to be used for the video tracks
+
+- `icePreferTcp` - Will make the client prefer TCP transport over UDP
+
+- `iceServers` - Explicitly set [ICE servers](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#iceservers) if the media server doesn't provide any. When `canTrickleIce` is off and `iceServers` are not set, the client will send a preflight OPTIONS request to learn about the ICE servers before it can start ICE candidates gathering
+
+- `maxReconnects` - The maximum number of reconnection attempts on WebRTC connection failure
+
+- `maxWhipRetries` - The maximum number of retries on WHIP requests
+
+- `noRestart` - Disables ICE restarts
+
+- `plugins` - An array of plugins to be used by the client. See [WhipClientPlugin](./rtckit.whipclientplugin.md)
+
+- `useHostIceCandidates` - Allow the use of the [host](https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate/type#host) ICE candidates. This might be useful for local development: the client will wait for the first host candidate to be gathered before starting the session, otherwise it might get stuck (for example, if there are no ICE servers configured). For the production environment, local host candidates basically have no use, as they lack connectivity
+
+- `videoCodecs` - An array of codec to restrict the codec used to send a video stream. See [CodecMatch](./rtckit.codecmatch.md)
+
+- `videoPreserveInitialResolutio` - An optimization cue for a browser to preserve the initial resolution of a video track which can lead to better quality further on
 

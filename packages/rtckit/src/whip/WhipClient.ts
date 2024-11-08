@@ -220,6 +220,7 @@ export class WhipClient {
       this.pc = null;
     }
     if (this.resourceUrl) {
+      // TODO use this.fetch without retries
       await fetch(this.resourceUrl, {
         method: "DELETE",
         headers: this.getCommonHeaders(),
@@ -375,7 +376,6 @@ export class WhipClient {
 
     this.resourceUrl = new URL(loc, this.endpoint);
 
-    this.checkAllowedMethods(resp);
     this.getIceServers(resp);
 
     const config = pc.getConfiguration();
@@ -679,7 +679,6 @@ export class WhipClient {
     }
     try {
       const resp = await this.fetch(new URL(this.endpoint), "OPTIONS");
-      this.checkAllowedMethods(resp);
       this.getIceServers(resp);
     } catch (e) {
       trace(`${T} runPreflight failed ${e}`, {
@@ -698,17 +697,6 @@ export class WhipClient {
         !this.options.iceServers?.length && !this.options.canTrickleIce
       )
     );
-  }
-
-  private checkAllowedMethods(resp: Response) {
-    // This seems not to have much support on the media servers
-    const allow =
-      resp.headers.get("allow") || resp.headers.get("access-control-allow-methods") || "";
-    const methods = allow.split(",").map((s) => s.trim());
-    if (methods.includes("PATCH")) {
-      this.canTrickleIce = true;
-      this.canRestartIce = true;
-    }
   }
 
   private resetCandidates() {
