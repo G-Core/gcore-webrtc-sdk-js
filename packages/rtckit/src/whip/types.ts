@@ -38,10 +38,11 @@ export interface WhipClientPlugin {
  * Options affecting the behaviour of WhipClient
  * @public
  * @remarks
- * Set `canTrickleIce` if your media server supports [Trickle ICE](https://bloggeek.me/webrtcglossary/trickle-ice/).
+ * - Set `canTrickleIce` if your media server supports [Trickle ICE](https://bloggeek.me/webrtcglossary/trickle-ice/).
  *   This will help to avoid sending a preflight OPTIONS request to learn about the ICE servers.
  *   That OPTIONS request is send when both canTrikleIce and iceServers are not set.
- * `icePreferTcp` will make the client prefer TCP transport over UDP.
+ *
+ * - `icePreferTcp` will make the client prefer TCP transport over UDP.
  */
 export type WhipClientOptions = {
   auth?: string;
