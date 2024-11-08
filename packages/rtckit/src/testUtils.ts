@@ -140,9 +140,9 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
     setLocalDescription(ld: any) {
       this.localDescription = ld
     },
-    setRemoteDescription(rd: any) {
+    setRemoteDescription: vi.fn().mockImplementation(function (this: any, rd: any) {
       this.remoteDescription = rd;
-    }
+    }),
   };
   // @ts-ignore
   Object.assign(this, retval);

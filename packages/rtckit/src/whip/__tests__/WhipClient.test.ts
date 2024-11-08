@@ -114,6 +114,60 @@ describe("WhipClient", () => {
       }));
     });
   })
+  describe("prefer TCP ICE candidates", () => {
+    let mockConn: any;
+    describe.each([
+      [
+        "tcp and udp",
+        "should keep only TCP ICE candidates",
+        "v=0\r\nm=video 9 UDP/TLS/RTP/SAVPF 96 97\r\na=candidate:1 1 udp 2130706431 77.202.11.101 12345 typ host\r\na=candidate:2 1 tcp 3130706431 77.202.11.101 12345 typ host tcptype active\r\n",
+        /\ba=candidate:2 1 tcp 3130706431 77.202.11.101 12345 typ host tcptype active\b/,
+        /\ba=candidate:\d+ \d+ udp\b/,
+      ],
+      [
+        "udp only",
+        "should leave UDP ICE candidates",
+        "v=0\r\nm=video 9 UDP/TLS/RTP/SAVPF 96 97\r\na=candidate:1 1 udp 2130706431 77.202.11.101 12345 typ host\r\na=candidate:1 2 udp 2130706431 77.202.11.101 12345 typ host\r\n",
+        /\ba=candidate:1 1 udp 2130706431 77.202.11.101 12345 typ host\b/,
+        null,
+      ],
+
+    ])("%s", (_, m, sdp, expectCandidates, notExpectCandidates) => {
+      beforeEach(async () => {
+        audioTrack = createMockMediaStreamTrack("audio");
+        videoTrack = createMockMediaStreamTrack("video");
+        const stream = createMockMediaStream([audioTrack, videoTrack]);
+        client = new WhipClient("https://example.com/whip", {
+          canTrickleIce: true,
+          icePreferTcp: true,
+        });
+        vi.spyOn(globalThis, "fetch").mockReset().mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({
+            location: "https://m01.video.com/s/123",
+          }),
+          status: 200,
+          text: () => Promise.resolve(sdp),
+        } as any);
+        mockConn = new MockRTCPeerConnection();
+        // @ts-ignore
+        globalThis.RTCPeerConnection = vi.fn().mockReturnValue(mockConn);
+        await client.start(stream as MediaStream);
+      });
+      it(m, () => {
+        expect(mockConn.setRemoteDescription).toHaveBeenCalledWith({
+          type: "answer",
+          sdp: expect.stringMatching(expectCandidates),
+        });
+        if (notExpectCandidates) {
+          expect(mockConn.setRemoteDescription).toHaveBeenCalledWith({
+            type: "answer",
+            sdp: expect.not.stringMatching(notExpectCandidates),
+          })
+        }
+      });
+    });
+  });
 });
 
 function createMockMediaStreamDestinationNode(stream) {
@@ -148,7 +202,6 @@ declare module 'vitest' {
 expect.extend({
   toMatchURL(received: URL, expected: RegExp) {
     const pass = expected.test(received.toString())
-    console.log("toMatchURL", received.toString(), expected, pass);
     return {
       message: () => `expected ${received} to match ${expected}`,
       pass,

@@ -407,7 +407,8 @@ export class WhipClient {
     this.updateIceParams(sdp);
     //}
 
-    await pc.setRemoteDescription({ type: "answer", sdp: answer });
+    // TODO filter out the remote ICE candidates if options.icePreferTcp is set
+    await pc.setRemoteDescription({ type: "answer", sdp: this.mungeAnswer(answer) });
   }
 
   private clearIceTrickleTimeout() {
@@ -636,6 +637,32 @@ export class WhipClient {
       return restrictCodecs(s1, "video", this.options.videoCodecs);
     }
     return s1;
+  }
+
+  // TODO test
+  private mungeAnswer(sdp: string): string {
+    if (this.options?.icePreferTcp) {
+      const candidates = sdp.matchAll(/^a=candidate:(.*)$/mg);
+      if (candidates) {
+        const tcpCandidates: string[] = [];
+        const udpCandidates: string[] = [];
+        for (const c of candidates) {
+          const parts = c[1].split(" ");
+          if (parts[2].toLowerCase() === "tcp") {
+            tcpCandidates.push(c[0]);
+          } else {
+            udpCandidates.push(c[0]);
+          }
+        }
+        if (tcpCandidates.length && udpCandidates.length) {
+          udpCandidates.forEach((c) => {
+            // TODO clarify if the candidates can be dubbed in different m-sections
+            sdp = sdp.replace(c + "\r\n", "");
+          });
+        }
+      }
+    }
+    return sdp;
   }
 
   private updateIceParams(offerSdp: string) {

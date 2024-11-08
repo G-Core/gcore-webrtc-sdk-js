@@ -41,12 +41,14 @@ export interface WhipClientPlugin {
  * Set `canTrickleIce` if your media server supports [Trickle ICE](https://bloggeek.me/webrtcglossary/trickle-ice/).
  *   This will help to avoid sending a preflight OPTIONS request to learn about the ICE servers.
  *   That OPTIONS request is send when both canTrikleIce and iceServers are not set.
+ * `icePreferTcp` will make the client prefer TCP transport over UDP.
  */
 export type WhipClientOptions = {
   auth?: string;
   canRestartIce?: boolean;
   canTrickleIce?: boolean;
   encodingParameters?: RTCRtpEncodingParameters[];
+  icePreferTcp?: boolean;
   iceServers?: RTCIceServer[];
   maxReconnects?: number;
   maxWhipRetries?: number;
@@ -55,5 +57,4 @@ export type WhipClientOptions = {
   useHostIceCandidates?: boolean;
   videoCodecs?: Array<string | CodecMatch>;
   videoPreserveInitialResolution?: boolean;
-  whipQueryParams?: Record<string, string>;
 };
