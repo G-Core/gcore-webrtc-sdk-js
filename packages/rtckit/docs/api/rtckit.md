@@ -134,7 +134,7 @@ Any API server (WHIP, WHEP or any other) request error response, that is, 4xx an
 
 </td><td>
 
-**_(BETA)_**
+**_(BETA)_** Adds stream's video track meta information (frame width and height) to a WHIP request query params
 
 
 </td></tr>

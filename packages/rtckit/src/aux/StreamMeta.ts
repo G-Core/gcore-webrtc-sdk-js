@@ -1,6 +1,7 @@
 import { WhipClientPlugin } from "../whip/types.js";
 
 /**
+ * Adds stream's video track meta information (frame width and height) to a WHIP request query params
  * @beta
  */
 export class StreamMeta implements WhipClientPlugin {

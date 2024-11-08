@@ -47,7 +47,7 @@ export type WhipClientOptions = {
 
 - `noRestart` - Disables ICE restarts
 
-- `plugins` - An array of plugins to be used by the client. See [WhipClientPlugin](./rtckit.whipclientplugin.md)
+- `plugins` - An array of plugins to be used by the client. See [WhipClientPlugin](./rtckit.whipclientplugin.md) Example plugins: [StreamMeta](./rtckit.streammeta.md)<!-- -->, [VideoResolutionChangeDetector](./rtckit.videoresolutionchangedetector.md)
 
 - `useHostIceCandidates` - Allow the use of the [host](https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate/type#host) ICE candidates. This might be useful for local development: the client will wait for the first host candidate to be gathered before starting the session, otherwise it might get stuck (for example, if there are no ICE servers configured). For the production environment, local host candidates basically have no use, as they lack connectivity
 

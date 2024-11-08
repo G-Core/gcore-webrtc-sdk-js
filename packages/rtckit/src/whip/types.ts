@@ -64,6 +64,7 @@ export interface WhipClientPlugin {
  * - `noRestart` - Disables ICE restarts
  *
  * - `plugins` - An array of plugins to be used by the client. See {@link WhipClientPlugin}
+ *   Example plugins: {@link StreamMeta}, {@link VideoResolutionChangeDetector}
  *
  * - `useHostIceCandidates` - Allow the use of the {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCIceCandidate/type#host | host}
  * ICE candidates.

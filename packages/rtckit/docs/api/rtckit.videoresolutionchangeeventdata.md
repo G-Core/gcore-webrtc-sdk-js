@@ -21,3 +21,8 @@ export type VideoResolutionChangeEventData = {
     srcHeight: number;
 };
 ```
+
+## Remarks
+
+- `ssrc` - The SSRC of the stream track - `degraded` - If the resolution is degraded or recovered - `width` - The current width of an encoded video frame - `height` - The current height an encoded video frame - `srcWidth` - The original width of the video track frame - `srcHeight` - The original height of the video track frame
+
