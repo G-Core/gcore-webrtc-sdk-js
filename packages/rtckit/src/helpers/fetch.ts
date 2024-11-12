@@ -1,4 +1,5 @@
 import { NetworkError, ServerRequestError } from "../errors.js";
+import { reportError } from "../trace/index.js";
 
 const MIN_RETRY_DELAY = 500;
 const MAX_RETRY_DELAY = 5000;

@@ -57,6 +57,9 @@ export interface WhipClientPlugin {
  *    When `canTrickleIce` is off and `iceServers` are not set, the client will send a preflight OPTIONS request to learn about
  * the ICE servers before it can start ICE candidates gathering
  *
+ * - `iceTransportPolicy` - {@link https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icetransportpolicy | ICE transport policy}
+ *    Set to `relay` to only use TURN servers
+ *
  * - `maxReconnects` - The maximum number of reconnection attempts on WebRTC connection failure
  *
  * - `maxWhipRetries` - The maximum number of retries on WHIP requests
@@ -84,6 +87,7 @@ export type WhipClientOptions = {
   encodingParameters?: RTCRtpEncodingParameters[];
   icePreferTcp?: boolean;
   iceServers?: RTCIceServer[];
+  iceTransportPolicy?: RTCIceTransportPolicy;
   maxReconnects?: number;
   maxWhipRetries?: number;
   noRestart?: boolean;

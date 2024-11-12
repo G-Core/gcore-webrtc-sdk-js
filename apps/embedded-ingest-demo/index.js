@@ -4,6 +4,7 @@ import {
   StreamMeta,
   VideoResolutionChangeDetector,
   WebrtcStreaming,
+  WhipClientEvents,
   setTracer
 } from '@gcorevideo/rtckit'
 
@@ -24,9 +25,13 @@ document.addEventListener(
     const statusNode =
       document.getElementById('status')
     const qualityNode = document.getElementById('videoquality')
+    let whipClient = null
     const webrtc = new WebrtcStreaming(
       WHIP_ENDPOINT,
       {
+        canTrickleIce: true,
+        icePreferTcp: true,
+        iceTransportPolicy: 'relay',
         plugins: [
           new StreamMeta(),
           new VideoResolutionChangeDetector(({ degraded, height, srcHeight }) => {
@@ -42,7 +47,7 @@ document.addEventListener(
               }
             }
           }),
-        ]
+        ],
       }
     )
     const start =
@@ -71,6 +76,7 @@ document.addEventListener(
       toggle.hidden = true
       webrtc.close()
       statusNode.textContent = 'Closed'
+      whipClient = null
     }
 
     cameraSelect.onchange = () => {
@@ -238,12 +244,25 @@ document.addEventListener(
         'Connecting the devices...'
       runPreview()
       webrtc.run().then(
-        () => {
+        (wc) => {
+          whipClient = wc
           statusNode.textContent =
-            'Streaming'
+            'Connecting...'
           stop.hidden = false
           toggle.hidden = false
           qualityNode.textContent = 'measuring...'
+          wc.on(WhipClientEvents.Connected, () => {
+            statusNode.textContent = 'Streaming'
+            statusNode.style.color = ''
+          })
+          wc.on(WhipClientEvents.Disconnected, () => {
+            statusNode.textContent = 'Disconnected'
+            statusNode.style.color = 'red'
+          })
+          wc.on(WhipClientEvents.ConnectionFailed, () => {
+            statusNode.textContent = 'Disconnected'
+            statusNode.style.color = 'red'
+          })
         },
         (e) => {
           statusNode.textContent = `Failed to start streaming: ${e}`

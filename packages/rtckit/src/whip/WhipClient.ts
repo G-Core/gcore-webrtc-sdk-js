@@ -236,8 +236,10 @@ export class WhipClient {
     if (this.closed) {
       throw new ConflictError("Client is closed");
     }
-
-    const pc = new RTCPeerConnection({ iceServers: this.iceServers });
+    const config: RTCConfiguration = {};
+    config.iceServers = this.useIceServers();
+    config.iceTransportPolicy = this.options?.iceTransportPolicy || "all";
+    const pc = new RTCPeerConnection(config);
     let hasAudioTrack = false;
     stream.getTracks().forEach(
       (track) => {
@@ -315,7 +317,8 @@ export class WhipClient {
       }
       if (this.canTrickleIce && !this.trickleIceTimer && !this.iceRestartTs) {
         // TODO trickle srflx/relay/prflx candidates immediately, host candidates after a delay
-        this.trickleIceTimer = window.setTimeout(() => this.runTrickleIce(), 0);
+        // const delay = event.candidate?.type === "host" ? 150 : 0;
+        this.scheduleTrickleIce(0);
       }
     };
 
@@ -357,7 +360,7 @@ export class WhipClient {
   }
 
   private canResolveWaitCandidates() {
-    return this.candidates.some((c) => this.options?.useHostIceCandidates || c.type !== "host");
+    return this.eofCandidates;
   }
 
   private async runInit(pc: RTCPeerConnection) {
@@ -380,35 +383,22 @@ export class WhipClient {
 
     const config = pc.getConfiguration();
 
-    // If it has ice server info and it is not overriden by the client
-    if (!config.iceServers?.length && this.iceServers.length) {
-      config.iceServers = this.iceServers;
-      // Set it
-      pc.setConfiguration(config);
-    }
-
     const answer = await resp.text();
 
     this.etag = resp.headers.get("etag");
 
-    // if (this.canTrickleIce && !this.trickleIceTimer) {
-    //   this.trickleIceTimer = window.setTimeout(() => this.runTrickleIce(), 0);
-    // }
-
-    // TODO: chrome is returning a wrong value, so don't use it for now
-    //try {
-    //	//Get local ice properties
-    //	const local = this.pc.getTransceivers()[0].sender.transport.iceTransport.getLocalParameters();
-    //	//Get them for transport
-    //	this.iceUsername = local.usernameFragment;
-    //	this.icePassword = local.password;
-    //} catch (e) {
-    //Fallback for browsers not supporting ice transport
     this.updateIceParams(sdp);
-    //}
 
+    const mungedAnswer = this.processAnswer(answer);
+
+    // If it has ICE servers which is not overriden by the client
+    if (!config.iceServers?.length && this.iceServers.length) {
+      config.iceServers = this.useIceServers();
+      config.iceTransportPolicy = this.options?.iceTransportPolicy || "all";
+      pc.setConfiguration(config);
+    }
     // TODO filter out the remote ICE candidates if options.icePreferTcp is set
-    await pc.setRemoteDescription({ type: "answer", sdp: this.mungeAnswer(answer) });
+    await pc.setRemoteDescription({ type: "answer", sdp: mungedAnswer });
   }
 
   private clearIceTrickleTimeout() {
@@ -420,8 +410,6 @@ export class WhipClient {
 
   // TODO rename
   private async patch() {
-    this.clearIceTrickleTimeout();
-
     if (!this.pc) {
       trace(`${T} patch: no peer connection`);
       return;
@@ -537,7 +525,7 @@ export class WhipClient {
           this.iceRestartTs = 0;
           if ((this.candidates.length || this.eofCandidates) && this.canTrickleIce) {
             // Trickle again
-            this.runTrickleIce();
+            this.scheduleTrickleIce(0);
           }
         }
       }
@@ -628,7 +616,24 @@ export class WhipClient {
           }
         })
         .filter((s) => s) as RTCIceServer[];
+        // TODO filter out UDP protocol TURNs if icePreferTcp is set
     }
+  }
+
+  private useIceServers(): RTCIceServer[] {
+    if (this.options?.icePreferTcp) {
+      const filtered = this.iceServers.filter((s) => {
+        if (typeof s.urls === "string") {
+          return isTcpIceServer(s.urls)
+        }
+        return s.urls.some(isTcpIceServer);
+      });
+
+      if (filtered.length) {
+        return filtered;
+      }
+    }
+    return this.iceServers;
   }
 
   private mungeOffer(sdp: string): string {
@@ -639,9 +644,9 @@ export class WhipClient {
     return s1;
   }
 
-  // TODO test
-  private mungeAnswer(sdp: string): string {
-    if (this.options?.icePreferTcp) {
+  private processAnswer(sdp: string): string {
+    // TODO test
+    if (this.options?.icePreferTcp && this.options?.iceTransportPolicy !== "relay") {
       const candidates = sdp.matchAll(/^a=candidate:(.*)$/mg);
       if (candidates) {
         const tcpCandidates: string[] = [];
@@ -655,8 +660,7 @@ export class WhipClient {
           }
         }
         if (tcpCandidates.length && udpCandidates.length) {
-          udpCandidates.forEach((c) => {
-            // TODO clarify if the candidates can be dubbed in different m-sections
+          udpCandidates.forEach((c, i) => {
             sdp = sdp.replace(c + "\r\n", "");
           });
         }
@@ -692,9 +696,10 @@ export class WhipClient {
       return false;
     }
     return (
-      !this.options ||
       (
-        !this.options.iceServers?.length && !this.options.canTrickleIce
+        !this.iceServers.length && !this.canTrickleIce
+      ) || (
+        this.options?.iceTransportPolicy === "relay" && !this.iceServers.length && this.canTrickleIce
       )
     );
   }
@@ -722,6 +727,16 @@ export class WhipClient {
       }
       throw e;
     }
+  }
+
+  private async scheduleTrickleIce(delay: number) {
+    if (this.trickleIceTimer) {
+      return;
+    }
+    this.trickleIceTimer = window.setTimeout(() => {
+      this.clearIceTrickleTimeout();
+      this.runTrickleIce();
+    }, delay);
   }
 
   private disconnected() {
@@ -822,4 +837,11 @@ export class WontRestartError extends Error {
     super("Won't restart");
     Object.setPrototypeOf(this, WontRestartError.prototype);
   }
+}
+
+function isTcpIceServer(urls: string) {
+  if (urls.startsWith("stun:")) {
+    return true;
+  }
+  return /^turns?:/.test(urls) && urls.includes("transport=tcp");
 }

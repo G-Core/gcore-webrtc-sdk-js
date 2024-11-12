@@ -16,6 +16,7 @@ export type WhipClientOptions = {
     encodingParameters?: RTCRtpEncodingParameters[];
     icePreferTcp?: boolean;
     iceServers?: RTCIceServer[];
+    iceTransportPolicy?: RTCIceTransportPolicy;
     maxReconnects?: number;
     maxWhipRetries?: number;
     noRestart?: boolean;
@@ -40,6 +41,8 @@ export type WhipClientOptions = {
 - `icePreferTcp` - Will make the client prefer TCP transport over UDP
 
 - `iceServers` - Explicitly set [ICE servers](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection#iceservers) if the media server doesn't provide any. When `canTrickleIce` is off and `iceServers` are not set, the client will send a preflight OPTIONS request to learn about the ICE servers before it can start ICE candidates gathering
+
+- `iceTransportPolicy` - [ICE transport policy](https://w3c.github.io/webrtc-pc/#dom-rtcconfiguration-icetransportpolicy) Set to `relay` to only use TURN servers
 
 - `maxReconnects` - The maximum number of reconnection attempts on WebRTC connection failure
 

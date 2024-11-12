@@ -118,6 +118,7 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
     configuration,
     localDescription: null,
     remoteDescription: null,
+    onicecandidate: null,
 
     addTrack: vi.fn(),
     addTransceiver: vi.fn(),
@@ -130,13 +131,26 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
       sdp: "v=0\r\n",
       type: "offer",
     }),
+    fireEvent(name: string, detail: any) {
+      switch (name) {
+        case "icecandidate":
+          if (this.onicecandidate) {
+            (this.onicecandidate as Function)(detail);
+          }
+          break;
+      }
+    },
     generateCertificate: vi.fn().mockImplementation(() => {
       return Promise.reject(new Error("Not implemented"));
     }),
     getConfiguration() {
       return this.configuration;
     },
-    getSenders: vi.fn(),
+    getSenders: vi.fn().mockReturnValue([]),
+    getTransceivers: vi.fn().mockReturnValue([]),
+    setConfiguration: vi.fn().mockImplementation(function (this: any, config: RTCConfiguration) {
+      this.configuration = config;
+    }),
     setLocalDescription(ld: any) {
       this.localDescription = ld
     },
