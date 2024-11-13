@@ -91,6 +91,12 @@ export class WhipClient {
 
   private audioContext: AudioContext | null = null;
 
+  private csrcNode: ConstantSourceNode | null = null;
+
+  private destNode: MediaStreamAudioDestinationNode | null = null;
+
+  private gainNode: GainNode | null = null;
+
   constructor(private endpoint: string, private options?: WhipClientOptions) {
     if (options?.canTrickleIce === false) {
       this.canTrickleIce = false;
@@ -119,6 +125,21 @@ export class WhipClient {
     if (this.silentAudioTrack) {
       this.silentAudioTrack.stop();
       this.silentAudioTrack = null;
+    }
+
+    if (this.gainNode) {
+      this.gainNode.disconnect();
+      this.gainNode = null;
+    }
+
+    if (this.csrcNode) {
+      this.csrcNode.disconnect();
+      this.csrcNode = null;
+    }
+
+    if (this.destNode) {
+      this.destNode.disconnect();
+      this.destNode = null;
     }
 
     if (this.audioContext) {
@@ -757,8 +778,14 @@ export class WhipClient {
   private insertSilentAudioTrack(pc: RTCPeerConnection) {
     if (!this.silentAudioTrack) {
       const audioContext = this.audioContext || new AudioContext();
-      const dest = audioContext.createMediaStreamDestination();
-      this.silentAudioTrack = dest.stream.getAudioTracks()[0];
+      this.csrcNode = audioContext.createConstantSource();
+      this.gainNode = audioContext.createGain();
+      this.gainNode.gain.value = 0.01;
+      this.csrcNode.connect(this.gainNode);
+      this.destNode = audioContext.createMediaStreamDestination();
+      this.gainNode.connect(this.destNode);
+      this.csrcNode.start();
+      this.silentAudioTrack = this.destNode.stream.getAudioTracks()[0];
     }
     pc.addTrack(this.silentAudioTrack);
   }
