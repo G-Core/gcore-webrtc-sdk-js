@@ -15,6 +15,8 @@ const audio = ref(false)
 const running = ref(false)
 const canTrickleIce = ref(false)
 const canRestartIce = ref(false)
+const icePreferTcp = ref(false)
+const iceRelay = ref(false)
 
 function start() {
   running.value = true
@@ -72,6 +74,14 @@ function useGeneratedEndpoint() {
         <input id="canRestartIce" type="checkbox" v-model="canRestartIce" :disabled="running"/>
         Can restart ICE
       </label>
+      <label for="icePreferTcp">
+        <input id="icePreferTcp" type="checkbox" v-model="icePreferTcp" :disabled="running"/>
+        Prefer TCP
+      </label>
+      <label for="iceRelay">
+        <input id="iceRelay" type="checkbox" v-model="iceRelay" :disabled="running"/>
+        Use relay
+      </label>
     </div>
     <div class="setup block">
       <span class="label filler"></span>
@@ -82,6 +92,8 @@ function useGeneratedEndpoint() {
       :endpoint="endpoint" :auth="auth" :video="video" :audio="audio"
       :can-restart-ice="canRestartIce"
       :can-trickle-ice="canTrickleIce"
+      :ice-prefer-tcp="icePreferTcp"
+      :ice-transport-policy="iceRelay ? 'relay' : 'all'"
       @close="stop"
     />
   </main>

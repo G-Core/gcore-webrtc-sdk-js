@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { ServerRequestError, WhipClient, WhipClientEvents } from "@gcorevideo/rtckit";
+import { ServerRequestError, StreamMeta, WhipClient, WhipClientEvents } from "@gcorevideo/rtckit";
 
 const emit = defineEmits(['close'])
 
 const props = defineProps<{
+  audio: boolean
   auth?: string
   canRestartIce?: boolean
   canTrickleIce?: boolean
   endpoint: string
+  icePreferTcp?: boolean
+  iceTransportPolicy?: RTCIceTransportPolicy
   video: boolean
-  audio: boolean
   // TODO video constraints, audio constraints
 }>()
 
@@ -36,19 +38,16 @@ const reconnects = ref(0);
 let client: WhipClient | null = null
 let stream: MediaStream | null = null
 
-const ICE_SERVERS = [
-  {
-    urls: 'stun:ed-c16-95-128-175.fe.gc.onl'
-  }
-]
-
 onMounted(async () => {
   try {
     client = new WhipClient(props.endpoint, {
       auth: props.auth,
       canTrickleIce: props.canTrickleIce,
       canRestartIce: props.canRestartIce,
-      // iceServers: ICE_SERVERS,
+      icePreferTcp: props.icePreferTcp,
+      plugins: [
+        new StreamMeta(),
+      ],
       useHostIceCandidates: new URL(props.endpoint).hostname === "localhost",
       videoCodecs: ["H264"],
       // maxReconnects: 1,
