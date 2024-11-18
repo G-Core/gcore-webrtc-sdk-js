@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@eyevinn/webrtc-player": "^0.13.0",
-    "@gcorevideo/rtckit": "^0.68.2",
+    "@gcorevideo/rtckit": "^0.75.0",
     "pinia": "^2.2.6",
     "vue": "^3.5.12",
     "vue-router": "^4.3.0"

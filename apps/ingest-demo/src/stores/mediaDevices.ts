@@ -7,6 +7,7 @@ import {
 } from 'vue'
 
 import { useWebrtcStreaming } from "../composables/webrtcStreaming";
+import type { MediaInputDeviceInfo } from '@gcorevideo/rtckit';
 
 type VideoResolution = {
   width: number
@@ -48,10 +49,10 @@ const webrtcStreaming = useWebrtcStreaming()
 export const useMediaDevicesStore =
   defineStore('mediaDevices', () => {
     const microphoneDevices = ref<
-      MediaDeviceInfo[]
+      MediaInputDeviceInfo[]
     >([])
     const cameraDevices = ref<
-      MediaDeviceInfo[]
+      MediaInputDeviceInfo[]
     >([])
 
     const videores = ref<VideoResolution[]>([])
@@ -308,7 +309,7 @@ export const useMediaDevicesStore =
       if (!(q in VIDEORES)) {
         return
       }
-      const newVq = VIDEORES[q]
+      const newVq = VIDEORES[q as unknown as StdVRes]
       if (
         sameConstraints(
           newVq,

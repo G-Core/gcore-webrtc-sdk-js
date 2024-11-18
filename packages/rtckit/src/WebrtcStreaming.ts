@@ -139,7 +139,7 @@ export class WebrtcStreaming {
     const mediaStream = await this.openSourceStream();
     const opts = {
       videoCodecs: ["H264"],
-      ...(this.options || {}),
+      ...this.options,
       iceServers: this.options?.iceServers?.flatMap(({ urls, username, credential }) => {
         if (Array.isArray(urls)) {
           return urls.map((url) => ({ urls: url, username, credential }));
