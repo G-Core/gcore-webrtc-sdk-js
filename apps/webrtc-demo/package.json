@@ -20,7 +20,7 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^22.9.0",
-    "@vitejs/plugin-vue": "^5.1.4",
+    "@vitejs/plugin-vue": "^5.2.0",
     "@vue/tsconfig": "^0.6.0",
     "oxlint": "^0.10.2",
     "prettier": "^3.2.5",
