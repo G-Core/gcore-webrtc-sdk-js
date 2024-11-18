@@ -45,6 +45,7 @@ onMounted(async () => {
       canTrickleIce: props.canTrickleIce,
       canRestartIce: props.canRestartIce,
       icePreferTcp: props.icePreferTcp,
+      iceTransportPolicy: props.iceTransportPolicy,
       plugins: [
         new StreamMeta(),
       ],
