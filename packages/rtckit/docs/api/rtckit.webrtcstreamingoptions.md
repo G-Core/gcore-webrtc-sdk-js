@@ -4,6 +4,8 @@
 
 ## WebrtcStreamingOptions type
 
+WebRTC streaming configuration options.
+
 **Signature:**
 
 ```typescript
@@ -12,4 +14,8 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
 };
 ```
 **References:** [WhipClientOptions](./rtckit.whipclientoptions.md)
+
+## Remarks
+
+- `hotReplace` - replace the outgoing stream immediately when the source stream changes
 
