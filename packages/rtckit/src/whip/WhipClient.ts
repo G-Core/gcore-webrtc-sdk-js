@@ -13,7 +13,6 @@ import {
 } from "../errors.js";
 import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
 import { withRetries } from "../helpers/fetch.js";
-import { M } from "vitest/dist/chunks/environment.CzISCQ7o.js";
 
 const T = "WhipClient";
 
