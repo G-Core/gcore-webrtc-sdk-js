@@ -6,6 +6,8 @@
 
 Information about a media input device. It's implicit type is inferred from the method by which it is obtained, e.g., [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
 
+TODO rename
+
 **Signature:**
 
 ```typescript

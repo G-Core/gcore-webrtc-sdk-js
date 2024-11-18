@@ -80,5 +80,5 @@ The client abruptly disconnected and will try to reconnect
 
 ## Example
 
-client.on(WhipClientEvents.Dicsonnected, () =<!-- -->&gt; showError(\_\_('Reconnecting...')));
+client.on(WhipClientEvents.Disconnected, () =<!-- -->&gt; showError(\_\_('Reconnecting...')));
 

@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-configure(endpoint: string, options?: WhipClientOptions): void;
+configure(endpoint: string, options?: WebrtcStreamingOptions): void;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-[WhipClientOptions](./rtckit.whipclientoptions.md)
+[WebrtcStreamingOptions](./rtckit.webrtcstreamingoptions.md)
 
 
 </td><td>

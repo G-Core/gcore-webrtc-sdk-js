@@ -9,7 +9,7 @@ Constructs a new instance of the `WebrtcStreaming` class
 **Signature:**
 
 ```typescript
-constructor(endpoint: string, options?: WhipClientOptions | undefined);
+constructor(endpoint: string, options?: WebrtcStreamingOptions | undefined);
 ```
 
 ## Parameters
@@ -51,7 +51,7 @@ options
 
 </td><td>
 
-[WhipClientOptions](./rtckit.whipclientoptions.md) \| undefined
+[WebrtcStreamingOptions](./rtckit.webrtcstreamingoptions.md) \| undefined
 
 
 </td><td>

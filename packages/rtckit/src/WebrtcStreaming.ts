@@ -1,8 +1,7 @@
-import { WhipClient } from "./whip/WhipClient.js";
-import { WhipClientOptions } from "./whip/types.js";
-
 import { MediaDevicesHelper } from "./MediaDevices.js";
 import { trace } from "./trace/index.js";
+import { WhipClient } from "./whip/WhipClient.js";
+import { WhipClientOptions } from "./whip/types.js";
 
 /**
  * @public
@@ -17,6 +16,16 @@ export type WebrtcStreamParams = {
   video?: boolean | DeviceId;
   resolution?: number;
 };
+
+/**
+ * @public
+ * WebRTC streaming configuration options. @see WhipClientOptions
+ * @remarks
+ * - `hotReplace` - replace the outgoing stream immediately when the source stream changes
+ */
+export type WebrtcStreamingOptions = WhipClientOptions & {
+  hotReplace?: boolean;
+}
 
 const DEFAULT_STREAM_PARAMS = {
   audio: true,
@@ -50,7 +59,11 @@ export class WebrtcStreaming {
 
   private whipClient: WhipClient | null = null;
 
-  constructor(private endpoint: string, private options?: WhipClientOptions) {}
+  private get hotReplace() {
+    return this.options?.hotReplace || false;
+  }
+
+  constructor(private endpoint: string, private options?: WebrtcStreamingOptions) { }
 
   close() {
     trace(`${T} close`);
@@ -58,7 +71,7 @@ export class WebrtcStreaming {
     this.closeMediaStream();
   }
 
-  configure(endpoint: string, options?: WhipClientOptions) {
+  configure(endpoint: string, options?: WebrtcStreamingOptions) {
     trace(`${T} configure`, { endpoint, options });
     this.endpoint = endpoint;
     if (options) {
@@ -76,7 +89,11 @@ export class WebrtcStreaming {
         if (!params || sameStreamParams(this.streamParams, params)) {
           return resolve(this.mediaStream);
         }
-        this.closeMediaStream();
+        // TODO check this point below:
+        // In Safari it isn't possible to have two live streams at the same time
+        if (!this.hotReplace || !this.whipClient) {
+          this.closeMediaStream();
+        }
       }
       this.streamParams = params ? { ...params } : DEFAULT_STREAM_PARAMS;
       const constraints: MediaStreamConstraints = {
@@ -84,8 +101,7 @@ export class WebrtcStreaming {
         video: buildVideoContraints(this.streamParams),
       };
       navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-        this.mediaStream = stream;
-        resolve(stream);
+        this.replaceStream(stream).then(() => resolve(stream), reject);
       }, reject)
     }).finally(() => {
       this.mediaStreamPromise = null;
@@ -167,12 +183,43 @@ export class WebrtcStreaming {
     }
   }
 
-  private closeMediaStream() {
+  private async closeMediaStream() {
     trace(`${T} closeMediaStream`, { exists: !!this.mediaStream });
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((track) => track.stop());
-      this.mediaStream = null;
+    if (!this.mediaStream) {
+      return;
     }
+    const mediaStream = this.mediaStream;
+    if (this.whipClient) {
+      const whip = this.whipClient;
+      for (const t of mediaStream.getTracks()) {
+        await whip.removeTrack(t);
+      };
+    }
+    closeMediaStream(mediaStream);
+    this.mediaStream = null;
+  }
+
+  private async replaceStream(stream: MediaStream) {
+    trace(`${T} replaceStream`, { hotReplace: this.hotReplace, client: !!this.whipClient });
+    return new Promise<void>((resolve, reject) => {
+      if (!(this.whipClient && this.hotReplace)) {
+        return resolve();
+      }
+      const client = this.whipClient;
+      Promise.all(stream.getTracks().map((track) => client.replaceTrack(track)))
+        .then(() => {
+          trace(`${T} replaceStream OK`, { hotReplace: this.hotReplace, client: !!this.whipClient });
+        })
+        .then(resolve, reject);
+    }).then(() => {
+      return this.closeMediaStream();
+    }).then(() => {
+      this.mediaStream = stream;
+    }).catch((e) => {
+      closeMediaStream(stream);
+      reportError(e);
+      // TODO emit a notification event
+    });
   }
 }
 
@@ -212,4 +259,11 @@ function buildVideoContraints(params: WebrtcStreamParams): boolean | MediaTrackC
     }
   }
   return constraints;
+}
+
+function closeMediaStream(stream: MediaStream) {
+  stream.getTracks().forEach((t) => {
+    t.stop();
+    stream.removeTrack(t);
+  });
 }

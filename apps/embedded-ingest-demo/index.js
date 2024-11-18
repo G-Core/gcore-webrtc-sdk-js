@@ -25,13 +25,13 @@ document.addEventListener(
     const statusNode =
       document.getElementById('status')
     const qualityNode = document.getElementById('videoquality')
-    let whipClient = null
     const webrtc = new WebrtcStreaming(
       WHIP_ENDPOINT,
       {
-        canTrickleIce: true,
+        // canTrickleIce: true,
         icePreferTcp: true,
-        iceTransportPolicy: 'relay',
+        hotReplace: true,
+        // iceTransportPolicy: 'relay',
         plugins: [
           new StreamMeta(),
           new VideoResolutionChangeDetector(({ degraded, height, srcHeight }) => {
@@ -83,6 +83,10 @@ document.addEventListener(
       changeCameraDevice()
     }
 
+    micOn.onchange = () => {
+      requestMediaStream()
+    }
+
     videoresSelect.onchange = () => {
       changeVideoResolution()
     }
@@ -90,10 +94,10 @@ document.addEventListener(
     updateDevicesList()
 
     function changeVideoResolution() {
-      requestVideoStream();
+      requestMediaStream();
     }
 
-    function requestVideoStream() {
+    function requestMediaStream() {
       const deviceId = cameraSelect.value
       const resolution = Number(videoresSelect.value)
       statusNode.textContent =
@@ -103,9 +107,10 @@ document.addEventListener(
       videoresSelect.disabled = true
       webrtc
         .openSourceStream({
+          audio: !!micOn.checked,
           video: deviceId,
           resolution,
-        })
+        }, false)
         .then(
           (s) => {
             statusNode.textContent =
@@ -135,7 +140,7 @@ document.addEventListener(
 
     function changeCameraDevice() {
       updateResolutionsList(cameraSelect.value)
-      requestVideoStream()
+      requestMediaStream()
     }
 
     function updateDevicesList() {
@@ -212,7 +217,7 @@ document.addEventListener(
     function startStreaming() {
       start.hidden = true
       cameraSelect.disabled = true
-      micOn.disabled = true
+      // micOn.disabled = true
       const resolution = Number(videoresSelect.value)
       webrtc
         .openSourceStream({

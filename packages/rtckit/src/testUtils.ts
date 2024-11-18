@@ -97,20 +97,45 @@ export function createMockMediaStream(tracks: MediaStreamTrack[]) {
   };
 }
 
-export function setupMockUserMedia(devices: MediaDeviceInfo[] = []) {
+export function setupDefaultMockUserMedia(devices: MediaDeviceInfo[] = []) {
   const audioTrack = createMockMediaStreamTrack("audio");
   const videoTrack = createMockMediaStreamTrack("video");
   const mockStream = createMockMediaStream([
     audioTrack as any,
     videoTrack as any,
   ]);
+  setupMockUserMedia(devices);
+  // @ts-ignore
+  window.navigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
+  return [mockStream, audioTrack, videoTrack];
+}
+
+export function setupMockUserMedia(devices: MediaDeviceInfo[]) {
   window.MediaStream = createMockMediaStream as any;
   // @ts-ignore
   window.navigator.mediaDevices = {
     enumerateDevices: vi.fn().mockResolvedValue(devices),
-    getUserMedia: vi.fn().mockResolvedValue(mockStream),
+    getUserMedia: vi.fn(),
   };
-  return [mockStream, audioTrack, videoTrack];
+}
+
+type GetUserMediaContraints = {
+  audio?: boolean | MediaTrackConstraints;
+  video?: boolean | MediaTrackConstraints;
+}
+
+export function setupGetUserMedia(constraints: GetUserMediaContraints): MockedMediaStreamTrack[] {
+  const tracks: MockedMediaStreamTrack[] = [];
+  if (constraints.audio) {
+    tracks.push(createMockMediaStreamTrack("audio"));
+  }
+  if (constraints.video) {
+    tracks.push(createMockMediaStreamTrack("video"));
+  }
+  const mockStream = createMockMediaStream(tracks);
+  // @ts-ignore
+  window.navigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
+  return tracks;
 }
 
 export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {

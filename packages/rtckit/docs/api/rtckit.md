@@ -360,6 +360,8 @@ A codec match condition to filter the available codecs
 
 Information about a media input device. It's implicit type is inferred from the method by which it is obtained, e.g., [MediaDevicesHelper.getCameras()](./rtckit.mediadeviceshelper.getcameras.md)
 
+TODO rename
+
 
 </td></tr>
 <tr><td>
@@ -478,6 +480,15 @@ Information about a media input device. It's implicit type is inferred from the 
 </td><td>
 
 **_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcStreamingOptions](./rtckit.webrtcstreamingoptions.md)
+
+
+</td><td>
 
 
 </td></tr>

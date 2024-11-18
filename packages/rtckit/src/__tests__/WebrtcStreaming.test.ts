@@ -1,8 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MockedObject, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WebrtcStreaming } from "../WebrtcStreaming.js";
 
-import { setupMockUserMedia } from "../testUtils.js";
+import {WhipClient} from "../whip/WhipClient.js";
+
+import { setupDefaultMockUserMedia, setupGetUserMedia, setupMockUserMedia } from "../testUtils.js";
+
+vi.mock("../whip/WhipClient.js", () => ({
+  WhipClient: vi.fn(),
+}));
 
 describe("WebrtcStreaming", () => {
   let webrtc: WebrtcStreaming;
@@ -10,7 +16,7 @@ describe("WebrtcStreaming", () => {
     let video: HTMLVideoElement;
     beforeEach(async () => {
       webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
-      setupMockUserMedia()
+      setupDefaultMockUserMedia()
       await webrtc.openSourceStream({
         audio: true,
         video: true,
@@ -103,7 +109,8 @@ describe("WebrtcStreaming", () => {
       ])("", (firstParams, secondParams, expectedConstraints) => {
         beforeEach(async () => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
-          const [mockStream] = setupMockUserMedia();
+          setupDefaultMockUserMedia();
+          setupGetUserMedia({ audio: true, video: true})
           await webrtc.openSourceStream(firstParams);
           await webrtc.openSourceStream(secondParams);
         });
@@ -117,6 +124,36 @@ describe("WebrtcStreaming", () => {
             expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
           });
         }
+      });
+    });
+    describe("hot track replacement", () => {
+      describe("when the audio track is toggled off", () => {
+        let firstTimeTracks: MediaStreamTrack[];
+        let mockWhipClient: MockedWhipClient;
+        beforeEach(() => {
+          webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
+          setupMockUserMedia([]);
+          firstTimeTracks = setupGetUserMedia({ audio: true, video: true });
+          setupGetUserMedia({ audio: false, video: true });
+          mockWhipClient = createMockWhipClient();
+          // @ts-ignore
+          WhipClient.mockReturnValueOnce(mockWhipClient);
+        });
+        it("should gracefully remove current audio track", async () => {
+          await webrtc.openSourceStream({
+            audio: true,
+            video: true,
+          });
+          await webrtc.run();
+          await webrtc.openSourceStream({
+            audio: false,
+            video: true,
+          });
+
+          firstTimeTracks.forEach((t) => {
+            expect(mockWhipClient.removeTrack).toHaveBeenCalledWith(t);
+          });
+        });
       });
     });
   });
@@ -133,4 +170,18 @@ function createMockVideoElement() {
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
   };
+}
+
+// TODO use WhipClient interface instead
+type MockedWhipClient = MockedObject<WhipClient>;
+
+function createMockWhipClient(): MockedWhipClient {
+  return {
+    close: vi.fn(),
+    on: vi.fn(),
+    restart: vi.fn(),
+    removeTrack: vi.fn(),
+    replaceTrack: vi.fn(),
+    start: vi.fn(),
+  } as MockedWhipClient;
 }

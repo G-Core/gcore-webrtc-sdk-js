@@ -90,6 +90,18 @@ Description
 </td></tr>
 <tr><td>
 
+[replaceTrack(track)](./rtckit.whipclient.replacetrack.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [restart()](./rtckit.whipclient.restart.md)
 
 

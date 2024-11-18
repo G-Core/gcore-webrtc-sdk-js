@@ -13,13 +13,14 @@ import {
 } from "../errors.js";
 import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
 import { withRetries } from "../helpers/fetch.js";
+import { M } from "vitest/dist/chunks/environment.CzISCQ7o.js";
 
 const T = "WhipClient";
 
 const ICE_CANDIDATES_WAIT_TIME = 5000;
 
 /**
- * @example client.on(WhipClientEvents.Dicsonnected, () =\> showError(__('Reconnecting...')));
+ * @example client.on(WhipClientEvents.Disconnected, () =\> showError(__('Reconnecting...')));
  * @public
  */
 export enum WhipClientEvents {
@@ -166,6 +167,50 @@ export class WhipClient {
     await this.runStart(mediaStream);
   }
 
+  async replaceTrack(track: MediaStreamTrack): Promise<boolean> {
+    if (!this.pc) {
+      trace(`${T} replaceTrack: no peer connection`);
+      return false;
+    }
+    trace(`${T} replaceTrack`, { kind: track.kind });
+    const pc = this.pc;
+    const transceivers = pc.getTransceivers();
+    for (const t of transceivers) {
+      if (t.sender.track?.kind === track.kind) {
+        await t.sender.replaceTrack(track);
+        trace(`${T} replaceTrack OK`, { kind: track.kind });
+        return true;
+      }
+    }
+    trace(`${T} replaceTrack: no transceiver found for ${track.kind}`);
+    return false;
+  }
+
+  /**
+   * Remove the track if it is associated with a transceiver.
+   * If the track is an audio track, it will be replaced with a silent one.
+   * @param {MediaStreamTrack} track - the track to remove
+   * @alpha
+   */
+  async removeTrack(track: MediaStreamTrack) {
+    trace(`${T} removeTrack`, { kind: track.kind });
+    const pc = this.pc;
+    if (!pc) {
+      trace(`${T} removeTrack: no peer connection`);
+      return;
+    }
+    for (const s of pc.getSenders()) {
+      if (s.track === track) {
+        if (track.kind === "audio") {
+          // TODO make async
+          await this.insertSilentAudioTrack(pc, s);
+        } else {
+          await s.replaceTrack(null);
+        }
+      }
+    }
+  }
+
   on<E extends WhipClientEvents>(
     event: E,
     listener: EventEmitter.EventListener<WhipClientEventTypes, E>,
@@ -261,7 +306,7 @@ export class WhipClient {
     config.iceServers = this.useIceServers();
     config.iceTransportPolicy = this.options?.iceTransportPolicy || "all";
     const pc = new RTCPeerConnection(config);
-    let hasAudioTrack = false;
+    let audioTrack: MediaStreamTrack | undefined;
     stream.getTracks().forEach(
       (track) => {
         if (track.kind === "video") {
@@ -269,7 +314,7 @@ export class WhipClient {
             track.contentHint = "detail";
           }
         } else {
-          hasAudioTrack = true;
+          audioTrack = track;
         }
         if (this.options?.encodingParameters) {
           pc.addTransceiver(track, {
@@ -283,8 +328,16 @@ export class WhipClient {
       }
     );
 
-    if (!hasAudioTrack) {
-      this.insertSilentAudioTrack(pc);
+    if (audioTrack) {
+      trace(`${T} audio track is found`, {id: audioTrack.id});
+      audioTrack.onended = () => {
+        trace(`${T} audio track ended`, {id: audioTrack?.id});
+        this.insertSilentAudioTrack(pc);
+        // TODO emit event or handle at WebrtcStreaming level
+      };
+    } else {
+      trace(`${T} audio track not found`);
+      await this.insertSilentAudioTrack(pc);
     }
 
     this.pc = pc;
@@ -336,6 +389,7 @@ export class WhipClient {
       if (this.canResolveWaitCandidates()) {
         this.resolveCandidatesPromise();
       }
+      // TODO update canTrickleIce from the server answer
       if (this.canTrickleIce && !this.trickleIceTimer && !this.iceRestartTs) {
         // TODO trickle srflx/relay/prflx candidates immediately, host candidates after a delay
         // const delay = event.candidate?.type === "host" ? 150 : 0;
@@ -775,7 +829,8 @@ export class WhipClient {
     this.emitter.emit(WhipClientEvents.ConnectionFailed);
   }
 
-  private insertSilentAudioTrack(pc: RTCPeerConnection) {
+  private async insertSilentAudioTrack(pc: RTCPeerConnection, sender?: RTCRtpSender) {
+    trace(`${T} insertSilentAudioTrack`, { silentAudioTrack: !!this.silentAudioTrack });
     if (!this.silentAudioTrack) {
       const audioContext = this.audioContext || new AudioContext();
       this.csrcNode = audioContext.createConstantSource();
@@ -787,7 +842,11 @@ export class WhipClient {
       this.csrcNode.start();
       this.silentAudioTrack = this.destNode.stream.getAudioTracks()[0];
     }
-    pc.addTrack(this.silentAudioTrack);
+    if (sender) {
+      await sender.replaceTrack(this.silentAudioTrack);
+    } else {
+      pc.addTrack(this.silentAudioTrack);
+    }
   }
 
   private runPlugins(cb: (p: WhipClientPlugin) => void) {

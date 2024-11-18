@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.73.0",
+  "version": "0.75.0",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",

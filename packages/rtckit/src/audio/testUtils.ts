@@ -6,11 +6,36 @@ export function createMockAudioContext(): MockAudioContext {
     state: "suspended",
     close: vi.fn(),
     createAnalyser: vi.fn(),
-    createGain: vi.fn(),
+    createConstantSource: vi.fn().mockImplementation(() => createMockConstantSourceNode()),
+    createGain: vi.fn().mockImplementation(() => createMockGainNode()),
     createMediaStreamDestination: vi.fn(),
     createMediaStreamSource: vi.fn(),
     onstatechange: null,
     resume: vi.fn(),
+  };
+}
+
+export function createMockConstantSourceNode() {
+  return {
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
+    offset: {
+      setValueAtTime: vi.fn(),
+      value: 0,
+    },
+  };
+}
+
+export function createMockGainNode() {
+  return {
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    gain: {
+      setValueAtTime: vi.fn(),
+      value: 1,
+    },
   };
 }
 
@@ -22,6 +47,7 @@ export type MockAudioContext = {
   close: Mock;
   createAnalyser: Mock;
   createGain: Mock;
+  createConstantSource: Mock;
   createMediaStreamDestination: Mock;
   createMediaStreamSource: Mock;
   resume: Mock;

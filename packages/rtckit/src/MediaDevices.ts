@@ -43,6 +43,7 @@ const MAX_RESOLUTION = STD_VIDEORES['1080']
  * It's implicit type is inferred from the method by which it is obtained,
  * e.g., {@link MediaDevicesHelper.getCameras}
  * @public
+ * TODO rename
  */
 export type MediaInputDeviceInfo = {
   deviceId: string;
@@ -61,6 +62,10 @@ export class MediaDevicesHelper {
   private videoResolutions: Record<string, VideoResolution[]> = {};
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
+
+  private promiseUpdateDevices: Promise<void> | null = null;
+
+  private promiseUpdateVres: Promise<void> | null = null;
 
   /**
    * Get a list of available video resolutions supported by the device
@@ -149,28 +154,44 @@ export class MediaDevicesHelper {
   }
 
   private async updateDevices() {
-    return navigator.mediaDevices.getUserMedia({
-      video: {
-        width: MAX_RESOLUTION.width,
-        height: MAX_RESOLUTION.height,
-      },
-    }).then(s => {
-      return this.enumerateDevices
-        .run()
-        .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
-        .then((devices) => {
-          this.devices = devices;
-        })
-        .finally(() => {
-          s.getTracks().forEach((t) => {
-            t.stop();
-            s.removeTrack(t);
-          });
-        })
-    })
+    if (!this.promiseUpdateDevices) {
+      this.promiseUpdateDevices = navigator.mediaDevices.getUserMedia({
+        video: {
+          width: MAX_RESOLUTION.width,
+          height: MAX_RESOLUTION.height,
+        },
+      }).then(s => {
+        return this.enumerateDevices
+          .run()
+          .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
+          .then((devices) => {
+            this.devices = devices;
+          })
+          .finally(() => {
+            s.getTracks().forEach((t) => {
+              s.removeTrack(t);
+              t.stop();
+            });
+          })
+      }).finally(() => {
+        this.promiseUpdateDevices = null;
+      });
+    }
+    return this.promiseUpdateDevices;
   }
 
   private async updateVideoResolutions() {
+    if (!this.promiseUpdateVres) {
+      this.promiseUpdateVres = new Promise<void>((resolve, reject) => {
+        this.doUpdateVideoResolutions().then(resolve, reject);
+      }).finally(() => {
+        this.promiseUpdateVres = null;
+      })
+    }
+    return this.promiseUpdateVres;
+  }
+
+  private async doUpdateVideoResolutions() {
     for await (const device of this.devices) {
       if (device.kind === "videoinput") {
         this.videoResolutions[device.deviceId] = await MediaDevicesHelper.probeAvailableVideoResolutions(device.deviceId);

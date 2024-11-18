@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MediaDevicesHelper } from "../MediaDevices";
-import { createMockMediaStream, createMockMediaStreamTrack, setupMockUserMedia } from "../testUtils";
+import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevices";
+import { createMockMediaStream, createMockMediaStreamTrack, setupGetUserMedia, setupMockUserMedia } from "../testUtils";
 
 describe("MediaDevices", () => {
   const devices: MediaDeviceInfo[] = [
@@ -24,10 +24,13 @@ describe("MediaDevices", () => {
   describe("getCameras", () => {
     beforeEach(() => {
       setupMockUserMedia(devices)
+      setupGetUserMedia({ video: true }) // this one for allowing to enumerate the devices
+      for (const _ of new Array(5).fill(null)) {
+        setupGetUserMedia({ video: true }) // for discovering the available video resolutions (1080 to 240)
+      }
       mediaDevices = new MediaDevicesHelper()
     })
     describe("concurrent calls to devices list", () => {
-      // })
       describe.each([
       [
         "video video",
@@ -43,7 +46,7 @@ describe("MediaDevices", () => {
       ]
       ])("%s", (seq: string) => {
         beforeEach(async () => {
-          const ps: Promise<MediaDeviceInfo[]>[] = []
+          const ps: Promise<MediaInputDeviceInfo[]>[] = []
           for (const s of seq.split(" ")) {
             const p = s == "audio" ? mediaDevices.getMicrophones() : mediaDevices.getCameras()
             ps.push(p)
@@ -60,7 +63,7 @@ describe("MediaDevices", () => {
     beforeEach(() => {
       setupMockUserMedia(devices)
       window.navigator.mediaDevices.getUserMedia
-        .mockReset()
+        // @ts-ignore
         .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // before updateDevices
         .mockRejectedValueOnce(new Error("Overconstrained")) // 1080
         .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // 720

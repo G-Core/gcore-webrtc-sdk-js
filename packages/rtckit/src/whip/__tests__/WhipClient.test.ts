@@ -300,6 +300,9 @@ describe("WhipClient", () => {
       });
     });
   });
+  describe.skip("replaceTrack", () => {
+    // TODO
+  });
 });
 
 function createMockMediaStreamDestinationNode(stream) {
