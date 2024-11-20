@@ -147,6 +147,30 @@ Description
 </td></tr>
 <tr><td>
 
+[off(event, handler)](./rtckit.webrtcstreaming.off.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[on(event, handler)](./rtckit.webrtcstreaming.on.md)
+
+
+</td><td>
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [openSourceStream(params)](./rtckit.webrtcstreaming.opensourcestream.md)
 
 

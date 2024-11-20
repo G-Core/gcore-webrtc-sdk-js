@@ -4,6 +4,7 @@ import {
   StreamMeta,
   VideoResolutionChangeDetector,
   WebrtcStreaming,
+  WebrtcStreamingEvents,
   WhipClientEvents,
   setTracer
 } from '@gcorevideo/rtckit'
@@ -31,6 +32,7 @@ document.addEventListener(
         // canTrickleIce: true,
         icePreferTcp: true,
         hotReplace: true,
+        mediaDevicesAutoSwitch: true,
         // iceTransportPolicy: 'relay',
         plugins: [
           new StreamMeta(),
@@ -50,6 +52,23 @@ document.addEventListener(
         ],
       }
     )
+    webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, (e) => {
+      const curStatus = statusNode.textContent
+      const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1)
+      const newStatus = `${kind} stream has been switched from "${e.prev.label}" to "${e.device.label}"`
+      statusNode.textContent = newStatus
+      runPreview()
+      micSelect.value = e.device.deviceId
+      setTimeout(() => {
+        if (statusNode.textContent === newStatus) {
+          statusNode.textContent = curStatus
+        }
+      }, 5000);
+    })
+    webrtc.on(WebrtcStreamingEvents.MediaDeviceDisconnect, (e) => {
+      statusNode.textContent = `"${e.device.label}" has disconnected`
+      statusNode.style.color = 'red'
+    })
     const start =
       document.getElementById('start')
     const stop =
@@ -61,6 +80,7 @@ document.addEventListener(
     const micOn =
       document.getElementById('audio')
     const videoresSelect = document.getElementById('videores')
+    const micSelect = document.getElementById('mic')
 
     start.onclick = () => {
       startStreaming();
@@ -84,7 +104,13 @@ document.addEventListener(
     }
 
     micOn.onchange = () => {
+      micSelect.disabled = !micOn.checked
+      micSelect.hidden = !micOn.checked
       requestMediaStream()
+    }
+
+    micSelect.onchange = () => {
+      changeMicDevice()
     }
 
     videoresSelect.onchange = () => {
@@ -105,9 +131,10 @@ document.addEventListener(
       start.disabled = true
       cameraSelect.disabled = true
       videoresSelect.disabled = true
+      micSelect.disabled = true
       webrtc
         .openSourceStream({
-          audio: !!micOn.checked,
+          audio: micOn.checked ? micSelect.value : false,
           video: deviceId,
           resolution,
         }, false)
@@ -124,6 +151,7 @@ document.addEventListener(
         .finally(() => {
           start.disabled = false
           cameraSelect.disabled = false
+          micSelect.disabled = false
           videoresSelect.disabled = false
         })
     }
@@ -143,34 +171,48 @@ document.addEventListener(
       requestMediaStream()
     }
 
+    function changeMicDevice() {
+      requestMediaStream();
+    }
+
     function updateDevicesList() {
       webrtc.mediaDevices
         .getCameras()
         .then((items) => {
-          for (const item of items) {
-            const option =
-              document.createElement(
-                'option',
-              )
-            option.value =
-              item.deviceId
-            option.textContent =
-              item.label ||
-              item.deviceId
-            cameraSelect.appendChild(
-              option,
-            )
-          }
+          populateDevicesList(cameraSelect, items)
           cameraSelect.hidden = false
           cameraSelect.disabled = false
-          micOn.disabled = false
           if (items.length) {
             updateResolutionsList(items[0].deviceId)
           }
           statusNode.textContent =
             'Ready'
         })
+        .then(() => webrtc.mediaDevices.getMicrophones())
+        .then((items) => {
+          populateDevicesList(micSelect, items)
+          micOn.disabled = false
+          micSelect.hidden = !micOn.checked
+          micSelect.disabled = !micOn.checked
+        })
         .then(() => runPreview())
+    }
+
+    function populateDevicesList(selectEl, items) {
+      for (const item of items) {
+        const option =
+          document.createElement(
+            'option',
+          )
+        option.value =
+          item.deviceId
+        option.textContent =
+          item.label ||
+          item.deviceId
+        selectEl.appendChild(
+          option,
+        )
+      }
     }
 
     function updateResolutionsList(deviceId) {

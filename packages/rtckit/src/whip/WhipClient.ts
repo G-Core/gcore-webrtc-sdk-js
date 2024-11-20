@@ -13,6 +13,7 @@ import {
 } from "../errors.js";
 import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
 import { withRetries } from "../helpers/fetch.js";
+import { MediaKind } from "src/index.js";
 
 const T = "WhipClient";
 
@@ -97,6 +98,8 @@ export class WhipClient {
 
   private gainNode: GainNode | null = null;
 
+  private senders: Partial<Record<MediaKind, RTCRtpSender>> = {};
+
   constructor(private endpoint: string, private options?: WhipClientOptions) {
     if (options?.canTrickleIce === false) {
       this.canTrickleIce = false;
@@ -173,6 +176,13 @@ export class WhipClient {
     }
     trace(`${T} replaceTrack`, { kind: track.kind });
     const pc = this.pc;
+    const s = this.senders[track.kind as MediaKind];
+    if (s) {
+      // TODO test
+      await s.replaceTrack(track);
+      trace(`${T} replaceTrack OK`, { kind: track.kind });
+      return true;
+    }
     const transceivers = pc.getTransceivers();
     for (const t of transceivers) {
       if (t.sender.track?.kind === track.kind) {
@@ -307,6 +317,7 @@ export class WhipClient {
     let audioTrack: MediaStreamTrack | undefined;
     stream.getTracks().forEach(
       (track) => {
+        const kind: MediaKind = track.kind as MediaKind; // TODO assert MediaKind value
         if (track.kind === "video") {
           if (!track.contentHint && this.options?.videoPreserveInitialResolution) {
             track.contentHint = "detail";
@@ -315,13 +326,14 @@ export class WhipClient {
           audioTrack = track;
         }
         if (this.options?.encodingParameters) {
-          pc.addTransceiver(track, {
+          const t = pc.addTransceiver(track, {
             direction: "sendonly",
             sendEncodings: this.options?.encodingParameters,
             streams: [stream],
           });
+          this.senders[kind] = t.sender;
         } else {
-          pc.addTrack(track, stream)
+          this.senders[kind] = pc.addTrack(track, stream)
         }
       }
     );
@@ -838,7 +850,7 @@ export class WhipClient {
     if (sender) {
       await sender.replaceTrack(this.silentAudioTrack);
     } else {
-      pc.addTrack(this.silentAudioTrack);
+      this.senders["audio"] = pc.addTrack(this.silentAudioTrack);
     }
   }
 

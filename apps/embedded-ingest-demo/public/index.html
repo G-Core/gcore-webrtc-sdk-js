@@ -37,8 +37,9 @@
         .controls {
             display: flex;
             gap: 0.5rem;
+            flex-direction: column;
+            align-items: flex-start;
         }
-        /* TODO */
     </style>
     <main>
         <div class="preview">
@@ -51,10 +52,16 @@
                 <select id="camera" hidden disabled title="Camera"></select>
                 <select id="videores" hidden disabled title="Resolution"></select>
             </div>
-            <label for="audio">Mic <input type="checkbox" checked id="audio" /></label>
-            <button id="start">Start</button>
-            <button id="stop" hidden>Stop</button>
-            <button id="toggle" hidden>Toggle</button>
+            <div>
+                <label for="audio">Mic <input type="checkbox" checked id="audio" /></label>
+                <select id="mic" hidden disabled title="Microphone"></select>
+            </div>
+            <div>
+                <label></label>
+                <button id="start">Start</button>
+                <button id="stop" hidden>Stop</button>
+                <button id="toggle" hidden>Toggle</button>
+            </div>
         </div>
         <div id="status">Loading...</div>
         <div>Video quality: <span id="videoquality">‒</span></div>

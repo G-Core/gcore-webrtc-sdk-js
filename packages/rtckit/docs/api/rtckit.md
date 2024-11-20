@@ -221,6 +221,15 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[WebrtcStreamingEvents](./rtckit.webrtcstreamingevents.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [WhipClientEvents](./rtckit.whipclientevents.md)
 
 
@@ -353,6 +362,24 @@ A codec match condition to filter the available codecs
 </td></tr>
 <tr><td>
 
+[MediaDevicePlugInfo](./rtckit.mediadevicepluginfo.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
+[MediaDeviceUnplugInfo](./rtckit.mediadeviceunpluginfo.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [MediaInputDeviceInfo](./rtckit.mediainputdeviceinfo.md)
 
 
@@ -480,6 +507,15 @@ TODO rename
 </td><td>
 
 **_(ALPHA)_**
+
+
+</td></tr>
+<tr><td>
+
+[WebrtcStreamingEventTypes](./rtckit.webrtcstreamingeventtypes.md)
+
+
+</td><td>
 
 
 </td></tr>
