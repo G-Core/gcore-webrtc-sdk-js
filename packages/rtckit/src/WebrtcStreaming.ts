@@ -27,9 +27,13 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
 
 /**
  * @public
+ *
  * WebRTC streaming configuration options. @see WhipClientOptions
+ *
  * @remarks
+ *
  * - `hotReplace` - replace the outgoing stream immediately when the source stream changes TODO make the default option. Deprecated
+ *
  * - `mediaDevicesAutoSwitch` - enable automatic switch to another media device when the current one is disconnected
  */
 export type WebrtcStreamingOptions = WhipClientOptions & {
@@ -40,8 +44,8 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
 /**
  * @public
  * @remarks
- * - MediaDeviceSwitch - selected input media device has been switched to another one after the former was disconnected
- * - MediaDeviceSwitchOff - selected input media device has been disconnected and it was not possible to switch to another one
+ * - `MediaDeviceSwitch` - selected input media device has been switched to another one after the former was disconnected
+ * - `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one
  */
 export enum WebrtcStreamingEvents {
   MediaDeviceSwitch = "mdswitch",

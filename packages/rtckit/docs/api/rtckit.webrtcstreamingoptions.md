@@ -18,5 +18,7 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
 
 ## Remarks
 
-- `hotReplace` - replace the outgoing stream immediately when the source stream changes TODO make the default option. Deprecated - `mediaDevicesAutoSwitch` - enable automatic switch to another media device when the current one is disconnected
+- `hotReplace` - replace the outgoing stream immediately when the source stream changes TODO make the default option. Deprecated
+
+- `mediaDevicesAutoSwitch` - enable automatic switch to another media device when the current one is disconnected
 

@@ -57,3 +57,8 @@ MediaDeviceSwitchOff
 
 </td></tr>
 </tbody></table>
+
+## Remarks
+
+- `MediaDeviceSwitch` - selected input media device has been switched to another one after the former was disconnected - `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one
+
