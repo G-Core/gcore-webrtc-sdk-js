@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevices";
-import { createMockMediaStream, createMockMediaStreamTrack, setupGetUserMedia, setupMockUserMedia } from "../testUtils";
+import { createMockMediaStream, createMockMediaStreamTrack, setupGetUserMedia, setupMockMediaDevices } from "../testUtils";
 
 describe("MediaDevices", () => {
   const devices: MediaDeviceInfo[] = [
@@ -23,7 +23,7 @@ describe("MediaDevices", () => {
   let mediaDevices: MediaDevicesHelper
   describe("getCameras", () => {
     beforeEach(() => {
-      setupMockUserMedia(devices)
+      setupMockMediaDevices(devices)
       setupGetUserMedia({ video: true }) // this one for allowing to enumerate the devices
       for (const _ of new Array(5).fill(null)) {
         setupGetUserMedia({ video: true }) // for discovering the available video resolutions (1080 to 240)
@@ -61,7 +61,7 @@ describe("MediaDevices", () => {
   })
   describe("video resolutions", () => {
     beforeEach(() => {
-      setupMockUserMedia(devices)
+      setupMockMediaDevices(devices)
       window.navigator.mediaDevices.getUserMedia
         // @ts-ignore
         .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // before updateDevices

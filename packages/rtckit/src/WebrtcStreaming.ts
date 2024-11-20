@@ -1,7 +1,9 @@
-import { MediaDevicesHelper } from "./MediaDevices.js";
-import { trace } from "./trace/index.js";
+import { MediaDevicesHelper, MediaInputDeviceInfo } from "./MediaDevices.js";
+import { MediaKind } from "./stats/types.js";
+import { reportError, trace } from "./trace/index.js";
 import { WhipClient } from "./whip/WhipClient.js";
 import { WhipClientOptions } from "./whip/types.js";
+import { EventEmitter } from "eventemitter3";
 
 /**
  * @public
@@ -17,20 +19,49 @@ export type WebrtcStreamParams = {
   resolution?: number;
 };
 
+const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
+  deviceId: "",
+  label: "",
+  groupId: "",
+});
+
 /**
  * @public
  * WebRTC streaming configuration options. @see WhipClientOptions
  * @remarks
- * - `hotReplace` - replace the outgoing stream immediately when the source stream changes
+ * - `hotReplace` - replace the outgoing stream immediately when the source stream changes TODO make the default option. Deprecated
+ * - `mediaDevicesAutoSwitch` - enable automatic switch to another media device when the current one is disconnected
  */
 export type WebrtcStreamingOptions = WhipClientOptions & {
-  hotReplace?: boolean;
+  hotReplace?: boolean; // TODO drop
+  mediaDevicesAutoSwitch?: boolean;
 }
 
-const DEFAULT_STREAM_PARAMS = {
+export enum WebrtcStreamingEvents {
+  MediaDeviceSwitch = "mdswitch",
+  MediaDeviceDisconnect = "mddisconnect",
+}
+
+export type MediaDevicePlugInfo = {
+  kind: MediaKind;
+  prev: MediaInputDeviceInfo;
+  device: MediaInputDeviceInfo;
+}
+
+export type MediaDeviceUnplugInfo = {
+  kind: MediaKind;
+  device: MediaInputDeviceInfo;
+}
+
+export type WebrtcStreamingEventTypes = {
+  [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDevicePlugInfo],
+  [WebrtcStreamingEvents.MediaDeviceDisconnect]: [MediaDeviceUnplugInfo],
+}
+
+const DEFAULT_STREAM_PARAMS = Object.freeze({
   audio: true,
   video: true,
-};
+});
 
 const T = "WebrtcStreaming";
 
@@ -51,6 +82,8 @@ const T = "WebrtcStreaming";
 export class WebrtcStreaming {
   public readonly mediaDevices = new MediaDevicesHelper();
 
+  private emitter = new EventEmitter<WebrtcStreamingEvents>();
+
   private mediaStream: MediaStream | null = null;
 
   private mediaStreamPromise: Promise<MediaStream> | null = null;
@@ -59,9 +92,7 @@ export class WebrtcStreaming {
 
   private whipClient: WhipClient | null = null;
 
-  private get hotReplace() {
-    return this.options?.hotReplace || false;
-  }
+  private hotReplace = true;
 
   constructor(private endpoint: string, private options?: WebrtcStreamingOptions) { }
 
@@ -77,6 +108,14 @@ export class WebrtcStreaming {
     if (options) {
       this.options = options;
     }
+  }
+
+  off<E extends WebrtcStreamingEvents>(event: E, handler: (...args: WebrtcStreamingEventTypes[E]) => void) {
+    this.emitter.off(event, handler);
+  }
+
+  on<E extends WebrtcStreamingEvents>(event: E, handler: (...args: WebrtcStreamingEventTypes[E]) => void) {
+    this.emitter.on(event, handler);
   }
 
   async openSourceStream(params?: WebrtcStreamParams): Promise<MediaStream> {
@@ -153,6 +192,7 @@ export class WebrtcStreaming {
     };
     const whipClient = new WhipClient(this.endpoint, opts);
     this.whipClient = whipClient;
+    this.bindMediaDeviceAutoReconnect(mediaStream);
     await whipClient.start(mediaStream);
     return whipClient;
   }
@@ -206,11 +246,15 @@ export class WebrtcStreaming {
         return resolve();
       }
       const client = this.whipClient;
-      Promise.all(stream.getTracks().map((track) => client.replaceTrack(track)))
+      return Promise.all(stream.getTracks().map((track) => client.replaceTrack(track)))
         .then(() => {
           trace(`${T} replaceStream OK`, { hotReplace: this.hotReplace, client: !!this.whipClient });
         })
-        .then(resolve, reject);
+        .then(() => {
+          this.bindMediaDeviceAutoReconnect(stream);
+          resolve();
+        })
+        .catch(reject);
     }).then(() => {
       return this.closeMediaStream();
     }).then(() => {
@@ -219,7 +263,63 @@ export class WebrtcStreaming {
       closeMediaStream(stream);
       reportError(e);
       // TODO emit a notification event
+      return Promise.reject(e);
     });
+  }
+
+  private bindMediaDeviceAutoReconnect(stream: MediaStream) {
+    if (!this.options?.mediaDevicesAutoSwitch) {
+      return;
+    }
+    trace(`${T} bindMediaDeviceAutoReconnect`);
+    stream.getTracks().forEach((track) => {
+      track.addEventListener("ended", async () => {
+        let prevDevice: MediaInputDeviceInfo | undefined;
+          try {
+            prevDevice = await this.getDeviceInfo(track);
+          } catch (e) {
+            reportError(e);
+          }
+        try {
+          await this.closeMediaStream();
+          const newStream = await this.openSourceStream(looseMediaDeviceConstraints(track.kind as MediaKind, this.streamParams))
+          trace(`${T} media device auto reconnect`, { kind: track.kind });
+          const newTrack = newStream.getTracks().find((t) => t.kind === track.kind);
+          const device = await (newTrack ? this.getDeviceInfo(newTrack) : Promise.resolve(undefined));
+          trace(`${T} media device auto reconnect OK`, {
+            kind: track.kind,
+            device: !!device,
+            prevDevice: !!prevDevice,
+          });
+          // TODO emit a notification event, including the track kind and device info
+          try {
+            this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSwitch, {
+              kind: track.kind as MediaKind,
+              device: device || NO_DEVICE,
+              prev: prevDevice || NO_DEVICE,
+            });
+          } catch (e) {
+            reportError(e);
+          }
+        } catch (e) {
+          reportError(e);
+          // TODO emit a notification event including the track kind and old device info
+          this.emitter.emit(WebrtcStreamingEvents.MediaDeviceDisconnect, {
+            kind: track.kind as MediaKind,
+            device: prevDevice || NO_DEVICE,
+          });
+        }
+      });
+    });
+  }
+
+  private async getDeviceInfo(track: MediaStreamTrack): Promise<MediaInputDeviceInfo | undefined> {
+    const settings = track.getSettings();
+    if (!settings.deviceId) {
+      return;
+    }
+    const devices = await (track.kind === "audio" ? this.mediaDevices.getMicrophones() : this.mediaDevices.getCameras());
+    return devices.find((d) => d.deviceId === settings.deviceId);
   }
 }
 
@@ -266,4 +366,12 @@ function closeMediaStream(stream: MediaStream) {
     t.stop();
     stream.removeTrack(t);
   });
+}
+
+function looseMediaDeviceConstraints(kind: MediaKind, params: WebrtcStreamParams): WebrtcStreamParams {
+  trace(`${T} looseMediaDeviceConstraints`, { kind, params });
+  if (kind === "audio") {
+    return { ...params, audio: true };
+  }
+  return { ...params, video: true };
 }

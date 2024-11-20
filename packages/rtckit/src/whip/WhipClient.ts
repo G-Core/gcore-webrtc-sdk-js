@@ -201,7 +201,6 @@ export class WhipClient {
     for (const s of pc.getSenders()) {
       if (s.track === track) {
         if (track.kind === "audio") {
-          // TODO make async
           await this.insertSilentAudioTrack(pc, s);
         } else {
           await s.replaceTrack(null);
@@ -329,11 +328,6 @@ export class WhipClient {
 
     if (audioTrack) {
       trace(`${T} audio track is found`, {id: audioTrack.id});
-      audioTrack.onended = () => {
-        trace(`${T} audio track ended`, {id: audioTrack?.id});
-        this.insertSilentAudioTrack(pc);
-        // TODO emit event or handle at WebrtcStreaming level
-      };
     } else {
       trace(`${T} audio track not found`);
       await this.insertSilentAudioTrack(pc);

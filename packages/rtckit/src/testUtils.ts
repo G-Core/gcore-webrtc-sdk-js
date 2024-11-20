@@ -10,7 +10,9 @@ const nextTrackId = (() => {
   return () => `t${id++}`;
 })();
 
-export type MockedMediaStreamTrack = MockedObject<MediaStreamTrack>;
+export type MockedMediaStreamTrack = MockedObject<MediaStreamTrack> & {
+  triggerEvent(name: "ended" | "mute" | "unmute"): void;
+};
 
 export type MockedMediaStream = MockedObject<MediaStream>;
 
@@ -40,7 +42,8 @@ export function createMockMediaStreamTrack(
     id,
     kind,
     onended: null,
-    onmuted: null,
+    onmute: null,
+    onunmute: null,
     addEventListener: vi.fn(),
     applyConstraints: vi.fn(),
     clone: vi.fn().mockImplementation(() => createMockMediaStreamTrack(kind)),
@@ -51,6 +54,26 @@ export function createMockMediaStreamTrack(
     stop: vi.fn().mockImplementation(function () {
       readyState = "ended";
     }),
+    triggerEvent(name: "ended" | "mute" | "unmute") {
+      const handler = this[`on${name}`];
+      const event = new CustomEvent(name);
+      if (handler)  {
+        try {
+          handler.call(this, event);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      this.addEventListener.mock.calls.forEach(([eventName, cb]: [string, Function]) => {
+        if (eventName === name) {
+          try {
+            cb.call(this, event);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      });
+    }
   } as any;
   track.clone.mockImplementation(() => {
     const {
@@ -104,19 +127,34 @@ export function setupDefaultMockUserMedia(devices: MediaDeviceInfo[] = []) {
     audioTrack as any,
     videoTrack as any,
   ]);
-  setupMockUserMedia(devices);
+  setupMockMediaDevices(devices);
   // @ts-ignore
   window.navigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
   return [mockStream, audioTrack, videoTrack];
 }
 
-export function setupMockUserMedia(devices: MediaDeviceInfo[]) {
+export function setupMockMediaDevices(devices: MediaDeviceInfo[]) {
   window.MediaStream = createMockMediaStream as any;
   // @ts-ignore
   window.navigator.mediaDevices = {
     enumerateDevices: vi.fn().mockResolvedValue(devices),
     getUserMedia: vi.fn(),
   };
+}
+
+export function setupDefaultGetUserMedia(constraints: GetUserMediaContraints) {
+  // @ts-ignore
+  window.navigator.mediaDevices.getUserMedia.mockImplementation(() => {
+    const tracks: MockedMediaStreamTrack[] = [];
+    if (constraints.audio) {
+      tracks.push(createMockMediaStreamTrack("audio"));
+    }
+    if (constraints.video) {
+      tracks.push(createMockMediaStreamTrack("video"));
+    }
+    const mockStream = createMockMediaStream(tracks);
+    return Promise.resolve(mockStream);
+  });
 }
 
 type GetUserMediaContraints = {
