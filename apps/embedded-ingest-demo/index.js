@@ -52,6 +52,7 @@ document.addEventListener(
         ],
       }
     )
+
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, (e) => {
       const curStatus = statusNode.textContent
       const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1)
@@ -65,7 +66,7 @@ document.addEventListener(
         }
       }, 5000);
     })
-    webrtc.on(WebrtcStreamingEvents.MediaDeviceDisconnect, (e) => {
+    webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, (e) => {
       statusNode.textContent = `"${e.device.label}" has disconnected`
       statusNode.style.color = 'red'
     })

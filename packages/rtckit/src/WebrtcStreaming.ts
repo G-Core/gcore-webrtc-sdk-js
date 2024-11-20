@@ -37,9 +37,15 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
   mediaDevicesAutoSwitch?: boolean;
 }
 
+/**
+ * @public
+ * @remarks
+ * - MediaDeviceSwitch - selected input media device has been switched to another one after the former was disconnected
+ * - MediaDeviceSwitchOff - selected input media device has been disconnected and it was not possible to switch to another one
+ */
 export enum WebrtcStreamingEvents {
   MediaDeviceSwitch = "mdswitch",
-  MediaDeviceDisconnect = "mddisconnect",
+  MediaDeviceSwitchOff = "mdswitchoff",
 }
 
 export type MediaDevicePlugInfo = {
@@ -55,7 +61,7 @@ export type MediaDeviceUnplugInfo = {
 
 export type WebrtcStreamingEventTypes = {
   [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDevicePlugInfo],
-  [WebrtcStreamingEvents.MediaDeviceDisconnect]: [MediaDeviceUnplugInfo],
+  [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceUnplugInfo],
 }
 
 const DEFAULT_STREAM_PARAMS = Object.freeze({
@@ -304,7 +310,7 @@ export class WebrtcStreaming {
         } catch (e) {
           reportError(e);
           // TODO emit a notification event including the track kind and old device info
-          this.emitter.emit(WebrtcStreamingEvents.MediaDeviceDisconnect, {
+          this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSwitchOff, {
             kind: track.kind as MediaKind,
             device: prevDevice || NO_DEVICE,
           });

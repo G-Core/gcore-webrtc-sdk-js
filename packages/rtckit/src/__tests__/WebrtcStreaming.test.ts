@@ -239,7 +239,7 @@ describe("WebrtcStreaming", () => {
         onPlug = vi.fn();
         onUnplug = vi.fn();
         webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, onPlug);
-        webrtc.on(WebrtcStreamingEvents.MediaDeviceDisconnect, onUnplug);
+        webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, onUnplug);
 
         await webrtc.openSourceStream({
           audio: "mic2",
@@ -350,7 +350,7 @@ describe("WebrtcStreaming", () => {
           onPlug = vi.fn();
           onUnplug = vi.fn();
           webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, onPlug);
-          webrtc.on(WebrtcStreamingEvents.MediaDeviceDisconnect, onUnplug);
+          webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, onUnplug);
 
           await webrtc.openSourceStream({
             audio: "mic2",
