@@ -28,13 +28,27 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
 /**
  * @public
  *
- * WebRTC streaming configuration options. @see WhipClientOptions
+ * WebRTC streaming configuration options. See also {@link WhipClientOptions}
  *
  * @remarks
  *
- * - `hotReplace` - replace the outgoing stream immediately when the source stream changes TODO make the default option. Deprecated
+ * - `hotReplace` - replace the outgoing stream immediately when the source stream changes. Deprecated, this is the
+ *    default behavior since 0.76.0.
  *
- * - `mediaDevicesAutoSwitch` - enable automatic switch to another media device when the current one is disconnected
+ * - `mediaDevicesAutoSwitch` - enable automatic switching to another media device when the current one is disconnected.
+ *
+ *  When a media device disconnect is detected, the client will attempt to reaqcuire the stream with the same constraints but 
+ *  requesting any available device of that kind. If that succeeds, the client will replace the currently sent media tracks
+ *  with those from the new stream. It will then emit a {@link WebrtcStreamingEvents.MediaDeviceSwitch} event, containing the
+ *  information about the previous and new media devices. The application code should then reflect the changes in the UI,
+ *  probably prompting the user to check the list of the available devices and switch to the desired one.
+ *
+ *  If any of the steps fail, the client will emit a {@link WebrtcStreamingEvents.MediaDeviceSwitchOff} event. The event will
+ *  contain the information about the disconnected media device.
+ *
+ *  NOTE. In the case of a camera device, it can happen that the new device will have different resolutions supported.
+ *  One way to avoid this is to always specify one of the standard resolutions in the {@link WebrtcStreamParams | video constraints}.
+ *  See also {@link WebrtcStreaming.openSourceStream}, {@link MediaDevicesHelper.getAvailableVideoResolutions}
  */
 export type WebrtcStreamingOptions = WhipClientOptions & {
   hotReplace?: boolean; // TODO drop
@@ -44,28 +58,50 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
 /**
  * @public
  * @remarks
- * - `MediaDeviceSwitch` - selected input media device has been switched to another one after the former was disconnected
- * - `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one
+ * - `MediaDeviceSwitch` - selected input media device has been switched to another one after being disconnected.
+ *    Payload: {@link MediaDeviceSwitchInfo}
+ *
+ * - `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one.
+ *    Payload: {@link MediaDeviceSwitchOffInfo}
  */
 export enum WebrtcStreamingEvents {
   MediaDeviceSwitch = "mdswitch",
   MediaDeviceSwitchOff = "mdswitchoff",
 }
 
-export type MediaDevicePlugInfo = {
+/**
+ * @public
+ * @remarks
+ * 
+ * - `kind` - media input kind of the device
+ *
+ * - `prev` - previous media input device info
+ *
+ * - `device` - new media input device info
+ */
+export type MediaDeviceSwitchInfo = {
   kind: MediaKind;
   prev: MediaInputDeviceInfo;
   device: MediaInputDeviceInfo;
 }
 
-export type MediaDeviceUnplugInfo = {
+/**
+ * @public
+ * 
+ * @remarks
+ * 
+ * - `kind` - media input kind of the device
+ *
+ * - `device` - disconnected media input device info
+ */
+export type MediaDeviceSwitchOffInfo = {
   kind: MediaKind;
   device: MediaInputDeviceInfo;
 }
 
 export type WebrtcStreamingEventTypes = {
-  [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDevicePlugInfo],
-  [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceUnplugInfo],
+  [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDeviceSwitchInfo],
+  [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceSwitchOffInfo],
 }
 
 const DEFAULT_STREAM_PARAMS = Object.freeze({
@@ -128,6 +164,11 @@ export class WebrtcStreaming {
     this.emitter.on(event, handler);
   }
 
+  /**
+   * 
+   * @param params - If not specified, will use the default parameters, requesting both audio and video from any devices
+   * @returns 
+   */
   async openSourceStream(params?: WebrtcStreamParams): Promise<MediaStream> {
     trace(`${T} openSourceStream`, params);
     if (this.mediaStreamPromise) {

@@ -60,5 +60,7 @@ MediaDeviceSwitchOff
 
 ## Remarks
 
-- `MediaDeviceSwitch` - selected input media device has been switched to another one after the former was disconnected - `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one
+- `MediaDeviceSwitch` - selected input media device has been switched to another one after being disconnected. Payload: [MediaDeviceSwitchInfo](./rtckit.mediadeviceswitchinfo.md)
+
+- `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one. Payload: [MediaDeviceSwitchOffInfo](./rtckit.mediadeviceswitchoffinfo.md)
 

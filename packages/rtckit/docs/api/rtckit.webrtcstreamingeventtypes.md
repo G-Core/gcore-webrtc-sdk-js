@@ -8,9 +8,9 @@
 
 ```typescript
 export type WebrtcStreamingEventTypes = {
-    [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDevicePlugInfo];
-    [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceUnplugInfo];
+    [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDeviceSwitchInfo];
+    [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceSwitchOffInfo];
 };
 ```
-**References:** [WebrtcStreamingEvents.MediaDeviceSwitch](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDevicePlugInfo](./rtckit.mediadevicepluginfo.md)<!-- -->, [WebrtcStreamingEvents.MediaDeviceSwitchOff](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceUnplugInfo](./rtckit.mediadeviceunpluginfo.md)
+**References:** [WebrtcStreamingEvents.MediaDeviceSwitch](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSwitchInfo](./rtckit.mediadeviceswitchinfo.md)<!-- -->, [WebrtcStreamingEvents.MediaDeviceSwitchOff](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSwitchOffInfo](./rtckit.mediadeviceswitchoffinfo.md)
 

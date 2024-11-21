@@ -40,7 +40,7 @@ params
 
 </td><td>
 
-_(Optional)_
+_(Optional)_ If not specified, will use the default parameters, requesting both audio and video from any devices
 
 
 </td></tr>
@@ -48,4 +48,5 @@ _(Optional)_
 **Returns:**
 
 Promise&lt;MediaStream&gt;
+
 

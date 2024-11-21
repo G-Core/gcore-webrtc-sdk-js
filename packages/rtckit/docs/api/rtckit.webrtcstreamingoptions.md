@@ -4,7 +4,7 @@
 
 ## WebrtcStreamingOptions type
 
-WebRTC streaming configuration options.
+WebRTC streaming configuration options. See also [WhipClientOptions](./rtckit.whipclientoptions.md)
 
 **Signature:**
 
@@ -18,7 +18,13 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
 
 ## Remarks
 
-- `hotReplace` - replace the outgoing stream immediately when the source stream changes TODO make the default option. Deprecated
+- `hotReplace` - replace the outgoing stream immediately when the source stream changes. Deprecated, this is the default behavior as of version 0.76.0.
 
-- `mediaDevicesAutoSwitch` - enable automatic switch to another media device when the current one is disconnected
+- `mediaDevicesAutoSwitch` - enable automatic switching to another media device when the current one is disconnected.
+
+When a media device disconnect is detected, the client will attempt to reaqcuire the stream with the same constraints but requesting any available device of that kind. If that succeeds, the client will replace the currently sent media tracks with those from the new stream. It will then emit a [WebrtcStreamingEvents.MediaDeviceSwitch](./rtckit.webrtcstreamingevents.md) event, containing the information about the previous and new media devices. The application code should then reflect the changes in the UI, probably prompting the user to check the list of the available devices and switch to the desired one.
+
+If any of the steps fail, the client will emit a [WebrtcStreamingEvents.MediaDeviceSwitchOff](./rtckit.webrtcstreamingevents.md) event. The event will contain the information about the disconnected media device.
+
+NOTE. In the case of a camera device, it can happen that the new device will have different resolutions supported. One way to avoid this is to always specify one of the standard resolutions in the [video constraints](./rtckit.webrtcstreamparams.md)<!-- -->. See also [WebrtcStreaming.openSourceStream()](./rtckit.webrtcstreaming.opensourcestream.md)<!-- -->, [MediaDevicesHelper.getAvailableVideoResolutions()](./rtckit.mediadeviceshelper.getavailablevideoresolutions.md)
 

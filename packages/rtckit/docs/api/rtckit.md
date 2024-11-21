@@ -362,7 +362,7 @@ A codec match condition to filter the available codecs
 </td></tr>
 <tr><td>
 
-[MediaDevicePlugInfo](./rtckit.mediadevicepluginfo.md)
+[MediaDeviceSwitchInfo](./rtckit.mediadeviceswitchinfo.md)
 
 
 </td><td>
@@ -371,7 +371,7 @@ A codec match condition to filter the available codecs
 </td></tr>
 <tr><td>
 
-[MediaDeviceUnplugInfo](./rtckit.mediadeviceunpluginfo.md)
+[MediaDeviceSwitchOffInfo](./rtckit.mediadeviceswitchoffinfo.md)
 
 
 </td><td>
@@ -526,7 +526,7 @@ TODO rename
 
 </td><td>
 
-WebRTC streaming configuration options.
+WebRTC streaming configuration options. See also [WhipClientOptions](./rtckit.whipclientoptions.md)
 
 
 </td></tr>

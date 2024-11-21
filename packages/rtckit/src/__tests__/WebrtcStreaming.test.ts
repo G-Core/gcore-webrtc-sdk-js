@@ -1,7 +1,7 @@
 import { MockedFunction, MockedObject, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as FakeTimers from "@sinonjs/fake-timers";
 
-import { MediaDevicePlugInfo, MediaDeviceUnplugInfo, WebrtcStreaming, WebrtcStreamingEvents } from "../WebrtcStreaming.js";
+import { MediaDeviceSwitchInfo, MediaDeviceSwitchOffInfo, WebrtcStreaming, WebrtcStreamingEvents } from "../WebrtcStreaming.js";
 
 import { WhipClient } from "../whip/WhipClient.js";
 
@@ -177,8 +177,8 @@ describe("WebrtcStreaming", () => {
     let endedTrack: MockedMediaStreamTrack;
     let autoReplaceTracks: MockedMediaStreamTrack[];
     let autoAudioTrack: MockedMediaStreamTrack;
-    let onPlug: MockedFunction<(data: MediaDevicePlugInfo) => void>;
-    let onUnplug: MockedFunction<(data: MediaDeviceUnplugInfo) => void>;
+    let onPlug: MockedFunction<(data: MediaDeviceSwitchInfo) => void>;
+    let onUnplug: MockedFunction<(data: MediaDeviceSwitchOffInfo) => void>;
     afterEach(() => {
       clock.uninstall();
     });
