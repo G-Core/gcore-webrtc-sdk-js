@@ -90,7 +90,7 @@ export class MediaDevicesHelper {
     if (!this.hasVideoResolutions) {
       await this.updateVideoResolutions();
     }
-    return this.devices.filter((devInfo) => devInfo.kind === "videoinput");
+    return filterDevicesList(this.devices, "videoinput");
   }
 
   /**
@@ -100,7 +100,7 @@ export class MediaDevicesHelper {
     if (!this.devices.length) {
       await this.updateDevices();
     }
-    return this.devices.filter((devInfo) => devInfo.kind === "audioinput");
+    return filterDevicesList(this.devices, "audioinput");
   }
 
   /**
@@ -214,4 +214,16 @@ class NoCollisions<T> {
     }
     return this.promise;
   }
+}
+
+function filterDevicesList(devicesList: MediaDeviceInfo[], kind: "audioinput" | "videoinput"): MediaInputDeviceInfo[] {
+  const items = devicesList.filter((devInfo) => devInfo.kind === kind).map((devInfo) => ({
+    deviceId: devInfo.deviceId,
+    groupId: devInfo.groupId,
+    label: devInfo.label,
+  }));
+  if (items.length > 1) {
+    return items.filter(devInfo => devInfo.deviceId !== "default");
+  }
+  return items;
 }

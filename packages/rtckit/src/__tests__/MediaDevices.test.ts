@@ -13,6 +13,13 @@ describe("MediaDevices", () => {
       toJSON() { return null },
     },
     {
+      deviceId: "default",
+      kind: "audioinput",
+      label: 'AirPods',
+      groupId: "",
+      toJSON() { return null },
+    },
+    {
       deviceId: "camera01",
       kind: "videoinput",
       label: 'Built-in Camera',
@@ -55,6 +62,42 @@ describe("MediaDevices", () => {
         })
         it("should only call the API once", async () => {
           expect(globalThis.navigator.mediaDevices.enumerateDevices).toHaveBeenCalledTimes(1)
+        })
+      })
+    })
+  })
+  describe("getMicrophones", () => {
+    describe("default device", () => {
+      describe("basically", () => {
+        beforeEach(() => {
+          setupMockMediaDevices(devices)
+          setupGetUserMedia({ audio: true })
+          mediaDevices = new MediaDevicesHelper()
+        })
+        it("should remove the default device from the list", async () => {
+          const microphones = await mediaDevices.getMicrophones()
+          expect(microphones).toHaveLength(1)
+          expect(microphones).toEqual([{
+            deviceId: "mic01",
+            label: 'Built-in Microphone',
+            groupId: "",
+          }])
+        })
+      })
+      describe("when there is only one device", () => {
+        beforeEach(() => {
+          setupMockMediaDevices(devices.filter((d) => d.kind === "videoinput" || d.deviceId === "default"))
+          setupGetUserMedia({ audio: true })
+          mediaDevices = new MediaDevicesHelper()
+        })
+        it("should keep the only default item", async () => {
+          const microphones = await mediaDevices.getMicrophones()
+          expect(microphones).toHaveLength(1)
+          expect(microphones).toEqual([{
+            deviceId: "default",
+            label: 'AirPods',
+            groupId: "",
+          }])
         })
       })
     })
