@@ -5,23 +5,48 @@ import { MediaDeviceSwitchInfo, MediaDeviceSwitchOffInfo, WebrtcStreaming, Webrt
 
 import { WhipClient } from "../whip/WhipClient.js";
 
-import { Logger } from "../Logger.js";
+// import { Logger } from "../Logger.js";
 import { LogTracer } from "../trace/LogTracer.js";
 import { setTracer } from "../trace/index.js";
 import {
   MockedMediaStreamTrack,
   setupDefaultGetUserMedia,
-  setupDefaultMockUserMedia,
   setupGetUserMedia,
   setupMockMediaDevices
 } from "../testUtils.js";
 
-Logger.enable("*");
+// Logger.enable("*");
 setTracer(new LogTracer());
 
 vi.mock("../whip/WhipClient.js", () => ({
   WhipClient: vi.fn(),
 }));
+
+const MOCK_MEDIA_DEVICES = [{
+  kind: "audioinput" as MediaDeviceKind,
+  deviceId: "mic1",
+  label: "Built-in microphone (default)",
+  groupId: "",
+  toJSON() {
+    return {};
+  },
+}, {
+  kind: "audioinput" as MediaDeviceKind,
+  deviceId: "mic2",
+  label: "AirPods Pro",
+  groupId: "",
+  toJSON() {
+    return {};
+  },
+}, {
+  kind: "videoinput" as MediaDeviceKind,
+  deviceId: "camera1",
+  label: "FaceTime HD Camera (Built-in)",
+  groupId: "",
+  toJSON() {
+    return {};
+  },
+}];
 
 describe("WebrtcStreaming", () => {
   let webrtc: WebrtcStreaming;
@@ -30,7 +55,10 @@ describe("WebrtcStreaming", () => {
     let video: HTMLVideoElement;
     beforeEach(async () => {
       webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
-      setupDefaultMockUserMedia()
+      setupMockMediaDevices(MOCK_MEDIA_DEVICES);
+      setupGetUserMedia({ audio: true, video: true });
+      setupGetUserMedia({ audio: true, video: true });
+      setupVideoResolutionProbes();
       await webrtc.openSourceStream({
         audio: true,
         video: true,
@@ -123,30 +151,40 @@ describe("WebrtcStreaming", () => {
       ])("", (firstParams, secondParams, expectedConstraints) => {
         beforeEach(async () => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
-          setupDefaultMockUserMedia();
-          setupGetUserMedia({ audio: true, video: true })
+          setupMockMediaDevices(MOCK_MEDIA_DEVICES);
+          setupGetUserMedia({ audio: true, video: true }); // initial permissions request
+          setupVideoResolutionProbes();
+          setupGetUserMedia({ audio: !!firstParams.audio, video: firstParams.video });
           await webrtc.openSourceStream(firstParams);
+          setupGetUserMedia({
+            audio: !!(secondParams ?? firstParams.audio),
+            video: !!(secondParams.video ?? firstParams.video)
+          });
           await webrtc.openSourceStream(secondParams);
         });
         if (expectedConstraints) {
           it("should call getUserMedia second time with the new constraints", () => {
-            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(2);
-            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(2, expectedConstraints);
+            // permissions request + 5 video resolutions + 2 distinct openSourceStream calls
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(8);
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(8, expectedConstraints);
           });
         } else {
           it("should not call getUserMedia second time", () => {
-            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(7);
           });
         }
       });
     });
+    // TODO test that device probes are always done at first openSourceStream call
     describe("hot track replacement", () => {
       describe("when the audio track is toggled off", () => {
         let firstTimeTracks: MediaStreamTrack[];
         let mockWhipClient: MockedWhipClient;
         beforeEach(() => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
-          setupMockMediaDevices([]);
+          setupMockMediaDevices(MOCK_MEDIA_DEVICES);
+          setupGetUserMedia({ audio: true, video: true }); // initial permissions request
+          setupVideoResolutionProbes();
           firstTimeTracks = setupGetUserMedia({ audio: true, video: true });
           setupGetUserMedia({ audio: false, video: true });
           mockWhipClient = createMockWhipClient();
@@ -190,35 +228,13 @@ describe("WebrtcStreaming", () => {
         webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
           mediaDevicesAutoSwitch: true,
         });
-        setupMockMediaDevices([{
-          kind: "audioinput",
-          deviceId: "mic1",
-          label: "Built-in microphone (default)",
-          groupId: "",
-          toJSON() {
-            return {};
-          },
-        }, {
-          kind: "audioinput",
-          deviceId: "mic2",
-          label: "AirPods Pro",
-          groupId: "",
-          toJSON() {
-            return {};
-          },
-        }, {
-          kind: "videoinput",
-          deviceId: "camera1",
-          label: "FaceTime HD Camera (Built-in)",
-          groupId: "",
-          toJSON() {
-            return {};
-          },
-        }]);
+        setupMockMediaDevices(MOCK_MEDIA_DEVICES);
         // for the first time permissions request and video resolutions probing
         setupDefaultGetUserMedia({ audio: true, video: true });
 
-        setupGetUserMedia({ audio: true, video: true }); // MediaDevices.updateDevices
+        // MediaDevices.updateDevices
+        setupGetUserMedia({ audio: true, video: true });
+        setupVideoResolutionProbes();
         await webrtc.mediaDevices.getCameras(); // to properly arrange calls to getUserMedia
 
         firstTimeTracks = setupGetUserMedia({ audio: true, video: true });
@@ -405,4 +421,11 @@ function createMockWhipClient(): MockedWhipClient {
     replaceTrack: vi.fn(),
     start: vi.fn(),
   } as MockedWhipClient;
+}
+
+function setupVideoResolutionProbes() {
+  // 5 standard video resolutions 240..1080
+  for (let i = 0; i < 5; i++) {
+    setupGetUserMedia({ video: true})
+  }
 }

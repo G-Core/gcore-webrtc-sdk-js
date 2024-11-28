@@ -29,11 +29,11 @@ document.addEventListener(
     const webrtc = new WebrtcStreaming(
       WHIP_ENDPOINT,
       {
-        // canTrickleIce: true,
+        canTrickleIce: true,
+        debug: true,
         icePreferTcp: true,
-        hotReplace: true,
         mediaDevicesAutoSwitch: true,
-        // iceTransportPolicy: 'relay',
+        iceTransportPolicy: 'relay',
         plugins: [
           new StreamMeta(),
           new VideoResolutionChangeDetector(({ degraded, height, srcHeight }) => {
@@ -53,13 +53,25 @@ document.addEventListener(
       }
     )
 
+    webrtc.on(WebrtcStreamingEvents.MediaDeviceSelect, (e) => {
+      switch (e.kind) {
+        case "audio":
+          micSelect.value = e.device.deviceId
+          break
+        case "video":
+          cameraSelect.value = e.device.deviceId
+          updateResolutionsList(e.device.deviceId)
+          break
+      }
+    });
+
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, (e) => {
       const curStatus = statusNode.textContent
       const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1)
-      const newStatus = `${kind} stream has been switched from "${e.prev.label}" to "${e.device.label}"`
+      const newStatus = `${kind} stream has been switched from "${e.prev.label}"(${e.prev.deviceId}) to "${e.device.label}"(${e.device.deviceId})`
       statusNode.textContent = newStatus
+      // TODO check if needed
       runPreview()
-      micSelect.value = e.device.deviceId
       setTimeout(() => {
         if (statusNode.textContent === newStatus) {
           statusNode.textContent = curStatus
@@ -67,9 +79,10 @@ document.addEventListener(
       }, 5000);
     })
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, (e) => {
-      statusNode.textContent = `"${e.device.label}" has disconnected`
+      statusNode.textContent = `"${e.device.label}"(${e.device.deviceId}) has disconnected`
       statusNode.style.color = 'red'
     })
+
     const start =
       document.getElementById('start')
     const stop =
@@ -160,7 +173,7 @@ document.addEventListener(
     function setEffectiveVideoResolution({ width, height }) {
       for (const item of webrtc.mediaDevices.getAvailableVideoResolutions(cameraSelect.value)) {
         if (item.height === height && item.width === width) {
-          videoresSelect.value = item.height
+          videoresSelect.value = String(item.height)
           return
         }
       }
@@ -219,19 +232,24 @@ document.addEventListener(
     function updateResolutionsList(deviceId) {
       const items = webrtc.mediaDevices
         .getAvailableVideoResolutions(deviceId);
+      const curValue = String(videoresSelect.value)
       videoresSelect.innerHTML = ''
       const defaultOption = document.createElement('option')
       defaultOption.value = ''
       defaultOption.textContent = 'Default'
       defaultOption.disabled = true
       videoresSelect.appendChild(defaultOption)
+      let hasValue = false
       for (const item of items) {
         const option =
           document.createElement(
             'option',
           )
-        option.value =
-          item.height
+        const val = String(item.height)
+        option.value = val
+        if (val === curValue) {
+          hasValue = true
+        }
         option.textContent =
           item.width + '×' + item.height
         videoresSelect.appendChild(
@@ -240,6 +258,9 @@ document.addEventListener(
       }
       videoresSelect.hidden = false
       videoresSelect.disabled = false
+      if (hasValue) {
+        videoresSelect.value = curValue
+      }
     }
 
     async function runPreview() {
@@ -260,7 +281,6 @@ document.addEventListener(
     function startStreaming() {
       start.hidden = true
       cameraSelect.disabled = true
-      // micOn.disabled = true
       const resolution = Number(videoresSelect.value)
       webrtc
         .openSourceStream({

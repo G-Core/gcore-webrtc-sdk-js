@@ -13,6 +13,7 @@ const props = defineProps<{
   icePreferTcp?: boolean
   iceTransportPolicy?: RTCIceTransportPolicy
   video: boolean
+  resolution?: number
   // TODO video constraints, audio constraints
 }>()
 

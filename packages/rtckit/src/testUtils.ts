@@ -49,7 +49,7 @@ export function createMockMediaStreamTrack(
     clone: vi.fn().mockImplementation(() => createMockMediaStreamTrack(kind)),
     getCapabilities: vi.fn(),
     getConstraints: vi.fn(),
-    getSettings: vi.fn(),
+    getSettings: vi.fn().mockReturnValue({ deviceId: "default"}),
     removeEventListener: vi.fn(),
     stop: vi.fn().mockImplementation(function () {
       readyState = "ended";

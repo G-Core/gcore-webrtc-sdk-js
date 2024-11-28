@@ -191,7 +191,9 @@ export class WhipClient {
         return true;
       }
     }
-    trace(`${T} replaceTrack: no transceiver found for ${track.kind}`);
+    trace(`${T} replaceTrack: no transceiver found`, {
+      kind: track.kind
+    });
     return false;
   }
 
@@ -339,9 +341,9 @@ export class WhipClient {
     );
 
     if (audioTrack) {
-      trace(`${T} audio track is found`, {id: audioTrack.id});
+      trace(`${T} runStart audio track is found`);
     } else {
-      trace(`${T} audio track not found`);
+      trace(`${T} runStart audio track not found`);
       await this.insertSilentAudioTrack(pc);
     }
 
@@ -537,12 +539,16 @@ export class WhipClient {
     for (const candidate of candidates) {
       const mid = candidate.sdpMid;
       if (mid === null) {
-        trace(`${T} candidate doesn't have mid set ${candidate.candidate}`);
+        trace(`${T} candidate has no mid set`, {
+          candidate: this.options?.debug ? candidate.candidate : maskIceCandidate(candidate),
+        });
         continue;
       }
       const transceiver = transceivers.find((t) => t.mid === mid);
       if (!transceiver) {
-        trace(`${T} no transceiver found for mid=${mid}`);
+        trace(`${T} no transceiver found for mid`, {
+          mid,
+        });
         continue;
       }
       let media = medias[mid];
@@ -648,7 +654,10 @@ export class WhipClient {
       abort.signal,
     )
       .catch((e) => {
-        trace(`${T} fetch ${method} ${url} failed ${e}`);
+        trace(`${T} WHIP ${method} failed`, {
+          error: String(e),
+          url: String(url),
+        });
         return Promise.reject(e);
       })
       .finally(() => {
@@ -765,8 +774,9 @@ export class WhipClient {
       const resp = await this.fetch(new URL(this.endpoint), "OPTIONS");
       this.getIceServers(resp);
     } catch (e) {
-      trace(`${T} runPreflight failed ${e}`, {
+      trace(`${T} runPreflight failed`, {
         endpoint: this.endpoint,
+        error: String(e),
       });
     }
   }
@@ -835,7 +845,7 @@ export class WhipClient {
   }
 
   private async insertSilentAudioTrack(pc: RTCPeerConnection, sender?: RTCRtpSender) {
-    trace(`${T} insertSilentAudioTrack`, { silentAudioTrack: !!this.silentAudioTrack });
+    trace(`${T} insertSilentAudioTrack`, { exists: !!this.silentAudioTrack });
     if (!this.silentAudioTrack) {
       const audioContext = this.audioContext || new AudioContext();
       this.csrcNode = audioContext.createConstantSource();
@@ -935,4 +945,8 @@ function isTcpIceServer(urls: string) {
     return true;
   }
   return /^turns?:/.test(urls) && urls.includes("transport=tcp");
+}
+
+function maskIceCandidate(c: RTCIceCandidate): string {
+  return `${c.foundation} ${c.component} ${c.protocol} ${c.priority} *** * typ ${c.type} ...`;
 }

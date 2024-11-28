@@ -1,3 +1,5 @@
+import { trace } from "./trace";
+
 /**
  * @public
  */
@@ -37,6 +39,8 @@ export const STD_VIDEORES: Record<
 }
 
 const MAX_RESOLUTION = STD_VIDEORES['1080']
+
+const T = "MediaDevicesHelper";
 
 /**
  * Information about a media input device.
@@ -84,6 +88,7 @@ export class MediaDevicesHelper {
    * Get a list of the camera devices available
    */
   async getCameras(): Promise<MediaInputDeviceInfo[]> {
+    trace(`${T} getCameras`, { devices: this.devices.length });
     if (!this.devices.length) {
       await this.updateDevices();
     }
@@ -97,6 +102,8 @@ export class MediaDevicesHelper {
    * Get a list of the microphone devices available
    */
   async getMicrophones(): Promise<MediaInputDeviceInfo[]> {
+    trace(`${T} getMicrophones`, { devices: this.devices.length });
+
     if (!this.devices.length) {
       await this.updateDevices();
     }
@@ -154,8 +161,11 @@ export class MediaDevicesHelper {
   }
 
   private async updateDevices() {
+    trace(`${T} updateDevices`, { promise: !!this.promiseUpdateDevices });
+
     if (!this.promiseUpdateDevices) {
       this.promiseUpdateDevices = navigator.mediaDevices.getUserMedia({
+        // TODO use audio: true, video: true
         video: {
           width: MAX_RESOLUTION.width,
           height: MAX_RESOLUTION.height,

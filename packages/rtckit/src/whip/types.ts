@@ -84,6 +84,7 @@ export type WhipClientOptions = {
   auth?: string;
   canRestartIce?: boolean;
   canTrickleIce?: boolean;
+  debug?: boolean; // TODO support
   encodingParameters?: RTCRtpEncodingParameters[];
   icePreferTcp?: boolean;
   iceServers?: RTCIceServer[];
