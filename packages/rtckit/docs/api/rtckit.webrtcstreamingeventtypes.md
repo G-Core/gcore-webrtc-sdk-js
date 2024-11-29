@@ -4,13 +4,15 @@
 
 ## WebrtcStreamingEventTypes type
 
+
 **Signature:**
 
 ```typescript
 export type WebrtcStreamingEventTypes = {
+    [WebrtcStreamingEvents.MediaDeviceSelect]: [MediaDeviceSelectInfo];
     [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDeviceSwitchInfo];
     [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceSwitchOffInfo];
 };
 ```
-**References:** [WebrtcStreamingEvents.MediaDeviceSwitch](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSwitchInfo](./rtckit.mediadeviceswitchinfo.md)<!-- -->, [WebrtcStreamingEvents.MediaDeviceSwitchOff](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSwitchOffInfo](./rtckit.mediadeviceswitchoffinfo.md)
+**References:** [WebrtcStreamingEvents.MediaDeviceSelect](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSelectInfo](./rtckit.mediadeviceselectinfo.md)<!-- -->, [WebrtcStreamingEvents.MediaDeviceSwitch](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSwitchInfo](./rtckit.mediadeviceswitchinfo.md)<!-- -->, [WebrtcStreamingEvents.MediaDeviceSwitchOff](./rtckit.webrtcstreamingevents.md)<!-- -->, [MediaDeviceSwitchOffInfo](./rtckit.mediadeviceswitchoffinfo.md)
 

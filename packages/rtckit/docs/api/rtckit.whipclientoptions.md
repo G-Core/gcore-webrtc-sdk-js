@@ -13,6 +13,7 @@ export type WhipClientOptions = {
     auth?: string;
     canRestartIce?: boolean;
     canTrickleIce?: boolean;
+    debug?: boolean;
     encodingParameters?: RTCRtpEncodingParameters[];
     icePreferTcp?: boolean;
     iceServers?: RTCIceServer[];

@@ -107,6 +107,17 @@ Network error during a WHIP/WHEP API request. Reasons: - no internet connection 
 </td></tr>
 <tr><td>
 
+[SentryTracer](./rtckit.sentrytracer.md)
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
 [ServerRequestError](./rtckit.serverrequesterror.md)
 
 
@@ -362,6 +373,16 @@ A codec match condition to filter the available codecs
 </td></tr>
 <tr><td>
 
+[MediaDeviceSelectInfo](./rtckit.mediadeviceselectinfo.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
 [MediaDeviceSwitchInfo](./rtckit.mediadeviceswitchinfo.md)
 
 
@@ -516,6 +537,7 @@ TODO rename
 
 
 </td><td>
+
 
 
 </td></tr>

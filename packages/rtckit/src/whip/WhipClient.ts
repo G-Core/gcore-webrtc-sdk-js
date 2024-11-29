@@ -200,7 +200,7 @@ export class WhipClient {
   /**
    * Remove the track if it is associated with a transceiver.
    * If the track is an audio track, it will be replaced with a silent one.
-   * @param {MediaStreamTrack} track - the track to remove
+   * @param track - the track to remove
    * @alpha
    */
   async removeTrack(track: MediaStreamTrack) {

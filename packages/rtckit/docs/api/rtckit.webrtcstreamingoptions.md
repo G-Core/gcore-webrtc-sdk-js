@@ -10,15 +10,12 @@ WebRTC streaming configuration options. See also [WhipClientOptions](./rtckit.wh
 
 ```typescript
 export type WebrtcStreamingOptions = WhipClientOptions & {
-    hotReplace?: boolean;
     mediaDevicesAutoSwitch?: boolean;
 };
 ```
 **References:** [WhipClientOptions](./rtckit.whipclientoptions.md)
 
 ## Remarks
-
-- `hotReplace` - replace the outgoing stream immediately when the source stream changes. Deprecated, this is the default behavior as of version 0.76.0.
 
 - `mediaDevicesAutoSwitch` - enable automatic switching to another media device when the current one is disconnected.
 

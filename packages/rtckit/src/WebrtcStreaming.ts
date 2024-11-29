@@ -61,6 +61,8 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
  *
  * - `MediaDeviceSwitchOff` - selected input media device has been disconnected and it was not possible to switch to another one.
  *    Payload: {@link MediaDeviceSwitchOffInfo}
+ *
+ * - `MediaDeviceSelect` - a new media input device has been selected {@link MediaDeviceSelectInfo}
  */
 export enum WebrtcStreamingEvents {
   MediaDeviceSelect = "mdselect",
@@ -98,11 +100,17 @@ export type MediaDeviceSwitchOffInfo = {
   device: MediaInputDeviceInfo;
 }
 
+/**
+ * @public
+ */
 export type MediaDeviceSelectInfo = {
   kind: MediaKind;
   device: MediaInputDeviceInfo;
 }
 
+/**
+ * @public
+ */
 export type WebrtcStreamingEventTypes = {
   [WebrtcStreamingEvents.MediaDeviceSelect]: [MediaDeviceSelectInfo],
   [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDeviceSwitchInfo],
