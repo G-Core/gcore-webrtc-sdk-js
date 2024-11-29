@@ -1,4 +1,4 @@
-import { trace } from "./trace";
+import { trace } from "./trace/index.js";
 
 /**
  * @public
