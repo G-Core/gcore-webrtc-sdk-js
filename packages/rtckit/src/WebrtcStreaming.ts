@@ -365,7 +365,7 @@ export class WebrtcStreaming {
       track.addEventListener("ended", async () => {
         // Safari: previous audio track is forcefully stopped when another one is requested, so we silence this event
         trace(`${T} media device auto reconnect`, { kind: track.kind, openingStream: true });
-        if (this.openingStream && track.kind === "audio") {
+        if (this.openingStream) {
           return;
         }
         let prevDevice: MediaInputDeviceInfo | undefined;
