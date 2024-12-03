@@ -1,4 +1,4 @@
-import { trace } from "./trace/index.js";
+import { reportError, trace } from "./trace/index.js";
 
 /**
  * @public
@@ -63,6 +63,7 @@ export class MediaDevicesHelper {
   private devices: MediaDeviceInfo[] = [];
 
   private hasVideoResolutions = false;
+
   private videoResolutions: Record<string, VideoResolution[]> = {};
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
@@ -125,6 +126,7 @@ export class MediaDevicesHelper {
   static async probeAvailableVideoResolutions(deviceId: string): Promise<VideoResolution[]> {
     const result: VideoResolution[] = [];
     for (const res of Object.values(STD_VIDEORES)) { // entries are sorted in ascending order of keys
+      // TODO use only width or height constraints in Firefox
       await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: {
@@ -165,12 +167,21 @@ export class MediaDevicesHelper {
 
     if (!this.promiseUpdateDevices) {
       this.promiseUpdateDevices = navigator.mediaDevices.getUserMedia({
-        // TODO use audio: true, video: true
-        video: {
-          width: MAX_RESOLUTION.width,
-          height: MAX_RESOLUTION.height,
-        },
-      }).then(s => {
+        audio: true,
+        // video: {
+        //   width: MAX_RESOLUTION.width,
+        //   height: MAX_RESOLUTION.height,
+        // },
+        video: true,
+      }).catch(e => {
+        reportError(e);
+        if (e.name === "OverconstrainedError") {
+          const looseConstraint =  e.constraint === "audio" ? { video: true } : { audio: true };
+          return navigator.mediaDevices.getUserMedia(looseConstraint)
+        }
+        return Promise.reject(e);
+      })
+      .then(s => {
         return this.enumerateDevices
           .run()
           .then((devices) => devices.filter(({ deviceId }) => !!deviceId))

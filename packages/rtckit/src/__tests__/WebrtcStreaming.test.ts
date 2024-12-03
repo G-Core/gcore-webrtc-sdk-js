@@ -12,7 +12,8 @@ import {
   MockedMediaStreamTrack,
   setupDefaultGetUserMedia,
   setupGetUserMedia,
-  setupMockMediaDevices
+  setupMockMediaDevices,
+  setupVideoResolutionProbes,
 } from "../testUtils.js";
 
 // Logger.enable("*");
@@ -423,9 +424,3 @@ function createMockWhipClient(): MockedWhipClient {
   } as MockedWhipClient;
 }
 
-function setupVideoResolutionProbes() {
-  // 5 standard video resolutions 240..1080
-  for (let i = 0; i < 5; i++) {
-    setupGetUserMedia({ video: true})
-  }
-}

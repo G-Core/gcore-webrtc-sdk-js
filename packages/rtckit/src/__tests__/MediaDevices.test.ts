@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevices";
-import { createMockMediaStream, createMockMediaStreamTrack, setupGetUserMedia, setupMockMediaDevices } from "../testUtils";
+import {
+  createMockMediaStream,
+  createMockMediaStreamTrack,
+  setupDefaultGetUserMedia,
+  setupGetUserMedia,
+  setupMockMediaDevices,
+  setupVideoResolutionProbes,
+} from "../testUtils";
 
 describe("MediaDevices", () => {
   const devices: MediaDeviceInfo[] = [
@@ -39,18 +46,18 @@ describe("MediaDevices", () => {
     })
     describe("concurrent calls to devices list", () => {
       describe.each([
-      [
-        "video video",
-      ],
-      [
-        "audio video"
-      ],
-      [
-        "audio audio"
-      ],
-      [
-        "video audio"
-      ]
+        [
+          "video video",
+        ],
+        [
+          "audio video"
+        ],
+        [
+          "audio audio"
+        ],
+        [
+          "video audio"
+        ]
       ])("%s", (seq: string) => {
         beforeEach(async () => {
           const ps: Promise<MediaInputDeviceInfo[]>[] = []
@@ -134,4 +141,49 @@ describe("MediaDevices", () => {
       ])
     })
   })
+  describe("permissions to enumerate the devices", () => {
+    // TODO
+    describe.each([
+      [
+        "video",
+        [
+          { kind: "audioinput" as MediaDeviceKind, deviceId: "mic1", groupId: "", label: "Built-in mic", toJSON: () => null }
+        ],
+      ],
+      [
+        "audio",
+        [{ kind: "videoinput" as MediaDeviceKind, deviceId: "camera1", groupId: "", label: "Face Time camera", toJSON: () => null }],
+      ],
+    ])("%s", (constraint, devices) => {
+      beforeEach(() => {
+        mediaDevices = new MediaDevicesHelper()
+
+        setupMockMediaDevices(devices);
+        setupNoGetUserMedia(constraint);
+        setupDefaultGetUserMedia({ audio: true, video: true });
+      });
+      it("should retry with looser contraints", async () => {
+        if (constraint === "audio") {
+          await mediaDevices.getCameras();
+        } else {
+          await mediaDevices.getMicrophones();
+        }
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(1, {
+          audio: true,
+          video: true,
+        });
+        const looseConstraint = constraint === "audio" ? { video: true } : { audio: true };
+        expect(navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(2, looseConstraint);
+      })
+    })
+  })
 })
+
+export function setupNoGetUserMedia(reason: string) {
+  const err = new Error("Constraints could be not satisfied.");
+  err.name = "OverconstrainedError";
+  // @ts-ignore
+  err.constraint = reason;
+  // @ts-ignore
+  window.navigator.mediaDevices.getUserMedia.mockRejectedValueOnce(err);
+}
