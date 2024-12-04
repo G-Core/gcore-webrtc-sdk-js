@@ -1,7 +1,7 @@
-import type { WhipClientPlugin } from "src/whip/types.js";
 import { WhipClientPluginBase } from "./plugins.js";
 import { ServerRequestError } from "../errors.js";
 import { IngesterErrorDetail } from "../helpers/fetch.js";
+import type { WhipClientPlugin } from "../whip/types.js";
 
 /**
  * The reason of the ingester request failure

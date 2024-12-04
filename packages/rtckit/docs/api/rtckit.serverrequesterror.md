@@ -82,7 +82,7 @@ Description
 
 </td><td>
 
-unknown
+unknown \| undefined
 
 
 </td><td>

@@ -1,5 +1,8 @@
-import { WhipClientPlugin } from "src/whip/types.js";
+import { WhipClientPlugin } from "../whip/types.js";
 
+/**
+ * @public
+ */
 export class WhipClientPluginBase implements WhipClientPlugin {
   public close() { }
   public init(_: RTCPeerConnection) { }

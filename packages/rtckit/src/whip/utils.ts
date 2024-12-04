@@ -1,7 +1,7 @@
 import sdpTransform from "sdp-transform";
 import type { MediaAttributes } from "sdp-transform";
 
-import { CodecMatch } from "./types";
+import { CodecMatch } from "./types.js";
 
 type RtpPayloadDesc = MediaAttributes['rtp'][number];
 type RtpPayloadFormatDesc = MediaAttributes['fmtp'][number];

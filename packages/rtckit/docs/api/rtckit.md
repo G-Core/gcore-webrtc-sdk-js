@@ -41,6 +41,17 @@ Some erroneous sequence of operations, e.g.: - attempt to double-produce/consume
 </td></tr>
 <tr><td>
 
+[IngesterErrorHandler](./rtckit.ingestererrorhandler.md)
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
 [Logger](./rtckit.logger.md)
 
 
@@ -206,6 +217,16 @@ WHIP client for streaming with WebRTC from a browser
 </td></tr>
 <tr><td>
 
+[WhipClientPluginBase](./rtckit.whipclientpluginbase.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
 [WontRestartError](./rtckit.wontrestarterror.md)
 
 
@@ -231,6 +252,17 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[IngesterErrorReason](./rtckit.ingestererrorreason.md)
+
+
+</td><td>
+
+**_(BETA)_** The reason of the ingester request failure
+
+
+</td></tr>
+<tr><td>
 
 [WebrtcStreamingEvents](./rtckit.webrtcstreamingevents.md)
 

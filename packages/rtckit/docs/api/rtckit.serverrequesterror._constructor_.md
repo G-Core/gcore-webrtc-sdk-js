@@ -9,7 +9,7 @@ Constructs a new instance of the `ServerRequestError` class
 **Signature:**
 
 ```typescript
-constructor(status: number, detail?: unknown);
+constructor(status: number, detail?: unknown | undefined);
 ```
 
 ## Parameters
@@ -51,7 +51,7 @@ detail
 
 </td><td>
 
-unknown
+unknown \| undefined
 
 
 </td><td>

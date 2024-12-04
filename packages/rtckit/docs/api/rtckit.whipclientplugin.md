@@ -57,4 +57,13 @@ Is called on any WHIP request
 
 
 </td></tr>
+<tr><td>
+
+[requestError(url, options, error)](./rtckit.whipclientplugin.requesterror.md)
+
+
+</td><td>
+
+
+</td></tr>
 </tbody></table>

@@ -12,8 +12,10 @@ Adds stream's video track meta information (frame width and height) to a WHIP re
 **Signature:**
 
 ```typescript
-export declare class StreamMeta implements WhipClientPlugin 
+export declare class StreamMeta extends WhipClientPluginBase implements WhipClientPlugin 
 ```
+**Extends:** [WhipClientPluginBase](./rtckit.whipclientpluginbase.md)
+
 **Implements:** [WhipClientPlugin](./rtckit.whipclientplugin.md)
 
 ## Methods
@@ -35,20 +37,6 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
-
-[close()](./rtckit.streammeta.close.md)
-
-
-</td><td>
-
-
-</td><td>
-
-**_(BETA)_**
-
-
-</td></tr>
-<tr><td>
 
 [init(pc)](./rtckit.streammeta.init.md)
 
