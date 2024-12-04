@@ -102,8 +102,8 @@ export function createMockMediaStream(tracks: MediaStreamTrack[]) {
     addTrack: (track: MediaStreamTrack) => privateTracks.push(track),
     clone: vi.fn().mockImplementation(() => createMockMediaStream(privateTracks)),
     dispatchEvent: vi.fn(),
-    getVideoTracks: () => privateTracks.filter((t) => t.kind === "video"),
     getAudioTracks: () => privateTracks.filter((t) => t.kind === "audio"),
+    getVideoTracks: () => privateTracks.filter((t) => t.kind === "video"),
     getTrackById(id: string) {
       return privateTracks.find((t) => t.id === id) || null;
     },

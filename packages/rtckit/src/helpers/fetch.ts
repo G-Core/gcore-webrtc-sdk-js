@@ -5,6 +5,14 @@ const MIN_RETRY_DELAY = 500;
 const MAX_RETRY_DELAY = 5000;
 const START_RETRY_DELAY = 1000;
 
+type BackendErrorDetail = unknown;
+
+export type IngesterErrorDetail = {
+  reasonCode: number | null;
+};
+
+type ResponseErrorParser = (resp: Response) => Promise<BackendErrorDetail>;
+
 /**
  * @internal
  * @param f  Fetch operation
@@ -17,6 +25,7 @@ export function withRetries(
   delay = START_RETRY_DELAY,
   delayMax = MAX_RETRY_DELAY,
   abortSignal?: AbortSignal,
+  errorParser: ResponseErrorParser = getResponseErrorDetail,
 ): Promise<Response> {
   return new Promise<void>((resolve) => {
     if (abortSignal) {
@@ -25,7 +34,7 @@ export function withRetries(
     resolve();
   })
     .then(f)
-    .then((resp: Response) => handleFetchResponse(resp))
+    .then((resp: Response) => handleFetchResponse(resp, errorParser))
     .catch((e) => {
       reportError(e);
       if (!canRetry(e)) {
@@ -60,10 +69,13 @@ function getResponseErrorDetail(resp: Response): Promise<unknown> {
  * @param resp
  * @returns
  */
-export async function handleFetchResponse(resp: Response): Promise<Response> {
+export async function handleFetchResponse(
+  resp: Response,
+  errorParser: ResponseErrorParser = () => Promise.resolve()
+): Promise<Response> {
   if (!resp.ok) {
-    return getResponseErrorDetail(resp).then(
-      (detail: unknown) => Promise.reject(new ServerRequestError(resp.status, detail)),
+    return errorParser(resp).then(
+      (detail: BackendErrorDetail) => Promise.reject(new ServerRequestError(resp.status, detail)),
       () => Promise.reject(new ServerRequestError(resp.status)),
     );
   }
@@ -128,4 +140,18 @@ function canRetry(e: Error): boolean {
     return [500, 502, 503, 504].includes(e.status);
   }
   return false;
+}
+
+function parseWhipIngesterErrorReason(reason: string | null): number | null {
+  if (!reason) {
+    return null;
+  }
+  const code = parseInt(reason, 10);
+  return isNaN(code) ? null : code;
+}
+
+export function whipIngesterErrorParser(resp: Response): Promise<IngesterErrorDetail> {
+  return Promise.resolve({
+    reasonCode: parseWhipIngesterErrorReason(resp.headers.get("x-reason-code"))
+  });
 }

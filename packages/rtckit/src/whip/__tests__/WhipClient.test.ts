@@ -5,7 +5,7 @@ import { createMockAudioContext, MockAudioContext } from "../../audio/testUtils.
 import { WhipClientPlugin } from "../types.js";
 import FakeTimers from "@sinonjs/fake-timers";
 
-import { LogTracer, Logger, setTracer } from "../../index.js";
+import { LogTracer, Logger, ServerRequestError, setTracer } from "../../index.js";
 
 Logger.enable("*");
 
@@ -81,12 +81,13 @@ describe("WhipClient", () => {
         close: vi.fn(),
         init: vi.fn(),
         request: vi.fn(),
+        requestError: vi.fn(),
       };
       pc = new MockRTCPeerConnection();
       // @ts-ignore
       globalThis.RTCPeerConnection = vi.fn().mockReturnValue(pc);
       client = new WhipClient("https://example.com/whip", {
-        canTrickleIce: true, // don't wait for ICE candidates before starting
+        canTrickleIce: true, // don't wait for ICE candidates before starting, skip preflight
         plugins: [plugin],
       });
     })
@@ -123,6 +124,34 @@ describe("WhipClient", () => {
           "X-Baz": "qux",
         }),
       }));
+    });
+    it("should call the plugins when a request fails", async () => {
+      audioTrack = createMockMediaStreamTrack("audio");
+      videoTrack = createMockMediaStreamTrack("video");
+      const stream = createMockMediaStream([audioTrack, videoTrack]);
+
+      // @ts-ignore
+      globalThis.fetch.mockReset().mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        headers: new Headers(),
+      })
+
+      try {
+        await client.start(stream);
+        expect.fail("should have thrown an error");
+      } catch (e) {
+        expect(e).toBeInstanceOf(ServerRequestError);
+      }
+      expect(plugin.requestError).toHaveBeenCalledWith(
+        expect.toMatchURL(/^https:\/\/example.com\/whip/),
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.any(Object),
+          body: expect.any(String),
+        }),
+        expect.any(ServerRequestError),
+      );
     });
   })
   describe("prefer TCP ICE candidates", () => {

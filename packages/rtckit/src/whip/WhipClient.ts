@@ -12,7 +12,7 @@ import {
   MalformedResponseError,
 } from "../errors.js";
 import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
-import { withRetries } from "../helpers/fetch.js";
+import { whipIngesterErrorParser, withRetries } from "../helpers/fetch.js";
 import { MediaKind } from "src/index.js";
 
 const T = "WhipClient";
@@ -275,13 +275,14 @@ export class WhipClient {
     this.clearIceTrickleTimeout();
 
     try {
-      await this.patch();
+      await this.updateResource();
     } catch (e) {
       if (e instanceof SessionClosedError) {
         await this.fullRestart();
         return;
       }
       if (e instanceof ServerRequestError && e.status === 405) {
+        // Either Trickle ICE or ICE restart is not supported
         await this.fullRestart();
         return;
       }
@@ -319,13 +320,18 @@ export class WhipClient {
     let audioTrack: MediaStreamTrack | undefined;
     stream.getTracks().forEach(
       (track) => {
-        const kind: MediaKind = track.kind as MediaKind; // TODO assert MediaKind value
-        if (track.kind === "video") {
-          if (!track.contentHint && this.options?.videoPreserveInitialResolution) {
-            track.contentHint = "detail";
-          }
-        } else {
-          audioTrack = track;
+        switch (track.kind) {
+          case "video":
+            if (!track.contentHint && this.options?.videoPreserveInitialResolution) {
+              track.contentHint = "detail";
+            }
+            break;
+          case "audio":
+            audioTrack = track;
+            break;
+          default:
+            trace(`${T} runStart: unknown track kind`, { kind: track.kind });
+            return;
         }
         if (this.options?.encodingParameters) {
           const t = pc.addTransceiver(track, {
@@ -333,9 +339,9 @@ export class WhipClient {
             sendEncodings: this.options?.encodingParameters,
             streams: [stream],
           });
-          this.senders[kind] = t.sender;
+          this.senders[track.kind] = t.sender;
         } else {
-          this.senders[kind] = pc.addTrack(track, stream)
+          this.senders[track.kind] = pc.addTrack(track, stream)
         }
       }
     );
@@ -479,7 +485,6 @@ export class WhipClient {
       config.iceTransportPolicy = this.options?.iceTransportPolicy || "all";
       pc.setConfiguration(config);
     }
-    // TODO filter out the remote ICE candidates if options.icePreferTcp is set
     await pc.setRemoteDescription({ type: "answer", sdp: mungedAnswer });
   }
 
@@ -490,15 +495,14 @@ export class WhipClient {
     }
   }
 
-  // TODO rename
-  private async patch() {
+  private async updateResource() {
     if (!this.pc) {
-      trace(`${T} patch: no peer connection`);
+      trace(`${T} updateResource: no peer connection`);
       return;
     }
 
     if (this.closed) {
-      trace(`${T} patch: client is closed`);
+      trace(`${T} updateResource: client is closed`);
       return;
     }
 
@@ -539,14 +543,14 @@ export class WhipClient {
     for (const candidate of candidates) {
       const mid = candidate.sdpMid;
       if (mid === null) {
-        trace(`${T} candidate has no mid set`, {
+        trace(`${T} updateResource: candidate has no mid set`, {
           candidate: this.options?.debug ? candidate.candidate : maskIceCandidate(candidate),
         });
         continue;
       }
       const transceiver = transceivers.find((t) => t.mid === mid);
       if (!transceiver) {
-        trace(`${T} no transceiver found for mid`, {
+        trace(`${T} updateResource: no transceiver found for mid`, {
           mid,
         });
         continue;
@@ -619,7 +623,6 @@ export class WhipClient {
       reportError(e);
       if (e instanceof ServerRequestError) {
         if (e.status === 404) {
-          // TODO check with MediaMTX
           this.resourceUrl = null;
           throw new SessionClosedError();
         }
@@ -636,9 +639,10 @@ export class WhipClient {
     headers: Record<string, string> = {},
     body?: string,
   ): Promise<Response> {
+    // TODO support no-retry invocations
     const abort = new AbortController();
     this.pendingOps.push(abort);
-    const requestInit = {
+    const requestInit: RequestInit = {
       method,
       headers: { ...this.getCommonHeaders(), ...headers },
       body,
@@ -652,12 +656,14 @@ export class WhipClient {
       undefined,
       undefined,
       abort.signal,
+      whipIngesterErrorParser, // TODO test
     )
       .catch((e) => {
         trace(`${T} WHIP ${method} failed`, {
           error: String(e),
           url: String(url),
         });
+        this.runPlugins(p => p.requestError(url, requestInit, e));
         return Promise.reject(e);
       })
       .finally(() => {
@@ -705,7 +711,6 @@ export class WhipClient {
           }
         })
         .filter((s) => s) as RTCIceServer[];
-        // TODO filter out UDP protocol TURNs if icePreferTcp is set
     }
   }
 
@@ -785,6 +790,8 @@ export class WhipClient {
     if (isLocalhost(this.endpoint)) {
       return false;
     }
+    // TODO add an option to TURN off preflight,
+    // e.g., when a server will accept valid STUN requests from unknown ICE candidates sources
     return (
       (
         !this.iceServers.length && !this.canTrickleIce
@@ -810,7 +817,7 @@ export class WhipClient {
 
   private async runTrickleIce() {
     try {
-      await this.patch();
+      await this.updateResource();
     } catch (e) {
       if (e instanceof ServerRequestError) {
         return;

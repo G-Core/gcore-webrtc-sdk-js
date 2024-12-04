@@ -16,8 +16,6 @@ export function restrictCodecs(sdp: string, kind: "audio" | "video", codecs: Arr
   }
   const filteredPayloadTypes: number[] = [];
   const normalizedCodecs = normalizeCodecs(codecs);
-  // TODO support filtering out by parameters (e.g., profile-level-id)
-  // a=fmtp:102 level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f
   const fmtps = msection.fmtp.reduce((acc: Record<number, RtpPayloadFormatDesc>, fmtp: RtpPayloadFormatDesc) => {
     acc[fmtp.payload] = fmtp;
     return acc;

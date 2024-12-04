@@ -1,13 +1,13 @@
 import { WhipClientPlugin } from "../whip/types.js";
 
+import { WhipClientPluginBase } from "./plugins.js";
+
 /**
  * Adds stream's video track meta information (frame width and height) to a WHIP request query params
  * @beta
  */
-export class StreamMeta implements WhipClientPlugin {
+export class StreamMeta extends WhipClientPluginBase implements WhipClientPlugin {
   private videoTrack: MediaStreamTrack | null = null;
-
-  public close() { }
 
   public init(pc: RTCPeerConnection) {
     this.videoTrack = pc.getSenders()

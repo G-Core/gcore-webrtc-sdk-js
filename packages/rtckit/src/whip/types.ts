@@ -32,6 +32,8 @@ export interface WhipClientPlugin {
    * Use `options`.`method` to determine the operation being performed, e.g., POST means session initialization
    */
   request(url: URL, options: RequestInit): void;
+
+  requestError(url: URL, options: RequestInit, error: Error): void;
 }
 
 /**
@@ -84,7 +86,7 @@ export type WhipClientOptions = {
   auth?: string;
   canRestartIce?: boolean;
   canTrickleIce?: boolean;
-  debug?: boolean; // TODO support
+  debug?: boolean;
   encodingParameters?: RTCRtpEncodingParameters[];
   icePreferTcp?: boolean;
   iceServers?: RTCIceServer[];

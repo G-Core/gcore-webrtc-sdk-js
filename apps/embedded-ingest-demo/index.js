@@ -1,12 +1,14 @@
 import {
   LogTracer,
   Logger,
+  IngesterErrorHandler,
+  IngesterErrorReason,
   StreamMeta,
   VideoResolutionChangeDetector,
   WebrtcStreaming,
   WebrtcStreamingEvents,
   WhipClientEvents,
-  setTracer
+  setTracer,
 } from '@gcorevideo/rtckit'
 
 // Get the endpoint URL from the CCP
@@ -20,6 +22,7 @@ document.addEventListener(
   'DOMContentLoaded',
   () => {
     setTracer(new LogTracer())
+    let hasFatalError = false
     const videoElement =
       document.getElementById('preview')
     const previewPlate = document.getElementById('preview-plate')
@@ -35,6 +38,10 @@ document.addEventListener(
         mediaDevicesAutoSwitch: true,
         iceTransportPolicy: 'relay',
         plugins: [
+          new IngesterErrorHandler((reason) => {
+            setFatalError()
+            showError(getIngesterErrorReasonExplanation(reason))
+          }),
           new StreamMeta(),
           new VideoResolutionChangeDetector(({ degraded, height, srcHeight }) => {
             if (degraded) {
@@ -66,22 +73,55 @@ document.addEventListener(
     });
 
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, (e) => {
-      const curStatus = statusNode.textContent
       const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1)
       const newStatus = `${kind} stream has been switched from "${e.prev.label}"(${e.prev.deviceId}) to "${e.device.label}"(${e.device.deviceId})`
-      statusNode.textContent = newStatus
+      showErrorTime(newStatus)
       // TODO check if needed
       runPreview()
-      setTimeout(() => {
-        if (statusNode.textContent === newStatus) {
-          statusNode.textContent = curStatus
-        }
-      }, 5000);
     })
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, (e) => {
-      statusNode.textContent = `"${e.device.label}"(${e.device.deviceId}) has disconnected`
-      statusNode.style.color = 'red'
+      const msg = `"${e.device.label}"(${e.device.deviceId}) has disconnected`
+      showError(msg)
     })
+
+    function setFatalError() {
+      hasFatalError = true
+      stop.hidden = true
+      toggle.hidden = true
+    }
+
+    function showError(msg) {
+      statusNode.textContent = msg
+      statusNode.style.color = 'red'
+    }
+
+    function showStatus(msg) {
+      statusNode.textContent = msg
+      statusNode.style.color = ''
+    }
+
+    function showErrorTime(msg, time = 5000) {
+      const prevMsg = statusNode.textContent
+      const prevColor = statusNode.style.color
+      showError(msg)
+      setTimeout(() => {
+        if (statusNode.textContent === msg) {
+          statusNode.textContent = prevMsg
+          statusNode.style.color = prevColor
+        }
+      }, time)
+    }
+
+    function getIngesterErrorReasonExplanation(code) {
+      switch (code) {
+        case IngesterErrorReason.StreamNotExists:
+          return 'Stream does not exist'
+        case IngesterErrorReason.StreamTokenInvalid:
+          return 'Stream token is invalid'
+        case IngesterErrorReason.DuplicateStream:
+          return 'Someone else is already streaming'
+      }
+    }
 
     const start =
       document.getElementById('start')
@@ -109,7 +149,7 @@ document.addEventListener(
       stop.hidden = true
       toggle.hidden = true
       webrtc.close()
-      statusNode.textContent = 'Closed'
+      showStatus('Closed')
       whipClient = null
     }
 
@@ -140,8 +180,9 @@ document.addEventListener(
     function requestMediaStream() {
       const deviceId = cameraSelect.value
       const resolution = Number(videoresSelect.value)
-      statusNode.textContent =
-        'Reconnecting the devices...'
+
+      showStatus('Reconnecting the devices...')
+
       start.disabled = true
       cameraSelect.disabled = true
       videoresSelect.disabled = true
@@ -154,12 +195,11 @@ document.addEventListener(
         }, false)
         .then(
           (s) => {
-            statusNode.textContent =
-              'Ready'
+            showStatus('Ready')
             runPreview()
           },
           (e) => {
-            statusNode.textContent = `Failed to open a device stream: ${e}`
+            showError(`Failed to open a device stream: ${e}`)
           },
         )
         .finally(() => {
@@ -199,8 +239,7 @@ document.addEventListener(
           if (items.length) {
             updateResolutionsList(items[0].deviceId)
           }
-          statusNode.textContent =
-            'Ready'
+          showStatus('Ready')
         })
         .then(() => webrtc.mediaDevices.getMicrophones())
         .then((items) => {
@@ -291,49 +330,49 @@ document.addEventListener(
         .catch((e) => {
           if (e instanceof DOMException) {
             if (e.name === "NotReadableError") {
-              statusNode.textContent =
-                'Failed to open a device stream: The camera is already in use'
+              showError('Failed to open a device stream: The camera is already in use')
               return
             }
             if (e.name === "NotAllowedError") {
-              statusNode.textContent =
-                'Failed to open a device stream: Permission denied'
+              showError('Failed to open a device stream: Permission denied')
               return
             }
             // TODO handle other cases
             // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#exceptions
           }
-          statusNode.textContent = `Failed to open a device stream: ${e}`
+          showError(`Failed to open a device stream: ${e}`)
         })
         .finally(() => {
           cameraSelect.disabled = false
         })
-      statusNode.textContent =
-        'Connecting the devices...'
+      showStatus('Connecting the devices...')
       runPreview()
       webrtc.run().then(
         (wc) => {
           whipClient = wc
-          statusNode.textContent =
-            'Connecting...'
+          showStatus('Connecting...')
           stop.hidden = false
           toggle.hidden = false
           qualityNode.textContent = 'measuring...'
           wc.on(WhipClientEvents.Connected, () => {
-            statusNode.textContent = 'Streaming'
-            statusNode.style.color = ''
+            hasFatalError = false
+            showStatus('Streaming')
           })
           wc.on(WhipClientEvents.Disconnected, () => {
-            statusNode.textContent = 'Disconnected'
-            statusNode.style.color = 'red'
+            showError('Disconnected')
           })
           wc.on(WhipClientEvents.ConnectionFailed, () => {
-            statusNode.textContent = 'Disconnected'
-            statusNode.style.color = 'red'
+            // the client has already tried to reconnect
+            if (!hasFatalError) {
+              showError('Disconnected')
+              setFatalError()
+            }
           })
         },
         (e) => {
-          statusNode.textContent = `Failed to start streaming: ${e}`
+          if (!IngesterErrorHandler.isIngesterError(e)) {
+            showError(`Failed to start streaming: ${e}`)
+          }
         },
       )
     }

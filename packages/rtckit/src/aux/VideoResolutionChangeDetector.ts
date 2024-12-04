@@ -1,3 +1,5 @@
+import { WhipClientPluginBase } from "./plugins.js";
+import { trace } from "../trace/index.js";
 import type { WhipClientPlugin } from "../whip/types.js";
 
 const CHECK_INTERVAL = 1000;
@@ -22,11 +24,13 @@ export type VideoResolutionChangeEventData = {
   srcHeight: number;
 }
 
+const T = "VideoResolutionChangeDetector";
+
 /**
  * Detects the degradation and recovery of the outgoing stream video resolution
  * @beta
  */
-export class VideoResolutionChangeDetector implements WhipClientPlugin {
+export class VideoResolutionChangeDetector extends WhipClientPluginBase implements WhipClientPlugin {
   private timerId: number | null = null;
 
   private ssrcState: Record<number, { width: number; height: number }> = {};
@@ -34,7 +38,9 @@ export class VideoResolutionChangeDetector implements WhipClientPlugin {
   /**
    * @param onchange - The callback to be called when the resolution change is detected
    */
-  constructor(private onchange: (data: VideoResolutionChangeEventData) => void) {}
+  constructor(private onchange: (data: VideoResolutionChangeEventData) => void) {
+    super();
+  }
 
   close() {
     if (this.timerId) {
@@ -47,6 +53,7 @@ export class VideoResolutionChangeDetector implements WhipClientPlugin {
    * @param pc - A WebRTC Peer connection to watch
    */
   init(pc: RTCPeerConnection) {
+    // TODO stop timer when the connection closes
     this.timerId = setInterval(() => {
       pc.getSenders()
         .filter(s => s.track && s.track.kind === "video")
@@ -61,7 +68,8 @@ export class VideoResolutionChangeDetector implements WhipClientPlugin {
               if (report.type === "outbound-rtp") {
                 const {frameHeight, frameWidth, ssrc} = report as RTCOutboundRtpStreamStats;
                 if (!frameWidth || !frameHeight) {
-                  return; // TODO deside what to do in this case
+                  trace(`${T} no frame size`, {frameHeight, frameWidth, ssrc});
+                  return;
                 }
                 this.detectStreamResolutionChange(ssrc, frameWidth, frameHeight, width, height);
               }
@@ -70,8 +78,6 @@ export class VideoResolutionChangeDetector implements WhipClientPlugin {
         })
     }, CHECK_INTERVAL);
   }
-
-  request(url: URL, options: RequestInit) {}
 
   private detectStreamResolutionChange(ssrc: number, width: number, height: number, srcWidth: number, srcHeight: number) {
     const degraded = width < srcWidth || height < srcHeight;

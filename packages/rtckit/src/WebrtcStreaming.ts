@@ -10,8 +10,6 @@ import { EventEmitter } from "eventemitter3";
  */
 export type DeviceId = string;
 
-// TODO trace sensitive data only when debug is enabled
-
 /**
  * @public
  */
