@@ -38,8 +38,6 @@ export const STD_VIDEORES: Record<
   },
 }
 
-const MAX_RESOLUTION = STD_VIDEORES['1080']
-
 const T = "MediaDevicesHelper";
 
 /**
@@ -168,10 +166,6 @@ export class MediaDevicesHelper {
     if (!this.promiseUpdateDevices) {
       this.promiseUpdateDevices = navigator.mediaDevices.getUserMedia({
         audio: true,
-        // video: {
-        //   width: MAX_RESOLUTION.width,
-        //   height: MAX_RESOLUTION.height,
-        // },
         video: true,
       }).catch(e => {
         reportError(e);

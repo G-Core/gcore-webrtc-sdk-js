@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevices";
+import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevicesHelper.js";
 import {
   createMockMediaStream,
   createMockMediaStreamTrack,

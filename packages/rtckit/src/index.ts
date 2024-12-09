@@ -3,7 +3,7 @@
  */
 
 export * from "./Logger.js";
-export * from "./MediaDevices.js";
+export * from "./MediaDevicesHelper.js";
 export * from "./WebrtcStreaming.js";
 export * from "./aux/IngesterErrorHandler.js";
 export * from "./aux/plugins.js";

@@ -1,4 +1,4 @@
-import { MediaDevicesHelper, MediaInputDeviceInfo } from "./MediaDevices.js";
+import { MediaDevicesHelper, MediaInputDeviceInfo } from "./MediaDevicesHelper.js";
 import { MediaKind } from "./stats/types.js";
 import { reportError, trace } from "./trace/index.js";
 import { WhipClient } from "./whip/WhipClient.js";
