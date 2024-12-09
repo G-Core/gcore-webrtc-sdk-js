@@ -38,6 +38,20 @@ export const STD_VIDEORES: Record<
   },
 }
 
+export class VideoResolutionProbeError extends Error {
+  constructor(public readonly width: number, public readonly height: number, e: DOMException) {
+    const vres = width && height ? `${width}x${height}` : (
+      width
+        ? `${width}x-?`
+        : (
+          height ? `-x${height}` : "?"
+        )
+    );
+    super(`Video resolution (${vres}) probe failed: ${e.message}`);
+    this.name = "VideoResolutionProbeError";
+  }
+}
+
 const T = "MediaDevicesHelper";
 
 /**
@@ -142,8 +156,9 @@ export class MediaDevicesHelper {
           t.stop();
           s.removeTrack(t);
         });
-      }, () => {
+      }, (e) => {
         // TODO check error, it can be NotReadableError
+        reportError(new VideoResolutionProbeError(res.width, res.height, e));
       });
     }
     return result.reverse(); // return in descending order of resolution
@@ -170,27 +185,27 @@ export class MediaDevicesHelper {
       }).catch(e => {
         reportError(e);
         if (e.name === "OverconstrainedError") {
-          const looseConstraint =  e.constraint === "audio" ? { video: true } : { audio: true };
+          const looseConstraint = e.constraint === "audio" ? { video: true } : { audio: true };
           return navigator.mediaDevices.getUserMedia(looseConstraint)
         }
         return Promise.reject(e);
       })
-      .then(s => {
-        return this.enumerateDevices
-          .run()
-          .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
-          .then((devices) => {
-            this.devices = devices;
-          })
-          .finally(() => {
-            s.getTracks().forEach((t) => {
-              s.removeTrack(t);
-              t.stop();
-            });
-          })
-      }).finally(() => {
-        this.promiseUpdateDevices = null;
-      });
+        .then(s => {
+          return this.enumerateDevices
+            .run()
+            .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
+            .then((devices) => {
+              this.devices = devices;
+            })
+            .finally(() => {
+              s.getTracks().forEach((t) => {
+                s.removeTrack(t);
+                t.stop();
+              });
+            })
+        }).finally(() => {
+          this.promiseUpdateDevices = null;
+        });
     }
     return this.promiseUpdateDevices;
   }
@@ -219,7 +234,7 @@ export class MediaDevicesHelper {
 class NoCollisions<T> {
   private promise: Promise<T> | null = null;
 
-  constructor(private fn: () => Promise<T>) {}
+  constructor(private fn: () => Promise<T>) { }
 
   run(): Promise<T> {
     if (!this.promise) {
@@ -237,8 +252,5 @@ function filterDevicesList(devicesList: MediaDeviceInfo[], kind: "audioinput" | 
     groupId: devInfo.groupId,
     label: devInfo.label,
   }));
-  if (items.length > 1) {
-    return items.filter(devInfo => devInfo.deviceId !== "default");
-  }
   return items;
 }

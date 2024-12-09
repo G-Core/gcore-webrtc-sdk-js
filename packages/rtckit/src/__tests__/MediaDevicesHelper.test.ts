@@ -7,7 +7,6 @@ import {
   setupDefaultGetUserMedia,
   setupGetUserMedia,
   setupMockMediaDevices,
-  setupVideoResolutionProbes,
 } from "../testUtils";
 
 describe("MediaDevices", () => {
@@ -81,12 +80,17 @@ describe("MediaDevices", () => {
           setupGetUserMedia({ audio: true })
           mediaDevices = new MediaDevicesHelper()
         })
-        it("should remove the default device from the list", async () => {
+        it("should not remove the default device from the list", async () => {
           const microphones = await mediaDevices.getMicrophones()
-          expect(microphones).toHaveLength(1)
+          expect(microphones).toHaveLength(2)
           expect(microphones).toEqual([{
             deviceId: "mic01",
             label: 'Built-in Microphone',
+            groupId: "",
+          },
+          {
+            deviceId: "default",
+            label: 'AirPods',
             groupId: "",
           }])
         })
@@ -122,7 +126,7 @@ describe("MediaDevices", () => {
         .mockRejectedValueOnce(new Error("Overconstrained")) // 240
       mediaDevices = new MediaDevicesHelper()
     })
-    it("should return only the resolutions available", async () => {
+    it("should return only the available resolutions", async () => {
       await mediaDevices.getCameras()
       const resolutions = mediaDevices.getAvailableVideoResolutions("camera01")
       expect(resolutions).toEqual([

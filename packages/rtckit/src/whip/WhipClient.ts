@@ -123,8 +123,6 @@ export class WhipClient {
 
     await this.closeSession();
 
-    this.runPlugins(p => p.close());
-
     if (this.silentAudioTrack) {
       this.silentAudioTrack.stop();
       this.silentAudioTrack = null;
@@ -171,7 +169,7 @@ export class WhipClient {
 
   async replaceTrack(track: MediaStreamTrack): Promise<boolean> {
     if (!this.pc) {
-      trace(`${T} replaceTrack: no peer connection`);
+      trace(`${T} replaceTrack: no peer connection`, { kind: track.kind });
       return false;
     }
     trace(`${T} replaceTrack`, { kind: track.kind });
@@ -293,8 +291,10 @@ export class WhipClient {
   private async closeSession() {
     trace(`${T} closeSession`);
     if (this.pc) {
+      this.runPlugins(p => p.close());
       this.pc.close();
       this.pc = null;
+      // TODO remove senders
     }
     if (this.resourceUrl) {
       // TODO use this.fetch without retries

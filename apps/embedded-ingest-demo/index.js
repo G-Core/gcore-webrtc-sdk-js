@@ -76,13 +76,20 @@ document.addEventListener(
       const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1)
       const newStatus = `${kind} stream has been switched from "${e.prev.label}"(${e.prev.deviceId}) to "${e.device.label}"(${e.device.deviceId})`
       showErrorTime(newStatus)
+      setTimeout(refreshDevicesList, 0)
       // TODO check if needed
       runPreview()
     })
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, (e) => {
       const msg = `"${e.device.label}"(${e.device.deviceId}) has disconnected`
+      setTimeout(refreshDevicesList, 0)
       showError(msg)
     })
+
+    function refreshDevicesList() {
+      webrtc.mediaDevices.reset();
+      updateDevicesList()
+    }
 
     function setFatalError() {
       hasFatalError = true
@@ -173,6 +180,8 @@ document.addEventListener(
 
     updateDevicesList()
 
+    showStatus('Ready')
+
     function changeVideoResolution() {
       requestMediaStream();
     }
@@ -239,7 +248,6 @@ document.addEventListener(
           if (items.length) {
             updateResolutionsList(items[0].deviceId)
           }
-          showStatus('Ready')
         })
         .then(() => webrtc.mediaDevices.getMicrophones())
         .then((items) => {
@@ -252,6 +260,8 @@ document.addEventListener(
     }
 
     function populateDevicesList(selectEl, items) {
+      const currentValue = selectEl.value
+      selectEl.innerHTML = ''
       for (const item of items) {
         const option =
           document.createElement(
@@ -265,6 +275,9 @@ document.addEventListener(
         selectEl.appendChild(
           option,
         )
+        if (item.deviceId === currentValue) {
+          selectEl.value = currentValue
+        }
       }
     }
 

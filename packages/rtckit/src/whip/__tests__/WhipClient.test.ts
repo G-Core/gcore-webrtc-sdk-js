@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, MockedFunction, MockedObject, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, Mocked, MockedFunction, MockedObject, vi } from "vitest";
 import { WhipClient } from "../WhipClient.js";
 import { createMockMediaStream, createMockMediaStreamTrack, MockedMediaStreamTrack, MockRTCPeerConnection } from "../../testUtils.js";
 import { createMockAudioContext, MockAudioContext } from "../../audio/testUtils.js";
 import { WhipClientPlugin } from "../types.js";
 import FakeTimers from "@sinonjs/fake-timers";
 
-import { LogTracer, Logger, ServerRequestError, setTracer } from "../../index.js";
+import { LogTracer, Logger, MediaKind, ServerRequestError, setTracer } from "../../index.js";
 
 Logger.enable("*");
 
@@ -14,9 +14,12 @@ describe("WhipClient", () => {
   let videoTrack: MockedMediaStreamTrack;
   let client: WhipClient;
   let clock: FakeTimers.InstalledClock;
+  let mfetch: MockedFetch;
+  let pc: MockedObject<RTCPeerConnection>;
+
   beforeEach(() => {
     setTracer(new LogTracer());
-    setupWhipWithoutPreflight();
+    mfetch = setupWhipWithoutPreflight();
     clock = FakeTimers.install();
   });
   afterEach(() => {
@@ -75,7 +78,6 @@ describe("WhipClient", () => {
   });
   describe("pluigins", () => {
     let plugin: WhipClientPlugin;
-    let pc: MockedObject<RTCPeerConnection>;
     beforeEach( () => {
       plugin = {
         close: vi.fn(),
@@ -99,7 +101,7 @@ describe("WhipClient", () => {
       await client.start(stream);
       expect(plugin.init).toHaveBeenCalledWith(pc);
     });
-    it("should close plugins when the client is closed", async () => {
+    it.skip("should close plugins when the client is closed", async () => {
       await client.close();
       expect(plugin.close).toHaveBeenCalled();
     });
@@ -114,6 +116,7 @@ describe("WhipClient", () => {
       });
 
       await client.start(stream);
+
       expect(plugin.request).toHaveBeenCalledWith(expect.toMatchURL(/^https:\/\/example.com\/whip/), expect.objectContaining({
         method: "POST",
         headers: expect.any(Object),
@@ -153,7 +156,19 @@ describe("WhipClient", () => {
         expect.any(ServerRequestError),
       );
     });
-  })
+    it("should call the plugins when the peer connection is closed", async () => {
+      const stream = createMockMediaStream([
+        createMockMediaStreamTrack("audio"),
+        createMockMediaStreamTrack("video"),
+      ]);
+      setupWhipClose(mfetch);
+
+      await client.start(stream);
+      await client.close();
+
+      expect(plugin.close).toHaveBeenCalled();
+    });
+  });
   describe("prefer TCP ICE candidates", () => {
     let mockConn: any;
     describe.each([
@@ -329,8 +344,38 @@ describe("WhipClient", () => {
       });
     });
   });
-  describe.skip("replaceTrack", () => {
-    // TODO
+  describe("replaceTrack", () => {
+    const senders: Partial<Record<MediaKind, RTCRtpSender>> = {};
+    beforeEach(async () => {
+      const stream = createMockMediaStream([
+        createMockMediaStreamTrack("audio"),
+        createMockMediaStreamTrack("video"),
+      ]);
+      pc = new MockRTCPeerConnection();
+      pc.addTrack.mockImplementation((t) => {
+        const s = createMockRtpSender(t);
+        senders[t.kind] = s;
+        return s;
+      });
+      // @ts-ignore
+      globalThis.RTCPeerConnection = vi.fn().mockReturnValue(pc);
+      client = new WhipClient("https://example.com/whip", {
+        canTrickleIce: true,
+      });
+
+      await client.start(stream);
+    });
+    describe.each([
+      "audio" as MediaKind,
+      "video" as MediaKind,
+    ])("%s", (kind) => {
+      it("should replace the track on the current sender", async () => {
+        await client.replaceTrack(createMockMediaStreamTrack(kind));
+
+        // @ts-ignore
+        expect(senders[kind].replaceTrack).toHaveBeenCalled();
+      });
+    });
   });
 });
 
@@ -342,15 +387,27 @@ function createMockMediaStreamDestinationNode(stream) {
   }
 }
 
-function setupWhipWithoutPreflight() {
+type MockedFetch = MockedFunction<typeof globalThis.fetch>;
+
+function setupWhipWithoutPreflight(): MockedFetch {
   // Session initiation request only
-  vi.spyOn(globalThis, "fetch").mockReset().mockResolvedValueOnce({
+  // @ts-ignore
+  return vi.spyOn(globalThis, "fetch").mockReset().mockResolvedValueOnce({
     ok: true,
     headers: new Headers({
       location: "https://m01.video.com/s/123",
     }),
     status: 200,
     text: () => Promise.resolve("v=0\r\n"),
+  } as any);
+}
+
+function setupWhipClose(f: MockedFetch) {
+  f.mockResolvedValueOnce({
+    ok: true,
+    headers: new Headers({}),
+    status: 204,
+    text: () => Promise.resolve(""),
   } as any);
 }
 
@@ -372,3 +429,15 @@ expect.extend({
     }
   },
 });
+
+function createMockRtpSender(track): MockedObject<RTCRtpSender> {
+  // @ts-ignore
+  return {
+    getParameters: vi.fn(),
+    getStats: vi.fn().mockResolvedValue([]),
+    replaceTrack: vi.fn().mockResolvedValue(undefined),
+    setParameters: vi.fn().mockResolvedValue(undefined),
+    setStreams: vi.fn(),
+    track,
+  }
+}

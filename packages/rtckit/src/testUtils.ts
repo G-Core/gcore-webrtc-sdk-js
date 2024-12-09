@@ -11,6 +11,7 @@ const nextTrackId = (() => {
 })();
 
 export type MockedMediaStreamTrack = MockedObject<MediaStreamTrack> & {
+  dispatchEvent(name: "ended" | "mute" | "unmute"): void;
   triggerEvent(name: "ended" | "mute" | "unmute"): void;
 };
 
@@ -54,7 +55,7 @@ export function createMockMediaStreamTrack(
     stop: vi.fn().mockImplementation(function () {
       readyState = "ended";
     }),
-    triggerEvent(name: "ended" | "mute" | "unmute") {
+    dispatchEvent(name: "ended" | "mute" | "unmute") {
       const handler = this[`on${name}`];
       const event = new CustomEvent(name);
       if (handler)  {
@@ -133,13 +134,16 @@ export function setupDefaultMockUserMedia(devices: MediaDeviceInfo[] = []) {
   return [mockStream, audioTrack, videoTrack];
 }
 
-export function setupMockMediaDevices(devices: MediaDeviceInfo[]) {
+export function setupMockMediaDevices(devices: MediaDeviceInfo[]): MockedObject<MediaDevices> {
   window.MediaStream = createMockMediaStream as any;
-  // @ts-ignore
-  window.navigator.mediaDevices = {
+  const md = {
     enumerateDevices: vi.fn().mockResolvedValue(devices),
     getUserMedia: vi.fn(),
-  };
+  }
+  // @ts-ignore
+  window.navigator.mediaDevices = md;
+  // @ts-ignore
+  return md;
 }
 
 export function setupDefaultGetUserMedia(constraints: GetUserMediaContraints) {
@@ -172,7 +176,7 @@ export function setupGetUserMedia(constraints: GetUserMediaContraints): MockedMe
   }
   const mockStream = createMockMediaStream(tracks);
   // @ts-ignore
-  window.navigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
+  globalThis.navigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
   return tracks;
 }
 
@@ -194,7 +198,7 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
       sdp: "v=0\r\n",
       type: "offer",
     }),
-    fireEvent(name: string, detail: any) {
+    dispatchEvent(name: string, detail: any) {
       switch (name) {
         case "icecandidate":
           if (this.onicecandidate) {

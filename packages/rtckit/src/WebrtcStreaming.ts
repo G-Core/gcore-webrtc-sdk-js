@@ -210,7 +210,9 @@ export class WebrtcStreaming {
       };
       this.openingStream = true;
       // Ensure the devices list is updated, it's managed to be only done once by the MediaDeviceHelper
-      this.mediaDevices.getCameras()
+
+      this.mediaDevices
+        .getCameras() // TODO save along with the microphones?
         .then(() => navigator.mediaDevices.getUserMedia(constraints))
         .then(stream => this.replaceStream(stream).then(
           () => {
@@ -335,12 +337,11 @@ export class WebrtcStreaming {
         return resolve();
       }
       const client = this.whipClient;
-      return Promise.all(stream.getTracks().map((track) => client.replaceTrack(track)))
-        .then(() => {
+      return Promise.all(
+        stream.getTracks().map((track) => client.replaceTrack(track))
+      ).then(() => {
           trace(`${T} replaceStream OK`, { client: !!this.whipClient });
-        })
-        .then(() => {
-          this.bindMediaDeviceAutoReconnect(stream);
+
           resolve();
         })
         .catch(reject);
@@ -356,13 +357,14 @@ export class WebrtcStreaming {
   }
 
   private bindMediaDeviceAutoReconnect(stream: MediaStream) {
+    trace('bindMediaDeviceAutoReconnect', { autoSwitch: this.options?.mediaDevicesAutoSwitch });
     if (!this.options?.mediaDevicesAutoSwitch) {
       return;
     }
     stream.getTracks().forEach((track) => {
       track.addEventListener("ended", async () => {
+        trace(`${T} media device auto reconnect`, { kind: track.kind, openingStream: this.openingStream });
         // Safari: previous audio track is forcefully stopped when another one is requested, so we silence this event
-        trace(`${T} media device auto reconnect`, { kind: track.kind, openingStream: true });
         if (this.openingStream) {
           return;
         }
@@ -402,7 +404,6 @@ export class WebrtcStreaming {
     });
   }
 
-  // TODO reject if not found?
   private async getDeviceInfo(track: MediaStreamTrack): Promise<MediaInputDeviceInfo | undefined> {
     const settings = track.getSettings();
     if (!settings.deviceId) {
@@ -442,6 +443,7 @@ function buildVideoContraints(params: WebrtcStreamParams): boolean | MediaTrackC
     constraints.deviceId = { exact: params.video };
   }
   if (params.resolution) {
+    // TODO use deviceId to use only available resolutions for the given device
     const parsed = MediaDevicesHelper.findVideoResolution(params.resolution);
     if (parsed) {
       constraints.width = { ideal: parsed.width };
