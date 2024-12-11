@@ -179,14 +179,20 @@ export class MediaDevicesHelper {
     trace(`${T} updateDevices`, { promise: !!this.promiseUpdateDevices });
 
     if (!this.promiseUpdateDevices) {
+      // TODO don't ask permissions more than once
       this.promiseUpdateDevices = navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true,
       }).catch(e => {
         reportError(e);
-        if (e.name === "OverconstrainedError") {
-          const looseConstraint = e.constraint === "audio" ? { video: true } : { audio: true };
-          return navigator.mediaDevices.getUserMedia(looseConstraint)
+        switch (e.name) {
+          case "NotAllowedError":
+          case "NotFoundError":
+            // try without audio this time
+            return navigator.mediaDevices.getUserMedia({ video: true})
+          case "OverconstrainedError":
+            const looseConstraint = e.constraint === "audio" ? { video: true } : { audio: true };
+            return navigator.mediaDevices.getUserMedia(looseConstraint)
         }
         return Promise.reject(e);
       })
@@ -222,7 +228,8 @@ export class MediaDevicesHelper {
   }
 
   private async doUpdateVideoResolutions() {
-    for await (const device of this.devices) {
+    // TODO update only missing devices' resolutions
+    for (const device of this.devices) {
       if (device.kind === "videoinput") {
         this.videoResolutions[device.deviceId] = await MediaDevicesHelper.probeAvailableVideoResolutions(device.deviceId);
       }

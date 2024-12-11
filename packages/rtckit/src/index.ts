@@ -2,6 +2,10 @@
  * Gcore WebRTC Kit
  */
 
+import pkg from "../package.json";
+
+export const version = pkg.version;
+
 export * from "./Logger.js";
 export * from "./MediaDevicesHelper.js";
 export * from "./WebrtcStreaming.js";

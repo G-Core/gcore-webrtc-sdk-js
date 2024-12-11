@@ -6,13 +6,25 @@
 </head>
 <body>
     <style>
+        body {
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
         main {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: calc(100vh - 30px);
             gap: 1rem;
+        }
+        footer {
+            height: 30px;
+            font-size: 12px;
+            line-height: 1.1;
+            text-align: right;
+            padding: 2px 8px;
         }
         .preview {
             display: flex;
@@ -66,6 +78,7 @@
         <div id="status">Loading...</div>
         <div>Video quality: <span id="videoquality">‒</span></div>
     </main>
+    <footer>rtckit: <span id="rtckitver">0.0.0</span></footer>
     <script src="index.js"></script>
 </body>
 </html>

@@ -21,7 +21,11 @@ class DebuggerWrapper {
   }
 
   write = (m: any, ...args: any[]) => {
-    this.currentWriter(typeof m === "string" ? `${this.namespace}: ${m}` : this.namespace, ...args);
+    const tokens = args.map((_) => "%s");
+    if (typeof m === "string" || args.length > 0) {
+      tokens.unshift("%s");
+    }
+    this.currentWriter(`${this.namespace}: ${tokens.join(' ')}`, m, ...args.map(a => JSON.stringify(a)));
   }
 }
 
@@ -31,7 +35,7 @@ const currentPatterns: Pattern[] = [];
 
 function parsePattern(pattern: string): Pattern {
   if (pattern === "*") {
-    return /./;
+    return /.?/;
   }
   return new RegExp("^" + pattern.replace(/\*/g, "[@\\w-]+"), "i");
 }

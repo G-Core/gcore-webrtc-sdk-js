@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.80.0",
+  "version": "0.81.17",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
@@ -31,6 +31,7 @@
   "devDependencies": {
     "@microsoft/api-extractor": "^7.47.5",
     "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@sentry/types": "^8.23.0",
     "@sinonjs/fake-timers": "^13.0.2",

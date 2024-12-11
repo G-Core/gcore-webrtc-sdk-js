@@ -9,6 +9,7 @@ import {
   WebrtcStreamingEvents,
   WhipClientEvents,
   setTracer,
+  version,
 } from '@gcorevideo/rtckit'
 
 // Get the endpoint URL from the CCP
@@ -22,7 +23,9 @@ document.addEventListener(
   'DOMContentLoaded',
   () => {
     setTracer(new LogTracer())
+    document.getElementById('rtckitver').textContent = version
     let hasFatalError = false
+    let whipClient = null;
     const videoElement =
       document.getElementById('preview')
     const previewPlate = document.getElementById('preview-plate')
@@ -36,6 +39,7 @@ document.addEventListener(
         debug: true,
         icePreferTcp: true,
         mediaDevicesAutoSwitch: true,
+        mediaDevicesAutoSwitchRefresh: true,
         iceTransportPolicy: 'relay',
         plugins: [
           new IngesterErrorHandler((reason) => {
@@ -73,13 +77,14 @@ document.addEventListener(
     });
 
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, (e) => {
-      const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1)
-      const newStatus = `${kind} stream has been switched from "${e.prev.label}"(${e.prev.deviceId}) to "${e.device.label}"(${e.device.deviceId})`
-      showErrorTime(newStatus)
-      setTimeout(refreshDevicesList, 0)
+      const kind = e.kind.slice(0, 1).toUpperCase() + e.kind.slice(1);
+      const newStatus = `${kind} stream has been switched from "${e.prev.label}"(${e.prev.deviceId}) to "${e.device.label}"(${e.device.deviceId})`;
+      showErrorTime(newStatus);
+      setTimeout(refreshDevicesList, 0);
       // TODO check if needed
-      runPreview()
-    })
+      runPreview();
+    });
+
     webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitchOff, (e) => {
       const msg = `"${e.device.label}"(${e.device.deviceId}) has disconnected`
       setTimeout(refreshDevicesList, 0)
@@ -87,8 +92,7 @@ document.addEventListener(
     })
 
     function refreshDevicesList() {
-      webrtc.mediaDevices.reset();
-      updateDevicesList()
+      return updateDevicesList()
     }
 
     function setFatalError() {
@@ -102,9 +106,26 @@ document.addEventListener(
       statusNode.style.color = 'red'
     }
 
+    const showErrorOnce = (function () {
+      const shown = new Set();
+      return function(msg) {
+        if (shown.has(msg)) {
+          return;
+        }
+        shown.add(msg);
+        showError(msg);
+      }
+    })();
+
     function showStatus(msg) {
       statusNode.textContent = msg
       statusNode.style.color = ''
+    }
+
+    function showStatusIfNoError(msg) {
+      if (statusNode.style.color !== 'red') {
+        showStatus(msg)
+      }
     }
 
     function showErrorTime(msg, time = 5000) {
@@ -143,10 +164,11 @@ document.addEventListener(
     const videoresSelect = document.getElementById('videores')
     const micSelect = document.getElementById('mic')
 
+    let active = true
+
     start.onclick = () => {
       startStreaming();
     }
-    let active = true
     toggle.onclick = () => {
       active = !active
       webrtc.toggleVideo(active)
@@ -178,12 +200,17 @@ document.addEventListener(
       changeVideoResolution()
     }
 
-    updateDevicesList()
+    updateDevicesList().then(() => {
+      showStatusIfNoError('Ready')
+    })
 
-    showStatus('Ready')
 
     function changeVideoResolution() {
       requestMediaStream();
+    }
+
+    function showOkStatus() {
+      showStatus(whipClient ? 'Streaming' : 'Ready');
     }
 
     function requestMediaStream() {
@@ -204,11 +231,16 @@ document.addEventListener(
         }, false)
         .then(
           (s) => {
-            showStatus('Ready')
-            runPreview()
+            showOkStatus()
+            runPreview(s)
           },
           (e) => {
             showError(`Failed to open a device stream: ${e}`)
+            if (e instanceof DOMException && e.name === "OverconstrainedError") {
+              setTimeout(() => refreshDevicesList().then(() => {
+                showOkStatus()
+              }), 0);
+            }
           },
         )
         .finally(() => {
@@ -239,20 +271,26 @@ document.addEventListener(
     }
 
     function updateDevicesList() {
-      webrtc.mediaDevices
+      return webrtc.mediaDevices
         .getCameras()
         .then((items) => {
           populateDevicesList(cameraSelect, items)
           cameraSelect.hidden = false
           cameraSelect.disabled = false
           if (items.length) {
-            updateResolutionsList(items[0].deviceId)
+            updateResolutionsList((cameraSelect.value || items[0].deviceId))
           }
         })
         .then(() => webrtc.mediaDevices.getMicrophones())
         .then((items) => {
           populateDevicesList(micSelect, items)
-          micOn.disabled = false
+          if (!items.length) {
+            micOn.checked = false;
+            micOn.disabled = true;
+            showErrorOnce('No microphones found')
+          } else {
+            micOn.disabled = false
+          }
           micSelect.hidden = !micOn.checked
           micSelect.disabled = !micOn.checked
         })
@@ -260,7 +298,7 @@ document.addEventListener(
     }
 
     function populateDevicesList(selectEl, items) {
-      const currentValue = selectEl.value
+      const currentValue = selectEl.value || items[0]?.deviceId
       selectEl.innerHTML = ''
       for (const item of items) {
         const option =
@@ -284,7 +322,7 @@ document.addEventListener(
     function updateResolutionsList(deviceId) {
       const items = webrtc.mediaDevices
         .getAvailableVideoResolutions(deviceId);
-      const curValue = String(videoresSelect.value)
+      const curValue = String(videoresSelect.value || items[0].height);
       videoresSelect.innerHTML = ''
       const defaultOption = document.createElement('option')
       defaultOption.value = ''
@@ -315,9 +353,14 @@ document.addEventListener(
       }
     }
 
-    async function runPreview() {
+    async function runPreview(stream) {
+      const constraints = {
+        audio: micOn.checked ? micSelect.value : false,
+        video: cameraSelect.value,
+        resolution: Number(videoresSelect.value),
+      }
+      const s = stream || await webrtc.openSourceStream(constraints)
       await webrtc.preview(videoElement)
-      const s = await webrtc.openSourceStream()
       const t = s.getVideoTracks()[0]
       if (t) {
         const settings = t.getSettings()
@@ -334,9 +377,11 @@ document.addEventListener(
       start.hidden = true
       cameraSelect.disabled = true
       const resolution = Number(videoresSelect.value)
+
+      showStatus('Connecting the devices...')
       webrtc
         .openSourceStream({
-          audio: !!micOn.checked,
+          audio: micOn.checked ? micSelect.value : false,
           video: cameraSelect.value,
           resolution,
         })
@@ -344,24 +389,24 @@ document.addEventListener(
           if (e instanceof DOMException) {
             if (e.name === "NotReadableError") {
               showError('Failed to open a device stream: The camera is already in use')
-              return
+              return Promise.reject(e)
             }
             if (e.name === "NotAllowedError") {
               showError('Failed to open a device stream: Permission denied')
-              return
+              return Promise.reject(e)
             }
             // TODO handle other cases
             // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#exceptions
           }
           showError(`Failed to open a device stream: ${e}`)
+          return Promise.reject(e)
         })
         .finally(() => {
           cameraSelect.disabled = false
         })
-      showStatus('Connecting the devices...')
-      runPreview()
-      webrtc.run().then(
-        (wc) => {
+        .then((s) => runPreview(s))
+        .then(() => webrtc.run())
+        .then((wc) => {
           whipClient = wc
           showStatus('Connecting...')
           stop.hidden = false
