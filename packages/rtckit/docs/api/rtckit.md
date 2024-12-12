@@ -184,6 +184,15 @@ Timeout, see the message for the details.
 </td></tr>
 <tr><td>
 
+[VideoResolutionProbeError](./rtckit.videoresolutionprobeerror.md)
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 [WebrtcReporter](./rtckit.webrtcreporter.md)
 
 
@@ -367,6 +376,17 @@ Standard video resolutions
 
 
 </td></tr>
+<tr><td>
+
+[version](./rtckit.version.md)
+
+
+</td><td>
+
+Gcore WebRTC Kit
+
+
+</td></tr>
 </tbody></table>
 
 ## Type Aliases
@@ -451,6 +471,15 @@ TODO rename
 
 </td><td>
 
+
+
+</td></tr>
+<tr><td>
+
+[ReconnectDevicesSchedule](./rtckit.reconnectdevicesschedule.md)
+
+
+</td><td>
 
 
 </td></tr>

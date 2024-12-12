@@ -153,8 +153,8 @@ export class MediaDevicesHelper {
           height: res.height,
         });
         s.getTracks().forEach((t) => {
-          t.stop();
           s.removeTrack(t);
+          t.stop();
         });
       }, (e) => {
         // TODO check error, it can be NotReadableError
@@ -195,8 +195,7 @@ export class MediaDevicesHelper {
             return navigator.mediaDevices.getUserMedia(looseConstraint)
         }
         return Promise.reject(e);
-      })
-        .then(s => {
+      }).then(s => {
           return this.enumerateDevices
             .run()
             .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
@@ -209,9 +208,9 @@ export class MediaDevicesHelper {
                 t.stop();
               });
             })
-        }).finally(() => {
-          this.promiseUpdateDevices = null;
-        });
+      }).finally(() => {
+        this.promiseUpdateDevices = null;
+      });
     }
     return this.promiseUpdateDevices;
   }

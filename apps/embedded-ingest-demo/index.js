@@ -40,6 +40,7 @@ document.addEventListener(
         icePreferTcp: true,
         mediaDevicesAutoSwitch: true,
         mediaDevicesAutoSwitchRefresh: true,
+        mediaDevicesMultiOpen: false,
         iceTransportPolicy: 'relay',
         plugins: [
           new IngesterErrorHandler((reason) => {
@@ -98,7 +99,6 @@ document.addEventListener(
     function setFatalError() {
       hasFatalError = true
       stop.hidden = true
-      toggle.hidden = true
     }
 
     function showError(msg) {
@@ -155,8 +155,10 @@ document.addEventListener(
       document.getElementById('start')
     const stop =
       document.getElementById('stop')
-    const toggle =
-      document.getElementById('toggle')
+    const toggleAudio =
+      document.getElementById('toggle_audio')
+    const toggleVideo =
+      document.getElementById('toggle_video')
     const cameraSelect =
       document.getElementById('camera')
     const micOn =
@@ -164,19 +166,22 @@ document.addEventListener(
     const videoresSelect = document.getElementById('videores')
     const micSelect = document.getElementById('mic')
 
-    let active = true
+    let audioActive = true
+    let videoActive = true
 
     start.onclick = () => {
       startStreaming();
     }
-    toggle.onclick = () => {
-      active = !active
-      webrtc.toggleVideo(active)
-      webrtc.toggleAudio(active)
+    toggleAudio.onchange = () => {
+      audioActive = !toggleAudio.checked
+      webrtc.toggleAudio(audioActive)
+    }
+    toggleVideo.onchange = () => {
+      videoActive = !toggleVideo.checked
+      webrtc.toggleVideo(videoActive)
     }
     stop.onclick = () => {
       stop.hidden = true
-      toggle.hidden = true
       webrtc.close()
       showStatus('Closed')
       whipClient = null
@@ -189,6 +194,7 @@ document.addEventListener(
     micOn.onchange = () => {
       micSelect.disabled = !micOn.checked
       micSelect.hidden = !micOn.checked
+      toggleAudio.hidden = !micOn.checked
       requestMediaStream()
     }
 
@@ -410,7 +416,7 @@ document.addEventListener(
           whipClient = wc
           showStatus('Connecting...')
           stop.hidden = false
-          toggle.hidden = false
+
           qualityNode.textContent = 'measuring...'
           wc.on(WhipClientEvents.Connected, () => {
             hasFatalError = false

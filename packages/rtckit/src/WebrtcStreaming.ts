@@ -46,10 +46,18 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
  *  NOTE. In the case of a camera device, it can happen that the new device will have different resolutions supported.
  *  One way to avoid this is to always specify one of the standard resolutions in the {@link WebrtcStreamParams | video constraints}.
  *  See also {@link WebrtcStreaming.openSourceStream}, {@link MediaDevicesHelper.getAvailableVideoResolutions}
+ * 
+ * - `mediaDevicesAutoSwitchRefresh` - refresh the list of available media devices after a media device disconnect is detected.
+ *   This option is experimental and will become a default behaviour in the future
+ * 
+ * - `mediaDevicesMultiOpen` - close any media stream requested earlier before requesting a new one.
+ *   This is necessary on some devices, e.g., Android, which won't let you open a stream from many devices at the same time.
+ *   This option will probably become a default behaviour in the future.
  */
 export type WebrtcStreamingOptions = WhipClientOptions & {
   mediaDevicesAutoSwitch?: boolean;
   mediaDevicesAutoSwitchRefresh?: boolean;
+  mediaDevicesMultiOpen?: boolean;
 }
 
 /**
@@ -160,6 +168,9 @@ export class WebrtcStreaming {
 
   private reconnectDevices: ReconnectDevicesSchedule | null = null;
 
+  private audioEnabled = true;
+  private videoEnabled = true;
+
   constructor(private endpoint: string, private options?: WebrtcStreamingOptions) { }
 
   close() {
@@ -202,9 +213,6 @@ export class WebrtcStreaming {
         if (!params || sameStreamParams(this.streamParams, params)) {
           return resolve(this.mediaStream);
         }
-        if (!this.hotReplace || !this.whipClient) {
-          this.closeMediaStream();
-        }
       }
 
       if (params) {
@@ -213,10 +221,17 @@ export class WebrtcStreaming {
 
       this.openingStream = true;
 
-      Promise.all([
+      new Promise<void>((resolve, reject) => {
+        if (this.mediaStream) {
+          if (!this.hotReplace || !this.whipClient || this.options?.mediaDevicesMultiOpen === false) {
+            return this.closeMediaStream().then(resolve, reject);
+          }
+        }
+        resolve();
+      }).then(() => Promise.all([
         this.mediaDevices.getMicrophones(),
         this.mediaDevices.getCameras(),
-      ]).then(([mics, cameras]) => {
+      ])).then(([mics, cameras]) => {
         // TODO test deviceId restricted to the current devices list
         const constraints = {
           audio: buildAudioConstraints(this.streamParams, mics),
@@ -242,6 +257,7 @@ export class WebrtcStreaming {
           () => {
             this.emitDeviceSelect(stream);
             this.bindMediaDeviceAutoReconnect(stream);
+            this.toggleTracks(stream);
             resolve(stream);
           },
         ))
@@ -313,6 +329,11 @@ export class WebrtcStreaming {
   }
 
   toggleAudio(active: boolean) {
+    if (this.audioEnabled === active) {
+      return;
+    }
+    this.audioEnabled = active;
+
     if (!this.mediaStream) {
       return;
     }
@@ -322,6 +343,11 @@ export class WebrtcStreaming {
   }
 
   toggleVideo(active: boolean) {
+    if (this.videoEnabled === active) {
+      return;
+    }
+    this.videoEnabled = active;
+
     if (!this.mediaStream) {
       return;
     }
@@ -512,6 +538,22 @@ export class WebrtcStreaming {
         this.streamParams.video = true;
       }
     }
+  }
+
+  private toggleTracks(stream: MediaStream) {
+    if (this.audioEnabled && this.videoEnabled) {
+      return;
+    }
+    stream.getTracks().forEach((t) => {
+      switch (t.kind) {
+        case "audio":
+          t.enabled = this.audioEnabled;
+          break;
+        case "video":
+          t.enabled = this.videoEnabled;
+          break;
+      }
+    });
   }
 }
 
