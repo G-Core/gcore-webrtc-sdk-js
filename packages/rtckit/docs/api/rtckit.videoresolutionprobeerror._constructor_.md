@@ -9,7 +9,7 @@ Constructs a new instance of the `VideoResolutionProbeError` class
 **Signature:**
 
 ```typescript
-constructor(width: number, height: number, e: DOMException);
+constructor(width: number, height: number, deviceId: string, e: Error);
 ```
 
 ## Parameters
@@ -60,12 +60,26 @@ number
 </td></tr>
 <tr><td>
 
+deviceId
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
+
 e
 
 
 </td><td>
 
-DOMException
+Error
 
 
 </td><td>

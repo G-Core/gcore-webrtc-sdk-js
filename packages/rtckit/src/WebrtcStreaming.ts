@@ -240,9 +240,9 @@ export class WebrtcStreaming {
         trace(`${T} openSourceStream built constraints`, { constraints, params: this.streamParams });
         return navigator.mediaDevices.getUserMedia(constraints).catch(e => {
           reportError(e);
-          // TODO tests
-          if (e instanceof DOMException
-            && e.name === "OverconstrainedError"
+          // TODO test this
+          // TODO in Firefox it's a MediaStreamError, in Chrome it's a DOMException
+          if (e.name === "OverconstrainedError"
             && !this.deviceListFresh
             && (
               (constraints.video && typeof constraints.video === "object" && constraints.video.deviceId) ||

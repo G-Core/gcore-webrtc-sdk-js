@@ -42,7 +42,7 @@ export const STD_VIDEORES: Record<
  * @public
  */
 export class VideoResolutionProbeError extends Error {
-  constructor(public readonly width: number, public readonly height: number, e: DOMException) {
+  constructor(public readonly width: number, public readonly height: number, public readonly deviceId: string, e: Error) {
     const vres = width && height ? `${width}x${height}` : (
       width
         ? `${width}x-?`
@@ -50,7 +50,8 @@ export class VideoResolutionProbeError extends Error {
           height ? `-x${height}` : "?"
         )
     );
-    super(`Video resolution (${vres}) probe failed: ${e.message}`);
+    const msg = `${e.name}: ${e.message} ${e.name === "OverconstrainedError" ? ` ${(e as any).constraint}` : ''}`;
+    super(`Video resolution (${vres}) probe failed (device ${deviceId}): ${msg}`);
     this.name = "VideoResolutionProbeError";
   }
 }
@@ -163,21 +164,37 @@ export class MediaDevicesHelper {
           deviceId: {
             exact: deviceId,
           },
-          width: { exact: res.width },
           height: { exact: res.height },
         },
-      }).then((s) => {
-        result.push({
-          width: res.width,
-          height: res.height,
-        });
+      })
+      .catch(e => {
+        if (e.name === "OverconstrainedError" && e.constraint === "height") {
+          return navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: {
+                exact: deviceId,
+              },
+              width: { exact: res.width },
+            },
+          });
+        }
+        return Promise.reject(e);
+      })
+      .then((s) => {
+        const { width, height } = s.getVideoTracks()[0].getSettings();
+        if (width && height && !result.some((r) => r.width === width && r.height === height)) {
+          result.push({
+            width,
+            height,
+          });
+        }
         s.getTracks().forEach((t) => {
           s.removeTrack(t);
           t.stop();
         });
       }, (e) => {
         // TODO check error, it can be NotReadableError
-        reportError(new VideoResolutionProbeError(res.width, res.height, e));
+        reportError(new VideoResolutionProbeError(res.width, res.height, deviceId, e));
       });
     }
     return result.reverse(); // return in descending order of resolution

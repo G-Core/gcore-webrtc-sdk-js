@@ -32,7 +32,7 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
-[(constructor)(width, height, e)](./rtckit.videoresolutionprobeerror._constructor_.md)
+[(constructor)(width, height, deviceId, e)](./rtckit.videoresolutionprobeerror._constructor_.md)
 
 
 </td><td>
@@ -70,6 +70,25 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[deviceId](./rtckit.videoresolutionprobeerror.deviceid.md)
+
+
+</td><td>
+
+`readonly`
+
+
+</td><td>
+
+string
+
+
+</td><td>
+
+
+</td></tr>
+<tr><td>
 
 [height](./rtckit.videoresolutionprobeerror.height.md)
 
