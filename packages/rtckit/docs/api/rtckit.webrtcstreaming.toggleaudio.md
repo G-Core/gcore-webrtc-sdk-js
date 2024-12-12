@@ -4,6 +4,8 @@
 
 ## WebrtcStreaming.toggleAudio() method
 
+Mutes or unmutes the audio track. A muted audio track will produce silence (at some constant audio level) and send some RTP over the network.
+
 **Signature:**
 
 ```typescript
@@ -39,6 +41,8 @@ boolean
 
 
 </td><td>
+
+`true` to unmute the audio, `false` to mute it
 
 
 </td></tr>

@@ -38,6 +38,9 @@ export const STD_VIDEORES: Record<
   },
 }
 
+/**
+ * @public
+ */
 export class VideoResolutionProbeError extends Error {
   constructor(public readonly width: number, public readonly height: number, e: DOMException) {
     const vres = width && height ? `${width}x${height}` : (
@@ -124,6 +127,22 @@ export class MediaDevicesHelper {
   }
 
   /**
+   * @param height - vertical resolution value
+   * @returns
+   * @internal
+   */
+  // matchVideoResolution(width: number, height: number, deviceId?: string): VideoResolution | undefined {
+  //   if (deviceId) {
+  //     if (this.videoResolutions[deviceId]) {
+  //       return this.videoResolutions[deviceId].find((res) => res.height === height);
+  //     }
+  //   }
+  //   if (height in STD_VIDEORES) {
+  //     return STD_VIDEORES[height];
+  //   }
+  // }
+
+  /**
    * Resets the cached information about the devices
    */
   reset() {
@@ -201,6 +220,7 @@ export class MediaDevicesHelper {
             .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
             .then((devices) => {
               this.devices = devices;
+              // trace(`${T} updateDevices OK`, { devices: this.devices });
             })
             .finally(() => {
               s.getTracks().forEach((t) => {

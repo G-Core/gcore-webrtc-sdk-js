@@ -215,6 +215,8 @@ Description
 
 </td><td>
 
+Mutes or unmutes the audio track. A muted audio track will produce silence (at some constant audio level) and send some RTP over the network.
+
 
 </td></tr>
 <tr><td>
@@ -226,6 +228,8 @@ Description
 
 
 </td><td>
+
+Mutes or unmutes the video track. Muted track will produce black frames and send some RTP over the network.
 
 
 </td></tr>

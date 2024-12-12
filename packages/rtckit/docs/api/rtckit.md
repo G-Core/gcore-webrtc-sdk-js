@@ -190,6 +190,7 @@ Timeout, see the message for the details.
 </td><td>
 
 
+
 </td></tr>
 <tr><td>
 
@@ -332,6 +333,17 @@ Description
 </th></tr></thead>
 <tbody><tr><td>
 
+[IngesterError](./rtckit.ingestererror.md)
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
 [Tracer](./rtckit.tracer.md)
 
 
@@ -383,7 +395,6 @@ Standard video resolutions
 
 </td><td>
 
-Gcore WebRTC Kit
 
 
 </td></tr>
@@ -471,15 +482,6 @@ TODO rename
 
 </td><td>
 
-
-
-</td></tr>
-<tr><td>
-
-[ReconnectDevicesSchedule](./rtckit.reconnectdevicesschedule.md)
-
-
-</td><td>
 
 
 </td></tr>

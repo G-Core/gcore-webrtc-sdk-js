@@ -48,5 +48,5 @@ Error
 </tbody></table>
 **Returns:**
 
-e is IngesterError
+e is [IngesterError](./rtckit.ingestererror.md)
 

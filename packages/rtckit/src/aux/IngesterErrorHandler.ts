@@ -14,7 +14,10 @@ export enum IngesterErrorReason {
   DuplicateStream = 2003,
 }
 
-interface IngesterError {
+/**
+ * @beta
+ */
+export interface IngesterError {
   detail: {
     reasonCode: IngesterErrorReason;
   };

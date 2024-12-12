@@ -4,6 +4,8 @@
 
 ## WebrtcStreaming.toggleVideo() method
 
+Mutes or unmutes the video track. Muted track will produce black frames and send some RTP over the network.
+
 **Signature:**
 
 ```typescript
@@ -39,6 +41,8 @@ boolean
 
 
 </td><td>
+
+`true` to unmute the video, `false` to mute it
 
 
 </td></tr>

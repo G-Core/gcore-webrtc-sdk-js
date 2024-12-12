@@ -131,7 +131,7 @@ const DEFAULT_STREAM_PARAMS = Object.freeze({
 
 const T = "WebrtcStreaming";
 
-export type ReconnectDevicesSchedule = Partial<Record<MediaKind, [resolve: (device: MediaInputDeviceInfo) => void, reject: (e: any) => void]>>;
+type ReconnectDevicesSchedule = Partial<Record<MediaKind, [resolve: (device: MediaInputDeviceInfo) => void, reject: (e: any) => void]>>;
 
 /**
  * A wrapper around WhipClient to facilitate creating WebRTC streams in a browser
@@ -328,6 +328,11 @@ export class WebrtcStreaming {
     return whipClient;
   }
 
+  /**
+   * Mutes or unmutes the audio track.
+   * A muted audio track will produce silence (at some constant audio level) and send some RTP over the network.
+   * @param active  - `true` to unmute the audio, `false` to mute it
+   */
   toggleAudio(active: boolean) {
     if (this.audioEnabled === active) {
       return;
@@ -342,6 +347,12 @@ export class WebrtcStreaming {
     });
   }
 
+  /**
+   * Mutes or unmutes the video track.
+   * Muted track will produce black frames and send some RTP over the network.
+   *
+   * @param active - `true` to unmute the video, `false` to mute it
+   */
   toggleVideo(active: boolean) {
     if (this.videoEnabled === active) {
       return;

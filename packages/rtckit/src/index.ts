@@ -4,6 +4,9 @@
 
 import pkg from "../package.json";
 
+/**
+ * @public
+ */
 export const version = pkg.version;
 
 export * from "./Logger.js";
