@@ -166,6 +166,7 @@ export class MediaDevicesHelper {
             exact: deviceId,
           },
           height: { exact: res.height },
+          width: { exact: res.width },
         },
       })
       .catch(e => {

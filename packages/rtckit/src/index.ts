@@ -2,7 +2,7 @@
  * Gcore WebRTC Kit
  */
 
-import pkg from "../package.json";
+import pkg from "../package.json" with { type: "json" };
 
 /**
  * @public
