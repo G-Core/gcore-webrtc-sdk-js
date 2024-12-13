@@ -50,7 +50,7 @@ export class VideoResolutionProbeError extends Error {
           height ? `-x${height}` : "?"
         )
     );
-    const msg = `${e.name}: ${e.message} ${e.name === "OverconstrainedError" ? ` ${(e as any).constraint}` : ''}`;
+    const msg = `${e.name}: ${e.message}${e.name === "OverconstrainedError" ? ` ${(e as any).constraint}` : ''}`;
     super(`Video resolution (${vres}) probe failed (device ${deviceId}): ${msg}`);
     this.name = "VideoResolutionProbeError";
   }
@@ -109,6 +109,7 @@ export class MediaDevicesHelper {
     if (!this.devices.length) {
       await this.updateDevices();
     }
+    // TODO probe video resolutions for the missed (new) devices
     if (!this.hasVideoResolutions) {
       await this.updateVideoResolutions();
     }

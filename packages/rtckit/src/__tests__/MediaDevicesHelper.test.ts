@@ -1,13 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
+// import { Logger } from "../Logger.js";
+import { LogTracer } from "../trace/LogTracer.js";
+import { setTracer } from "../trace/index.js";
 import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevicesHelper.js";
 import {
   createMockMediaStream,
   createMockMediaStreamTrack,
+  MockedMediaStreamTrack,
   setupDefaultGetUserMedia,
   setupGetUserMedia,
   setupMockMediaDevices,
 } from "../testUtils";
+
+// Logger.enable('*');
+setTracer(new LogTracer("MediaDevicesHelper.test"));
 
 describe("MediaDevices", () => {
   const devices: MediaDeviceInfo[] = [
@@ -115,15 +122,17 @@ describe("MediaDevices", () => {
   })
   describe("video resolutions", () => {
     beforeEach(() => {
-      setupMockMediaDevices(devices)
+      setupMockMediaDevices(devices) // the only camera is camera01
       window.navigator.mediaDevices.getUserMedia
         // @ts-ignore
-        .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // before updateDevices
-        .mockRejectedValueOnce(new Error("Overconstrained")) // 1080
-        .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // 720
-        .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // 480
-        .mockResolvedValueOnce(createMockMediaStream([createMockMediaStreamTrack("video")])) // 360
-        .mockRejectedValueOnce(new Error("Overconstrained")) // 240
+        .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(640, 360, "default")])) // permissions request
+        .mockRejectedValueOnce(new OverconstrainedError("height"))
+        .mockRejectedValueOnce(new OverconstrainedError("width"))
+        .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(640, 360, "camera01")])) // 360
+        .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(854, 480, "camera01")])) // 480
+        .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(1280, 720, "camera01")])) // 720
+        .mockRejectedValueOnce(new OverconstrainedError("height"))
+        .mockRejectedValueOnce(new OverconstrainedError("width"));
       mediaDevices = new MediaDevicesHelper()
     })
     it("should return only the available resolutions", async () => {
@@ -184,10 +193,24 @@ describe("MediaDevices", () => {
 })
 
 export function setupNoGetUserMedia(reason: string) {
-  const err = new Error("Constraints could be not satisfied.");
-  err.name = "OverconstrainedError";
-  // @ts-ignore
-  err.constraint = reason;
+  const err = new OverconstrainedError(reason);
   // @ts-ignore
   window.navigator.mediaDevices.getUserMedia.mockRejectedValueOnce(err);
+}
+
+class OverconstrainedError extends Error {
+  constructor(public readonly constraint: string) {
+    super(`Constraints could be not satisfied.`);
+    this.name = "OverconstrainedError";
+  }
+}
+
+function createVideoTrack(width: number, height: number, deviceId: string, id?: string): MockedMediaStreamTrack {
+  const track = createMockMediaStreamTrack("video", id);
+  track.getSettings.mockReturnValue({
+    width,
+    height,
+    deviceId,
+  })
+  return track;
 }
