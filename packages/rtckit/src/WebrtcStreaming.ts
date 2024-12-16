@@ -25,7 +25,7 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
   groupId: "",
 });
 
-const GET_USER_MEDIA_TIMEOUT = 5000;
+const REFRESH_MEDIA_DEVICES_DELAY = 1000;
 
 /**
  * @public
@@ -213,6 +213,7 @@ export class WebrtcStreaming {
     this.mediaStreamPromise = new Promise<MediaStream>((resolve, reject) => {
       if (this.mediaStream) {
         if (!params || sameStreamParams(this.streamParams, params)) {
+          trace(`${T} openSourceStream already opened with the same params`);
           return resolve(this.mediaStream);
         }
       }
@@ -224,10 +225,6 @@ export class WebrtcStreaming {
       this.openingStream = true;
 
       new Promise<void>((resolve, reject) => {
-        setTimeout(() => {
-          // TODO test
-          reject(new GetUserMediaTimeoutError({ ...this.streamParams }));
-        }, GET_USER_MEDIA_TIMEOUT);
         if (this.mediaStream) {
           if (!this.hotReplace || !this.whipClient || this.options?.mediaDevicesMultiOpen === false) {
             return this.closeMediaStream().then(resolve, reject);
@@ -248,8 +245,8 @@ export class WebrtcStreaming {
           reportError(e);
           // TODO test this
           // TODO in Firefox it's a MediaStreamError, in Chrome it's a DOMException
-          if (e.name === "OverconstrainedError"
-            && !this.deviceListFresh
+          if (!this.deviceListFresh
+            && e.name === "OverconstrainedError"
             && (
               (constraints.video && typeof constraints.video === "object" && constraints.video.deviceId) ||
               (constraints.audio && typeof constraints.audio === "object" && constraints.audio.deviceId)
@@ -257,8 +254,8 @@ export class WebrtcStreaming {
           ) {
             return this.refreshMediaDevices().then(() => Promise.reject(e));
           }
-          throw e;
-        })
+          return Promise.reject(e);
+        });
       }).then(stream => this.replaceStream(stream).then(
         () => {
           this.emitDeviceSelect(stream);
@@ -477,14 +474,18 @@ export class WebrtcStreaming {
     return devices.find((d) => d.deviceId === settings.deviceId);
   }
 
-  private async refreshMediaDevices() {
+  private refreshMediaDevices() {
     trace(`${T} refreshMediaDevices`);
-    this.mediaDevices.reset();
-    await this.mediaDevices.getMicrophones().then(() => this.mediaDevices.getCameras());
-    this.deviceListFresh = true;
-    setTimeout(() => {
-      this.deviceListFresh = false;
-    }, 0);
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, REFRESH_MEDIA_DEVICES_DELAY);
+    }).then(async () => {
+      this.mediaDevices.reset();
+      await this.mediaDevices.getMicrophones().then(() => this.mediaDevices.getCameras());
+      this.deviceListFresh = true;
+      setTimeout(() => {
+        this.deviceListFresh = false;
+      }, 0);
+    })
   }
 
   private async scheduleInputReconnect(track: MediaStreamTrack, prevDevice?: MediaInputDeviceInfo): Promise<MediaInputDeviceInfo> {
@@ -632,7 +633,7 @@ function closeMediaStream(stream: MediaStream) {
 
 function looseMediaDeviceConstraints(kind: MediaKind, params: WebrtcStreamParams): WebrtcStreamParams {
   if (kind === "audio") {
-    return { ...params, audio: true };
+    return { ...params, audio: !!params.audio };
   }
   return { ...params, video: true };
 }
@@ -666,10 +667,4 @@ function maskStreamingParams(params?: WebrtcStreamParams): Record<string, unknow
     audio: typeof params?.audio === "string" ? "deviceId" : params?.audio,
     video: typeof params?.video === "string" ? "deviceId" : params?.video,
   };
-}
-
-class GetUserMediaTimeoutError extends Error {
-  constructor(public readonly params: WebrtcStreamParams) {
-    super(`getUserMedia timeout for ${JSON.stringify(params)}`);
-  }
 }

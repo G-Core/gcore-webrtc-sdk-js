@@ -543,8 +543,11 @@ describe("WebrtcStreaming", () => {
           initialTracks[0].dispatchEvent("ended");
           await clock.tickAsync(0);
         });
-        it("should refresh the list of available devices", () => {
-          // TODO decide to implement or not
+        it("should not refresh the list of available devices instantly", () => {
+          expect(globalThis.navigator.mediaDevices.enumerateDevices).toHaveBeenCalledTimes(1);
+        });
+        it("not refresh the list of available devices after a delay", async () => {
+          await clock.tickAsync(1000);
           expect(globalThis.navigator.mediaDevices.enumerateDevices).toHaveBeenCalledTimes(2);
         });
       });
