@@ -25,6 +25,8 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
   groupId: "",
 });
 
+const GET_USER_MEDIA_TIMEOUT = 5000;
+
 /**
  * @public
  *
@@ -222,6 +224,10 @@ export class WebrtcStreaming {
       this.openingStream = true;
 
       new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          // TODO test
+          reject(new GetUserMediaTimeoutError({ ...this.streamParams }));
+        }, GET_USER_MEDIA_TIMEOUT);
         if (this.mediaStream) {
           if (!this.hotReplace || !this.whipClient || this.options?.mediaDevicesMultiOpen === false) {
             return this.closeMediaStream().then(resolve, reject);
@@ -254,13 +260,13 @@ export class WebrtcStreaming {
           throw e;
         })
       }).then(stream => this.replaceStream(stream).then(
-          () => {
-            this.emitDeviceSelect(stream);
-            this.bindMediaDeviceAutoReconnect(stream);
-            this.toggleTracks(stream);
-            resolve(stream);
-          },
-        ))
+        () => {
+          this.emitDeviceSelect(stream);
+          this.bindMediaDeviceAutoReconnect(stream);
+          this.toggleTracks(stream);
+          resolve(stream);
+        },
+      ))
         .catch(reject)
     }).finally(() => {
       this.mediaStreamPromise = null;
@@ -436,7 +442,7 @@ export class WebrtcStreaming {
         } catch (e) {
           reportError(e);
         }
-        this.scheduleMediaReconnect(track, prevDevice).then((device) => {
+        this.scheduleInputReconnect(track, prevDevice).then((device) => {
           trace(`${T} media device auto reconnect OK`, {
             kind: track.kind,
             device: this.options?.debug ? device?.label : (device ? "***" : "-"),
@@ -481,10 +487,10 @@ export class WebrtcStreaming {
     }, 0);
   }
 
-  private async scheduleMediaReconnect(track: MediaStreamTrack, prevDevice?: MediaInputDeviceInfo): Promise<MediaInputDeviceInfo> {
+  private async scheduleInputReconnect(track: MediaStreamTrack, prevDevice?: MediaInputDeviceInfo): Promise<MediaInputDeviceInfo> {
     return new Promise<MediaInputDeviceInfo>((resolve, reject) => {
       trace(
-        `${T} scheduleMediaReconnect enter`,
+        `${T} scheduleInputReconnect enter`,
         {
           kind: track.kind,
           prevDevice: prevDevice?.label,
@@ -495,7 +501,7 @@ export class WebrtcStreaming {
         const rd: ReconnectDevicesSchedule = {}
         this.reconnectDevices = rd;
         setTimeout(async () => {
-          trace(`${T} scheduleMediaReconnect run`, { reconnectDevices: Object.keys(rd).join() });
+          trace(`${T} scheduleInputReconnect run`, { reconnectDevices: Object.keys(rd).join() });
           try {
             await this.closeMediaStream();
             if (this.options?.mediaDevicesAutoSwitchRefresh) {
@@ -516,7 +522,7 @@ export class WebrtcStreaming {
               if (!device) {
                 throw new Error(`Failed to get ${track.kind} media device info`);
               }
-              trace(`${T} scheduleMediaReconnect OK`, { kind, device: this.options?.debug ? device.label : "***" });
+              trace(`${T} scheduleInputReconnect OK`, { kind, device: this.options?.debug ? device.label : "***" });
               resolved.push(() => res(device));
             }
             for (const r of resolved) {
@@ -660,4 +666,10 @@ function maskStreamingParams(params?: WebrtcStreamParams): Record<string, unknow
     audio: typeof params?.audio === "string" ? "deviceId" : params?.audio,
     video: typeof params?.video === "string" ? "deviceId" : params?.video,
   };
+}
+
+class GetUserMediaTimeoutError extends Error {
+  constructor(public readonly params: WebrtcStreamParams) {
+    super(`getUserMedia timeout for ${JSON.stringify(params)}`);
+  }
 }

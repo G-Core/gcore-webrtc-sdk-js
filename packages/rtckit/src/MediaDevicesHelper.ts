@@ -84,8 +84,6 @@ export class MediaDevicesHelper {
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
 
-  private promiseUpdateDevices: Promise<void> | null = null;
-
   private promiseUpdateVres: Promise<void> | null = null;
 
   /**
@@ -107,11 +105,11 @@ export class MediaDevicesHelper {
   async getCameras(): Promise<MediaInputDeviceInfo[]> {
     trace(`${T} getCameras`, { devices: this.devices.length });
     if (!this.devices.length) {
-      await this.updateDevices();
+      await this.updateDevices.run();
     }
     // TODO probe video resolutions for the missed (new) devices
     if (!this.hasVideoResolutions) {
-      await this.updateVideoResolutions();
+      await this.updateVideoResolutions.run();
     }
     return filterDevicesList(this.devices, "videoinput");
   }
@@ -123,26 +121,10 @@ export class MediaDevicesHelper {
     trace(`${T} getMicrophones`, { devices: this.devices.length });
 
     if (!this.devices.length) {
-      await this.updateDevices();
+      await this.updateDevices.run();
     }
     return filterDevicesList(this.devices, "audioinput");
   }
-
-  /**
-   * @param height - vertical resolution value
-   * @returns
-   * @internal
-   */
-  // matchVideoResolution(width: number, height: number, deviceId?: string): VideoResolution | undefined {
-  //   if (deviceId) {
-  //     if (this.videoResolutions[deviceId]) {
-  //       return this.videoResolutions[deviceId].find((res) => res.height === height);
-  //     }
-  //   }
-  //   if (height in STD_VIDEORES) {
-  //     return STD_VIDEORES[height];
-  //   }
-  // }
 
   /**
    * Resets the cached information about the devices
@@ -169,35 +151,35 @@ export class MediaDevicesHelper {
           width: { exact: res.width },
         },
       })
-      .catch(e => {
-        if (e.name === "OverconstrainedError" && e.constraint === "height") {
-          return navigator.mediaDevices.getUserMedia({
-            video: {
-              deviceId: {
-                exact: deviceId,
+        .catch(e => {
+          if (e.name === "OverconstrainedError" && e.constraint === "height") {
+            return navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: {
+                  exact: deviceId,
+                },
+                width: { exact: res.width },
               },
-              width: { exact: res.width },
-            },
+            });
+          }
+          return Promise.reject(e);
+        })
+        .then((s) => {
+          const { width, height } = s.getVideoTracks()[0].getSettings();
+          if (width && height && !result.some((r) => r.width === width && r.height === height)) {
+            result.push({
+              width,
+              height,
+            });
+          }
+          s.getTracks().forEach((t) => {
+            s.removeTrack(t);
+            t.stop();
           });
-        }
-        return Promise.reject(e);
-      })
-      .then((s) => {
-        const { width, height } = s.getVideoTracks()[0].getSettings();
-        if (width && height && !result.some((r) => r.width === width && r.height === height)) {
-          result.push({
-            width,
-            height,
-          });
-        }
-        s.getTracks().forEach((t) => {
-          s.removeTrack(t);
-          t.stop();
+        }, (e) => {
+          // TODO check error, it can be NotReadableError
+          reportError(new VideoResolutionProbeError(res.width, res.height, deviceId, e));
         });
-      }, (e) => {
-        // TODO check error, it can be NotReadableError
-        reportError(new VideoResolutionProbeError(res.width, res.height, deviceId, e));
-      });
     }
     return result.reverse(); // return in descending order of resolution
   }
@@ -213,59 +195,45 @@ export class MediaDevicesHelper {
     }
   }
 
-  private async updateDevices() {
-    trace(`${T} updateDevices`, { promise: !!this.promiseUpdateDevices });
+  private askPermissions = new Once<void>(() => {
+    trace(`${T} askPermissions run`);
 
-    if (!this.promiseUpdateDevices) {
-      // TODO don't ask permissions more than once
-      this.promiseUpdateDevices = navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      }).catch(e => {
-        reportError(e);
-        switch (e.name) {
-          case "NotAllowedError":
-          case "NotFoundError":
-            // try without audio this time
-            return navigator.mediaDevices.getUserMedia({ video: true})
-          case "OverconstrainedError":
-            const looseConstraint = e.constraint === "audio" ? { video: true } : { audio: true };
-            return navigator.mediaDevices.getUserMedia(looseConstraint)
-        }
-        return Promise.reject(e);
-      }).then(s => {
-          return this.enumerateDevices
-            .run()
-            .then((devices) => devices.filter(({ deviceId }) => !!deviceId))
-            .then((devices) => {
-              this.devices = devices;
-              // trace(`${T} updateDevices OK`, { devices: this.devices });
-            })
-            .finally(() => {
-              s.getTracks().forEach((t) => {
-                s.removeTrack(t);
-                t.stop();
-              });
-            })
-      }).finally(() => {
-        this.promiseUpdateDevices = null;
+    return navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: true,
+    }).catch(e => {
+      reportError(e);
+      switch (e.name) {
+        case "NotAllowedError":
+        case "NotFoundError":
+          // try without audio this time
+          return navigator.mediaDevices.getUserMedia({ video: true })
+        case "OverconstrainedError":
+          const looseConstraint = e.constraint === "audio" ? { video: true } : { audio: true };
+          return navigator.mediaDevices.getUserMedia(looseConstraint)
+      }
+      return Promise.reject(e);
+    }).then(s => {
+      trace(`${T} askPermissions OK`);
+      s.getTracks().forEach((t) => {
+        s.removeTrack(t);
+        t.stop();
       });
-    }
-    return this.promiseUpdateDevices;
-  }
+    })
+  });
 
-  private async updateVideoResolutions() {
-    if (!this.promiseUpdateVres) {
-      this.promiseUpdateVres = new Promise<void>((resolve, reject) => {
-        this.doUpdateVideoResolutions().then(resolve, reject);
-      }).finally(() => {
-        this.promiseUpdateVres = null;
-      })
-    }
-    return this.promiseUpdateVres;
-  }
+  private updateDevices = new NoCollisions(async () => {
+    trace(`${T} updateDevices`, {});
+    // TODO don't ask permissions more than once
+    return this.askPermissions.run().then(() => {
+      return this.enumerateDevices.run()
+    }).then((devices) => {
+      this.devices = devices.filter(({ deviceId }) => !!deviceId);
+      trace(`${T} updateDevices OK`, { devices: this.devices.map(d => ([d.deviceId, d.label])) });
+    });
+  })
 
-  private async doUpdateVideoResolutions() {
+  private updateVideoResolutions = new NoCollisions<void>(async () => {
     // TODO update only missing devices' resolutions
     for (const device of this.devices) {
       if (device.kind === "videoinput") {
@@ -273,7 +241,7 @@ export class MediaDevicesHelper {
       }
     }
     this.hasVideoResolutions = true;
-  }
+  });
 }
 
 class NoCollisions<T> {
@@ -286,6 +254,19 @@ class NoCollisions<T> {
       this.promise = this.fn().finally(() => {
         this.promise = null;
       });
+    }
+    return this.promise;
+  }
+}
+
+class Once<T> {
+  private promise: Promise<T> | null = null;
+
+  constructor(private fn: () => Promise<T>) { }
+
+  run(): Promise<T> {
+    if (!this.promise) {
+      this.promise = this.fn();
     }
     return this.promise;
   }
