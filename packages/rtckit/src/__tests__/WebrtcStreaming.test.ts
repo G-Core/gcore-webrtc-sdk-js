@@ -545,7 +545,6 @@ describe("WebrtcStreaming", () => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
             debug: true,
             mediaDevicesAutoSwitch: true,
-            mediaDevicesAutoSwitchRefresh: true,
           });
           // @ts-ignore
           stream = await webrtc.openSourceStream({

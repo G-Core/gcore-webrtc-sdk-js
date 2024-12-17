@@ -40,7 +40,7 @@ params
 
 </td><td>
 
-_(Optional)_ If not specified, will use the default parameters, requesting both audio and video from any devices
+_(Optional)_ If not specified, will use the default parameters, requesting both audio and video from any devices. If the parameters are equivalent (e.g., empty) to the parameters used to request the current media stream, the stream is not reopened.
 
 
 </td></tr>
@@ -49,4 +49,5 @@ _(Optional)_ If not specified, will use the default parameters, requesting both 
 
 Promise&lt;MediaStream&gt;
 
+- A promise resolving with a MediaStream object or rejecting with a native browser error. See the description of possible errors on [https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia\#exceptions](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#exceptions)
 

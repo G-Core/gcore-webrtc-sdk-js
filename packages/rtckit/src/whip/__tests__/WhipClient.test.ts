@@ -78,7 +78,7 @@ describe("WhipClient", () => {
   });
   describe("pluigins", () => {
     let plugin: WhipClientPlugin;
-    beforeEach( () => {
+    beforeEach(() => {
       plugin = {
         close: vi.fn(),
         init: vi.fn(),
@@ -101,10 +101,43 @@ describe("WhipClient", () => {
       await client.start(stream);
       expect(plugin.init).toHaveBeenCalledWith(pc);
     });
-    it.skip("should close plugins when the client is closed", async () => {
-      await client.close();
-      expect(plugin.close).toHaveBeenCalled();
-    });
+    describe("on session close", () => {
+      describe.each([
+        ["directly", async (c: WhipClient) => await c.close()],
+        ["restart", async (c: WhipClient) => {
+          // POST WHIP endpoint
+          // @ts-ignore
+          globalThis.fetch.mockRejectedValueOnce({
+            status: 403,
+            ok: false,
+            headers: new Headers([
+              ["content-length", "0"],
+            ]),
+          });
+          // @ts-ignore
+          globalThis.RTCPeerConnection.mockReturnValue(new MockRTCPeerConnection());
+          await c.restart().catch(() => { }) // 403
+        }],
+      ])("%s", (_, triggerClose) => {
+        beforeEach(async () => {
+          audioTrack = createMockMediaStreamTrack("audio");
+          videoTrack = createMockMediaStreamTrack("video");
+          const stream = createMockMediaStream([audioTrack, videoTrack]);
+          // @ts-ignore
+          // DELETE resource URL
+          globalThis.fetch.mockResolvedValueOnce({
+            status: 200,
+            ok: true,
+          });
+
+          await client.start(stream);
+          await triggerClose(client);
+        });
+        it.only("should call the close plugin method", () => {
+          expect(plugin.close).toHaveBeenCalled();
+        });
+      });
+    })
     it("should call the plugins when a request is made", async () => {
       audioTrack = createMockMediaStreamTrack("audio");
       videoTrack = createMockMediaStreamTrack("video");
@@ -416,8 +449,8 @@ interface CustomMatchers<R = unknown> {
 }
 
 declare module 'vitest' {
-  interface Assertion<T = any> extends CustomMatchers<T> {}
-  interface AsymmetricMatchersContaining extends CustomMatchers {}
+  interface Assertion<T = any> extends CustomMatchers<T> { }
+  interface AsymmetricMatchersContaining extends CustomMatchers { }
 }
 
 expect.extend({

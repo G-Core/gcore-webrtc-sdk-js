@@ -36,18 +36,14 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
  *  NOTE. In the case of a camera device, it can happen that the new device will have different resolutions supported.
  *  One way to avoid this is to always specify one of the standard resolutions in the {@link WebrtcStreamParams | video constraints}.
  *  See also {@link WebrtcStreaming.openSourceStream}, {@link MediaDevicesHelper.getAvailableVideoResolutions}
- * 
- * - `mediaDevicesAutoSwitchRefresh` - *deprecated* refresh the list of available media devices after a media device disconnect is detected.
- *   This option is experimental and will become a default behaviour in the future
- * 
- * - `mediaDevicesMultiOpen` - close any media stream requested earlier before requesting a new one.
- *   This is necessary on some devices, e.g., Android, which won't let you open a stream from many devices at the same time.
- *   This option will probably become a default behaviour in the future.
  */
 export type WebrtcStreamingOptions = WhipClientOptions & {
   mediaDevicesAutoSwitch?: boolean;
-  mediaDevicesAutoSwitchRefresh?: boolean; // deprecated
-  mediaDevicesMultiOpen?: boolean;
+  mediaDevicesAutoSwitchRefresh?: boolean; // deprecated (the logic is always enabled)
+  mediaDevicesMultiOpen?: boolean; // deprecated (the logic is always enabled)
+  /**
+   * @beta
+   */
   sourceStreamControlProtocol?: SourceStreamControlProtocol;
 }
 
@@ -199,8 +195,10 @@ export class WebrtcStreaming {
 
   /**
    * 
-   * @param params - If not specified, will use the default parameters, requesting both audio and video from any devices
-   * @returns 
+   * @param params - If not specified, will use the default parameters, requesting both audio and video from any devices.
+   *    If the parameters are equivalent (e.g., empty) to the parameters used to request the current media stream, the stream is not reopened.
+   * @returns  - A promise resolving with a MediaStream object or rejecting with a native browser error.
+   * See the description of possible errors on {@link https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#exceptions}
    */
   async openSourceStream(params?: WebrtcStreamParams): Promise<MediaStream> {
     trace(`${T} openSourceStream`, params);
@@ -326,7 +324,8 @@ export class WebrtcStreaming {
       return;
     }
     this.audioEnabled = active;
-
+    // TODO replace the outgoing audio track with a silent one
+    // TODO test
     if (!this.mediaStream) {
       return;
     }

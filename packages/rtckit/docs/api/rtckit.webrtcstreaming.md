@@ -17,7 +17,7 @@ export declare class WebrtcStreaming
 
 ```typescript
 const webrtc = new WebrtcStreaming('https://example.com/whip/0aeb');
-await webrtc.openSourceStream();
+await webrtc.openSourceStream({ audio: true, video: true });
 await webrtc.preview(document.querySelector('video'));
 await webrtc.run();
 webrtc.toggleVideo(false);

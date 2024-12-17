@@ -1,4 +1,4 @@
-import { MediaKind } from "src/types.js";
+import { MediaKind } from "../types.js";
 
 /**
  * @alpha

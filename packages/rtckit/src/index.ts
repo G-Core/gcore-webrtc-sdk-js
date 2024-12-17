@@ -23,6 +23,7 @@ export { LogTracer } from "./trace/LogTracer.js";
 export { SentryTracer } from "./trace/SentryTracer.js";
 export { setTracer } from "./trace/index.js";
 export * from "./trace/types.js";
+export * from "./types.js";
 export * from "./userMedia/types.js";
 export * from "./whip/WhipClient.js";
 export * from "./whip/errors.js";

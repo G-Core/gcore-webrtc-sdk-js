@@ -289,7 +289,7 @@ export class WhipClient {
   }
 
   private async closeSession() {
-    trace(`${T} closeSession`);
+    trace(`${T} closeSession`, { pc: !!this.pc });
     if (this.pc) {
       this.runPlugins(p => p.close());
       this.pc.close();

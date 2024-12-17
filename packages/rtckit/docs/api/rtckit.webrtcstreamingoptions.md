@@ -13,9 +13,10 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
     mediaDevicesAutoSwitch?: boolean;
     mediaDevicesAutoSwitchRefresh?: boolean;
     mediaDevicesMultiOpen?: boolean;
+    sourceStreamControlProtocol?: SourceStreamControlProtocol;
 };
 ```
-**References:** [WhipClientOptions](./rtckit.whipclientoptions.md)
+**References:** [WhipClientOptions](./rtckit.whipclientoptions.md)<!-- -->, [SourceStreamControlProtocol](./rtckit.sourcestreamcontrolprotocol.md)
 
 ## Remarks
 
@@ -26,8 +27,4 @@ When a media device disconnect is detected, the client will attempt to reaqcuire
 If any of the steps fail, the client will emit a [WebrtcStreamingEvents.MediaDeviceSwitchOff](./rtckit.webrtcstreamingevents.md) event. The event will contain the information about the disconnected media device.
 
 NOTE. In the case of a camera device, it can happen that the new device will have different resolutions supported. One way to avoid this is to always specify one of the standard resolutions in the [video constraints](./rtckit.webrtcstreamparams.md)<!-- -->. See also [WebrtcStreaming.openSourceStream()](./rtckit.webrtcstreaming.opensourcestream.md)<!-- -->, [MediaDevicesHelper.getAvailableVideoResolutions()](./rtckit.mediadeviceshelper.getavailablevideoresolutions.md)
-
-- `mediaDevicesAutoSwitchRefresh` - refresh the list of available media devices after a media device disconnect is detected. This option is experimental and will become a default behaviour in the future
-
-- `mediaDevicesMultiOpen` - close any media stream requested earlier before requesting a new one. This is necessary on some devices, e.g., Android, which won't let you open a stream from many devices at the same time. This option will probably become a default behaviour in the future.
 
