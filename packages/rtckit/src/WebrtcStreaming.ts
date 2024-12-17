@@ -1,6 +1,6 @@
 import { EventEmitter } from "eventemitter3";
 
-import { MediaDevicesHelper, MediaInputDeviceInfo } from "./MediaDevicesHelper.js";
+import { MediaDevicesHelper, MediaInputDeviceInfo, VideoResolution } from "./MediaDevicesHelper.js";
 import { reportError, trace } from "./trace/index.js";
 import { MediaKind } from "./types.js";
 import { DefaultSourceStreamControlProtocol } from "./userMedia/DefaultSourceStreamControlProtocol.js";
@@ -218,7 +218,6 @@ export class WebrtcStreaming {
       if (params) {
         this.streamParams = { ...params };
       }
-
       this.openingStream = true;
 
       new Promise<void>((resolve, reject) => {
@@ -236,7 +235,7 @@ export class WebrtcStreaming {
         // TODO test deviceId restricted to the current devices list
         const constraints = {
           audio: buildAudioConstraints(this.streamParams, mics),
-          video: buildVideoContraints(this.streamParams, cameras),
+          video: buildVideoContraints(this.streamParams, cameras, dev => this.mediaDevices.getAvailableVideoResolutions(dev)),
         };
         trace(`${T} openSourceStream built constraints`, { constraints, params: this.streamParams });
         return navigator.mediaDevices.getUserMedia(constraints).catch(e => {
@@ -567,7 +566,7 @@ function buildAudioConstraints(params: WebrtcStreamParams, devicesList: MediaInp
   return !!params.audio;
 }
 
-function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInputDeviceInfo[]): boolean | MediaTrackConstraints {
+function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInputDeviceInfo[], rlist: (deviceId: string) => VideoResolution[]): boolean | MediaTrackConstraints {
   if (params.video === false) {
     return false;
   }
@@ -576,9 +575,23 @@ function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInpu
     const dev = devicesList.find((d) => d.deviceId === params.video);
     if (dev) {
       constraints.deviceId = { exact: params.video };
+      if (params.resolution) {
+        const items = rlist(params.video);
+        const parsed = items.find(item => item.height === params.resolution || item.width === params.resolution);
+        if (parsed) {
+          const { width, height } = parsed;
+          if (width > height) {
+            constraints.width = width;
+            constraints.height = height;
+          } else {
+            constraints.width = height;
+            constraints.height = width;
+          }
+        }
+      }
     }
   }
-  if (params.resolution) {
+  if (params.resolution && !(constraints.width || constraints.height)) {
     // TODO use deviceId to restrict to only that device available resolutions
     const parsed = MediaDevicesHelper.findVideoResolution(params.resolution);
     if (parsed) {

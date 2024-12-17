@@ -78,8 +78,6 @@ export type MediaInputDeviceInfo = {
 export class MediaDevicesHelper {
   private devices: MediaDeviceInfo[] = [];
 
-  private hasVideoResolutions = false;
-
   private videoResolutions: Record<string, VideoResolution[]> = {};
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
@@ -105,10 +103,7 @@ export class MediaDevicesHelper {
     if (!this.devices.length) {
       await this.updateDevices.run();
     }
-    // TODO probe video resolutions for the missed (new) devices
-    if (!this.hasVideoResolutions) {
-      await this.updateVideoResolutions.run();
-    }
+    await this.updateVideoResolutions.run();
     return filterDevicesList(this.devices, "videoinput");
   }
 
@@ -150,7 +145,7 @@ export class MediaDevicesHelper {
         },
       })
         .catch(e => {
-          if (e.name === "OverconstrainedError" && e.constraint === "height") {
+          if (e.name === "OverconstrainedError" && ["height", "width", "deviceId"].includes(e.constraint)) {
             return navigator.mediaDevices.getUserMedia({
               video: {
                 deviceId: {
@@ -163,7 +158,7 @@ export class MediaDevicesHelper {
           return Promise.reject(e);
         })
         .then((s) => {
-          const { width, height } = s.getVideoTracks()[0].getSettings();
+          const { width = 0, height = 0 } = s.getVideoTracks()[0].getSettings();
           if (width && height && !result.some((r) => r.width === width && r.height === height)) {
             result.push({
               width,
@@ -231,13 +226,15 @@ export class MediaDevicesHelper {
   })
 
   private updateVideoResolutions = new NoCollisions<void>(async () => {
-    // TODO update only missing devices' resolutions
     for (const device of this.devices) {
-      if (device.kind === "videoinput") {
-        this.videoResolutions[device.deviceId] = await MediaDevicesHelper.probeAvailableVideoResolutions(device.deviceId);
+      if (device.kind !== "videoinput" || (device.deviceId in this.videoResolutions)) {
+        continue;
       }
+      // TODO test that only missing devices' resolutins are queried
+      const items = await MediaDevicesHelper.probeAvailableVideoResolutions(device.deviceId);
+      this.videoResolutions[device.deviceId] = items;
+      trace(`${T} updateVideoResolutions`, { deviceId: device.deviceId, items });
     }
-    this.hasVideoResolutions = true;
   });
 }
 
