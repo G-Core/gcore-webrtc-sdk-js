@@ -235,3 +235,10 @@ export function setupVideoResolutionProbes() {
     setupGetUserMedia({ video: true})
   }
 }
+
+export class MockOverconstrainedError extends Error {
+  constructor(public readonly constraint: string) {
+    super(`Constraints could not be satisfied.`);
+    this.name = "OverconstrainedError";
+  }
+}

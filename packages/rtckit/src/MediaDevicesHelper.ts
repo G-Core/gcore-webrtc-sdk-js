@@ -84,8 +84,6 @@ export class MediaDevicesHelper {
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices())
 
-  private promiseUpdateVres: Promise<void> | null = null;
-
   /**
    * Get a list of available video resolutions supported by the device
    *
@@ -224,12 +222,11 @@ export class MediaDevicesHelper {
 
   private updateDevices = new NoCollisions(async () => {
     trace(`${T} updateDevices`, {});
-    // TODO don't ask permissions more than once
     return this.askPermissions.run().then(() => {
       return this.enumerateDevices.run()
     }).then((devices) => {
       this.devices = devices.filter(({ deviceId }) => !!deviceId);
-      trace(`${T} updateDevices OK`, { devices: this.devices.map(d => ([d.deviceId, d.label])) });
+      trace(`${T} updateDevices OK`, { devices: this.devices.map(d => ([d.kind, d.deviceId])) });
     });
   })
 

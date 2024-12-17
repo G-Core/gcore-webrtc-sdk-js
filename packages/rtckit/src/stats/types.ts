@@ -1,3 +1,5 @@
+import { MediaKind } from "src/types.js";
+
 /**
  * @alpha
  */
@@ -187,8 +189,3 @@ export type WebrtcConciseReportDto = {
   server: string;
   data: WebrtcConciseReport;
 }
-
-/**
- * @public
- */
-export type MediaKind = "audio" | "video";

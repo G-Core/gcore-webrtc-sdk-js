@@ -5,19 +5,19 @@ import { MediaDeviceSwitchInfo, MediaDeviceSwitchOffInfo, WebrtcStreaming, Webrt
 
 import { WhipClient } from "../whip/WhipClient.js";
 
-// import { Logger } from "../Logger.js";
+import { Logger } from "../Logger.js";
 import { LogTracer } from "../trace/LogTracer.js";
 import { setTracer } from "../trace/index.js";
 import {
   MockedMediaStream,
   MockedMediaStreamTrack,
-  setupDefaultGetUserMedia,
+  MockOverconstrainedError,
   setupGetUserMedia,
   setupMockMediaDevices,
   setupVideoResolutionProbes,
 } from "../testUtils.js";
 
-// Logger.enable("*");
+Logger.enable("*");
 setTracer(new LogTracer());
 
 vi.mock("../whip/WhipClient.js", () => ({
@@ -57,7 +57,9 @@ describe("WebrtcStreaming", () => {
   describe("preview", () => {
     let video: HTMLVideoElement;
     beforeEach(async () => {
-      webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
+      webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+        debug: true,
+      });
       setupMockMediaDevices(MOCK_MEDIA_DEVICES);
       setupGetUserMedia({ audio: true, video: true });
       setupGetUserMedia({ audio: true, video: true });
@@ -153,7 +155,9 @@ describe("WebrtcStreaming", () => {
         ],
       ])("", (firstParams, secondParams, expectedConstraints) => {
         beforeEach(async () => {
-          webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
+          webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+            debug: true,
+          });
           setupMockMediaDevices(MOCK_MEDIA_DEVICES);
           setupGetUserMedia({ audio: true, video: true }); // initial permissions request
           setupVideoResolutionProbes();
@@ -183,7 +187,9 @@ describe("WebrtcStreaming", () => {
       describe("when the audio track is toggled off", () => {
         let firstTimeTracks: MediaStreamTrack[];
         beforeEach(() => {
-          webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1");
+          webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+            debug: true,
+          });
           setupMockMediaDevices(MOCK_MEDIA_DEVICES);
           setupGetUserMedia({ audio: true, video: true }); // initial permissions request
           setupVideoResolutionProbes();
@@ -227,31 +233,32 @@ describe("WebrtcStreaming", () => {
     describe("basically", () => {
       beforeEach(async () => {
         webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+          debug: true,
           mediaDevicesAutoSwitch: true,
         });
         setupMockMediaDevices(MOCK_MEDIA_DEVICES);
         // for the first time permissions request and video resolutions probing
-        setupDefaultGetUserMedia({ audio: true, video: true });
 
-        // MediaDevices.updateDevices
-        setupGetUserMedia({ audio: true, video: true });
+        setupGetUserMedia({ audio: true, video: true }); // MediaDevices.updateDevices initial permission
         setupVideoResolutionProbes();
         await webrtc.mediaDevices.getCameras(); // to properly arrange calls to getUserMedia
 
         firstTimeTracks = setupGetUserMedia({ audio: true, video: true });
-        endedTrack = firstTimeTracks.find((t) => t.kind === "audio") as any;
+        endedTrack = firstTimeTracks[0]
         endedTrack.getSettings.mockReturnValue({
           deviceId: "mic2",
         });
-        const liveTrack = firstTimeTracks.find((t) => t.kind === "video") as any;
+        const liveTrack = firstTimeTracks[1];
         liveTrack.getSettings.mockReturnValue({
           deviceId: "camera1",
         });
-
         autoReplaceTracks = setupGetUserMedia({ audio: true, video: true });
-        autoAudioTrack = autoReplaceTracks.find((t) => t.kind === "audio") as any;
+        autoAudioTrack = autoReplaceTracks[0];
         autoAudioTrack.getSettings.mockReturnValue({
           deviceId: "mic1",
+        });
+        autoReplaceTracks[1].getSettings.mockReturnValue({
+          deviceId: "camera1",
         });
 
         mockWhipClient = createMockWhipClient();
@@ -271,11 +278,12 @@ describe("WebrtcStreaming", () => {
         await clock.tickAsync(0);
         // @ts-ignore
         window.navigator.mediaDevices.getUserMedia.mockClear();
+
         endedTrack.dispatchEvent("ended");
-        await clock.tickAsync(0);
+        await clock.tickAsync(1002); // refreshMediaDevices + some time for the callbacks
       });
       // TODO break into smaller tests with fewer assertions
-      it("should reconnect the default device", async () => {
+      it("should reconnect the default device", () => {
         expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledWith({
           audio: true,
           video: expect.objectContaining({
@@ -315,11 +323,13 @@ describe("WebrtcStreaming", () => {
         }],
         ["getUserMedia", (_) => {
           // @ts-ignore
-          window.navigator.mediaDevices.getUserMedia.mockReset().mockRejectedValueOnce(new Error("OverconstrainedError"));
+          window.navigator.mediaDevices.getUserMedia.mockReset().mockRejectedValueOnce(new MockOverconstrainedError("deviceId"));
+          setupVideoResolutionProbes(); // after the OverconstrainedError
         }]
       ])("%s", (_, setup) => {
         beforeEach(async () => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+            debug: true,
             mediaDevicesAutoSwitch: true,
           });
           setupMockMediaDevices([{
@@ -347,10 +357,10 @@ describe("WebrtcStreaming", () => {
               return {};
             },
           }]);
-          // for the first time permissions request and video resolutions probing
-          setupDefaultGetUserMedia({ audio: true, video: true });
 
-          setupGetUserMedia({ audio: true, video: true }); // MediaDevices.updateDevices
+          setupGetUserMedia({ audio: true, video: true }); // MediaDevices.updateDevices initial permissions request
+          setupVideoResolutionProbes();
+
           await webrtc.mediaDevices.getCameras(); // to properly arrange calls to getUserMedia
 
           firstTimeTracks = setupGetUserMedia({ audio: true, video: true });
@@ -358,12 +368,10 @@ describe("WebrtcStreaming", () => {
           endedTrack.getSettings.mockReturnValue({
             deviceId: "mic2",
           });
-
-          autoReplaceTracks = setupGetUserMedia({ audio: true, video: true });
-          autoAudioTrack = autoReplaceTracks.find((t) => t.kind === "audio") as any;
-          autoAudioTrack.getSettings.mockReturnValue({
-            deviceId: "mic1",
+          firstTimeTracks[1].getSettings.mockReturnValue({
+            deviceId: "camera1",
           });
+          setupVideoResolutionProbes(); // after first trackended event and consequent devices list refresh
 
           mockWhipClient = createMockWhipClient();
           // @ts-ignore
@@ -383,8 +391,11 @@ describe("WebrtcStreaming", () => {
           // @ts-ignore
           window.navigator.mediaDevices.getUserMedia.mockClear();
           setup(mockWhipClient);
+
           endedTrack.dispatchEvent("ended");
-          await clock.tickAsync(0);
+          await clock.tickAsync(1000); // refresh devices list delay 1st (after trackended)
+          await clock.tickAsync(1000); // refresh devices list delay 2nd (after OverconstraintError)
+          await clock.tickAsync(2);
         });
         it("should indicate error with sufficient details", () => {
           expect(onUnplug).toHaveBeenCalledWith({
@@ -473,6 +484,7 @@ describe("WebrtcStreaming", () => {
           WhipClient.mockReturnValueOnce(mockWhipClient);
 
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+            debug: true,
             mediaDevicesAutoSwitch: true,
           });
           // @ts-ignore
@@ -531,6 +543,7 @@ describe("WebrtcStreaming", () => {
           WhipClient.mockReturnValueOnce(mockWhipClient);
 
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
+            debug: true,
             mediaDevicesAutoSwitch: true,
             mediaDevicesAutoSwitchRefresh: true,
           });
@@ -541,12 +554,11 @@ describe("WebrtcStreaming", () => {
           })
           await webrtc.run(); // will use the stream
           initialTracks[0].dispatchEvent("ended");
-          await clock.tickAsync(0);
         });
         it("should not refresh the list of available devices instantly", () => {
           expect(globalThis.navigator.mediaDevices.enumerateDevices).toHaveBeenCalledTimes(1);
         });
-        it("not refresh the list of available devices after a delay", async () => {
+        it("should refresh the list of available devices after a delay", async () => {
           await clock.tickAsync(1000);
           expect(globalThis.navigator.mediaDevices.enumerateDevices).toHaveBeenCalledTimes(2);
         });

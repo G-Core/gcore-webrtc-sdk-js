@@ -1,5 +1,5 @@
+import { MediaKind } from "../types.js";
 import {
-  MediaKind,
   WebrtcAudioConsumerStats,
   WebrtcAudioProducerStreamStats,
   WebrtcConciseReport,

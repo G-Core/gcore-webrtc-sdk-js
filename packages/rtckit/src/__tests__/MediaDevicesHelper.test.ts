@@ -8,6 +8,7 @@ import {
   createMockMediaStream,
   createMockMediaStreamTrack,
   MockedMediaStreamTrack,
+  MockOverconstrainedError,
   setupDefaultGetUserMedia,
   setupGetUserMedia,
   setupMockMediaDevices,
@@ -126,13 +127,13 @@ describe("MediaDevices", () => {
       window.navigator.mediaDevices.getUserMedia
         // @ts-ignore
         .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(640, 360, "default")])) // permissions request
-        .mockRejectedValueOnce(new OverconstrainedError("height"))
-        .mockRejectedValueOnce(new OverconstrainedError("width"))
+        .mockRejectedValueOnce(new MockOverconstrainedError("height"))
+        .mockRejectedValueOnce(new MockOverconstrainedError("width"))
         .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(640, 360, "camera01")])) // 360
         .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(854, 480, "camera01")])) // 480
         .mockResolvedValueOnce(createMockMediaStream([createVideoTrack(1280, 720, "camera01")])) // 720
-        .mockRejectedValueOnce(new OverconstrainedError("height"))
-        .mockRejectedValueOnce(new OverconstrainedError("width"));
+        .mockRejectedValueOnce(new MockOverconstrainedError("height"))
+        .mockRejectedValueOnce(new MockOverconstrainedError("width"));
       mediaDevices = new MediaDevicesHelper()
     })
     it("should return only the available resolutions", async () => {
@@ -193,16 +194,9 @@ describe("MediaDevices", () => {
 })
 
 export function setupNoGetUserMedia(reason: string) {
-  const err = new OverconstrainedError(reason);
+  const err = new MockOverconstrainedError(reason);
   // @ts-ignore
   window.navigator.mediaDevices.getUserMedia.mockRejectedValueOnce(err);
-}
-
-class OverconstrainedError extends Error {
-  constructor(public readonly constraint: string) {
-    super(`Constraints could be not satisfied.`);
-    this.name = "OverconstrainedError";
-  }
 }
 
 function createVideoTrack(width: number, height: number, deviceId: string, id?: string): MockedMediaStreamTrack {
