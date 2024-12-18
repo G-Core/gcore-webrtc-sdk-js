@@ -147,8 +147,6 @@ export class WebrtcStreaming {
 
   private whipClient: WhipClient | null = null;
 
-  private hotReplace = true;
-
   private openingStream = false;
 
   private reconnectDevices: ReconnectDevicesSchedule | null = null;
@@ -220,10 +218,8 @@ export class WebrtcStreaming {
 
       new Promise<void>((resolve, reject) => {
         if (this.mediaStream) {
-          // TODO always close the stream
-          if (!this.hotReplace || !this.whipClient || this.options?.mediaDevicesMultiOpen === false) {
-            return this.closeMediaStream().then(resolve, reject);
-          }
+          // TODO test that the stream is always closed
+          return this.closeMediaStream().then(resolve, reject);
         }
         resolve();
       }).then(() => Promise.all([
@@ -324,8 +320,6 @@ export class WebrtcStreaming {
       return;
     }
     this.audioEnabled = active;
-    // TODO replace the outgoing audio track with a silent one
-    // TODO test
     if (!this.mediaStream) {
       return;
     }
@@ -363,7 +357,7 @@ export class WebrtcStreaming {
   }
 
   private async closeMediaStream() {
-    trace(`${T} closeMediaStream`, { exists: !!this.mediaStream });
+    trace(`${T} closeMediaStream`, { tracks: this.mediaStream?.getTracks().map(t => t.kind).join() });
     if (!this.mediaStream) {
       return;
     }
@@ -381,7 +375,7 @@ export class WebrtcStreaming {
   private async replaceStream(stream: MediaStream) {
     trace(`${T} replaceStream`, { client: !!this.whipClient });
     return new Promise<void>((resolve, reject) => {
-      if (!(this.whipClient && this.hotReplace)) {
+      if (!this.whipClient) {
         return resolve();
       }
       const client = this.whipClient;

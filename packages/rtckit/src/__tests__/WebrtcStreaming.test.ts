@@ -184,7 +184,7 @@ describe("WebrtcStreaming", () => {
     });
     // TODO test that device probes are always done at first openSourceStream call
     describe("hot track replacement", () => {
-      describe("when the audio track is toggled off", () => {
+      describe("when the audio track is turned off", () => {
         let firstTimeTracks: MediaStreamTrack[];
         beforeEach(() => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
