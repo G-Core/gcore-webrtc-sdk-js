@@ -34,7 +34,7 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@sentry/types": "^8.23.0",
-    "@sinonjs/fake-timers": "^13.0.2",
+    "@sinonjs/fake-timers": "^14.0.0",
     "@types/debug": "^4.1.12",
     "@types/sdp-transform": "^2.4.9",
     "@types/sinonjs__fake-timers": "^8.1.5",
