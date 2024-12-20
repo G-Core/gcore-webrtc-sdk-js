@@ -20,21 +20,7 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/apps/basic" # Location of package manifests
-    registries: "*"
-    allow:
-      - dependency-type: "all"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "npm" # See documentation for possible values
     directory: "/apps/embedded-ingest-demo" # Location of package manifests
-    registries: "*"
-    allow:
-      - dependency-type: "all"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/apps/gvcdemo" # Location of package manifests
     registries: "*"
     allow:
       - dependency-type: "all"
