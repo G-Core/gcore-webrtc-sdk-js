@@ -1,14 +1,13 @@
-import { EventEmitter } from "eventemitter3";
+import EventLite from "event-lite";
 
 export class WebrtcPeerConnectionWatcher {
-  private emitter = new EventEmitter<{
-    "peer-connection-created": (pc: RTCPeerConnection) => void;
-  }>();
+  private emitter = new EventLite();
 
   private origPC: typeof RTCPeerConnection | undefined;
 
   destroy() {
-    this.emitter.removeAllListeners();
+    // @ts-ignore - typings are wrong about optionality of the arguments
+    this.emitter.off();
     if (this.origPC) {
       (window.RTCPeerConnection as unknown) = this.origPC;
       delete this.origPC;

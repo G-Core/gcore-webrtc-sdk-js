@@ -1,4 +1,4 @@
-import { EventEmitter } from "eventemitter3";
+import EventLite from "event-lite";
 
 import { WebrtcPeerConnectionWatcher } from "./WebrtcPeerConnectionWatcher.js";
 import { WebrtcStatsReportBuilder } from "./WebrtcStatsReportBuilder.js";
@@ -11,9 +11,7 @@ export class WebrtcStatsReporter {
 
   private intervalRef: number | undefined;
 
-  private emitter = new EventEmitter<{
-    report: (report: WebrtcConciseReport) => void;
-  }>();
+  private emitter = new EventLite();
 
   private peerConnections: Set<RTCPeerConnection> = new Set();
 
@@ -60,7 +58,8 @@ export class WebrtcStatsReporter {
       clearInterval(this.intervalRef);
       this.intervalRef = undefined;
     }
-    this.emitter.removeAllListeners();
+    // @ts-ignore - typings are wrong about optionality of the arguments
+    this.emitter.off();
     this.peerConnections.clear();
   }
 

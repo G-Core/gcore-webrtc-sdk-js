@@ -1,4 +1,4 @@
-import { EventEmitter } from "eventemitter3";
+import EventLite from "event-lite";
 
 import { MediaDevicesHelper, MediaInputDeviceInfo, VideoResolution } from "./MediaDevicesHelper.js";
 import { reportError, trace } from "./trace/index.js";
@@ -137,7 +137,7 @@ const T = "WebrtcStreaming";
 export class WebrtcStreaming {
   public readonly mediaDevices = new MediaDevicesHelper();
 
-  private emitter = new EventEmitter<WebrtcStreamingEvents>();
+  private emitter = new EventLite();
 
   private mediaStream: MediaStream | null = null;
 

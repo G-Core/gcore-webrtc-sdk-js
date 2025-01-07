@@ -1,5 +1,5 @@
 // Based on https://github.com/medooze/whip-whep-js/blob/main/whip.js
-import { EventEmitter } from "eventemitter3";
+import EventLite from "event-lite";
 
 import { reportError, trace } from "../trace/index.js";
 import { restrictCodecs } from "./utils.js";
@@ -48,11 +48,16 @@ export type WhipClientEventTypes = {
 };
 
 /**
+ * @public
+ */
+export type WhipClientEventListener<E extends WhipClientEvents> = (...args: WhipClientEventTypes[E]) => void;
+
+/**
  * WHIP client for streaming with WebRTC from a browser
  * @public
  */
 export class WhipClient {
-  private emitter = new EventEmitter<WhipClientEvents>();
+  private emitter = new EventLite();
 
   private closed = false;
 
@@ -221,7 +226,7 @@ export class WhipClient {
 
   on<E extends WhipClientEvents>(
     event: E,
-    listener: EventEmitter.EventListener<WhipClientEventTypes, E>,
+    listener: WhipClientEventListener<E>,
   ) {
     this.emitter.on(event, listener);
   }

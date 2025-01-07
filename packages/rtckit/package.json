@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.83.0",
+  "version": "0.84.0",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "cbor-x": "^1.5.9",
-    "eventemitter3": "^5.0.1",
+    "event-lite": "^1.0.0",
     "sdp-transform": "^2.14.2"
   },
   "devDependencies": {
