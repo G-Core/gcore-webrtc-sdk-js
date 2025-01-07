@@ -192,7 +192,6 @@ export class WebrtcStreaming {
   }
 
   /**
-   * 
    * @param params - If not specified, will use the default parameters, requesting both audio and video from any devices.
    *    If the parameters are equivalent (e.g., empty) to the parameters used to request the current media stream, the stream is not reopened.
    * @returns  - A promise resolving with a MediaStream object or rejecting with a native browser error.
@@ -231,7 +230,6 @@ export class WebrtcStreaming {
           audio: buildAudioConstraints(this.streamParams, mics),
           video: buildVideoContraints(this.streamParams, cameras, dev => this.mediaDevices.getAvailableVideoResolutions(dev)),
         };
-        trace(`${T} openSourceStream built constraints`, { constraints, params: this.streamParams });
         return navigator.mediaDevices.getUserMedia(constraints).catch(e => {
           reportError(e);
           return this.sscp.openSourceStreamError(e, constraints);
@@ -565,8 +563,7 @@ function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInpu
   }
   const constraints: MediaTrackConstraints = {};
   if (typeof params.video === "string") {
-    const dev = devicesList.find((d) => d.deviceId === params.video);
-    if (dev) {
+    if (devicesList.find((d) => d.deviceId === params.video)) {
       constraints.deviceId = { exact: params.video };
       if (params.resolution) {
         const items = rlist(params.video);

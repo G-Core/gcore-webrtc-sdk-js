@@ -1,4 +1,4 @@
-import {Client} from "@sentry/types";
+import { Client, addBreadcrumb } from "@sentry/core";
 
 /**
  * @beta
@@ -10,8 +10,11 @@ export class SentryTracer {
     this.client.captureException(e);
   }
 
-  trace(msg: string, data?: Record<string, unknown>) {
-    this.client.captureMessage(msg, "info", {
+  trace(message: string, data?: Record<string, unknown>) {
+    addBreadcrumb({
+      type: "default",
+      level: "info",
+      message,
       data,
     });
   }
