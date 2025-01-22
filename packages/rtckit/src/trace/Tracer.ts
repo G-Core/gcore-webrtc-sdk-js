@@ -4,11 +4,17 @@ const logger = new Logger("_");
 
 type TagValue = string | boolean | number | null | undefined;
 
+/**
+ * @public
+ */
 export interface Tracer {
   reportError(e: unknown): void;
   trace(msg: string, data: Record<string, unknown>): void;
 }
 
+/**
+ * @beta
+ */
 export class LogTracer implements Tracer {
   private tags: Record<string, TagValue> = {};
 
