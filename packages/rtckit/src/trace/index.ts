@@ -15,17 +15,17 @@ export function setTracer(t: Tracer) {
 }
 
 /**
- * @internal
- * @param e
+ * @public
+ * @param e - error to report
  */
 export function reportError(e: unknown) {
   tracer.reportError(e);
 }
 
 /**
- * @internal
- * @param msg
- * @param data
+ * @public
+ * @param msg - message to attach to the trace
+ * @param data - additional attributes to attach to the trace message
  */
 export function trace(msg: string, data: Record<string, unknown> = {}) {
   tracer.trace(msg, data);
