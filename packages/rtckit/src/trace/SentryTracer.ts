@@ -1,17 +1,17 @@
-import { Client, addBreadcrumb } from "@sentry/core";
+import { Client, Scope, addBreadcrumb } from "@sentry/core";
 
 /**
  * @beta
  */
 export class SentryTracer {
-  constructor(private client: Client) {}
+  constructor(private client: Client, private scope: Scope) {}
 
   reportError(e: Error) {
     this.client.captureException(e);
   }
 
   trace(message: string, data?: Record<string, unknown>) {
-    addBreadcrumb({
+    this.scope.addBreadcrumb({
       type: "default",
       level: "info",
       message,
