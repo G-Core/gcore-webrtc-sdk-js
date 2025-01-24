@@ -1,4 +1,4 @@
-import { reportError, trace } from "./trace/index.js";
+import { reportError, trace } from "@gcorevideo/utils";
 
 /**
  * @public

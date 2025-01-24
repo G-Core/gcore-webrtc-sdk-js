@@ -1,7 +1,7 @@
 // Based on https://github.com/medooze/whip-whep-js/blob/main/whip.js
 import EventLite from "event-lite";
 
-import { reportError, trace } from "../trace/index.js";
+import { reportError, trace } from "@gcorevideo/utils";
 import { restrictCodecs } from "./utils.js";
 import { WhipClientOptions, WhipClientPlugin } from "./types.js";
 import {

@@ -9,7 +9,7 @@ import pkg from "../package.json" with { type: "json" };
  */
 export const version = pkg.version;
 
-export * from "./Logger.js";
+export * from "@gcorevideo/utils"; // TODO export only setTracer after the next minor release
 export * from "./MediaDevicesHelper.js";
 export * from "./WebrtcStreaming.js";
 export * from "./aux/IngesterErrorHandler.js";
@@ -19,11 +19,6 @@ export * from "./aux/VideoResolutionChangeDetector.js";
 export * from "./errors.js";
 export * from "./stats/WebrtcReporter.js";
 export * from "./stats/types.js";
-export { LogTracer } from "./trace/LogTracer.js";
-export { RemoteTracer } from "./trace/RemoteTracer.js";
-export { SentryTracer } from "./trace/SentryTracer.js";
-export type { Tracer } from "./trace/Tracer.js";
-export { reportError, setTracer, trace } from "./trace/index.js";
 export * from "./types.js";
 export * from "./userMedia/types.js";
 export * from "./whip/WhipClient.js";

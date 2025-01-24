@@ -1,5 +1,6 @@
+import { trace } from "@gcorevideo/utils";
+
 import { WhipClientPluginBase } from "./plugins.js";
-import { trace } from "../trace/index.js";
 import type { WhipClientPlugin } from "../whip/types.js";
 
 const CHECK_INTERVAL = 1000;

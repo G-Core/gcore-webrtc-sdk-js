@@ -6,7 +6,7 @@ import {
   ref,
 } from 'vue'
 
-import { reportError } from '@gcorevideo/rtckit/lib/trace'
+import { reportError } from '@gcorevideo/utils'
 
 import { useMediaDevicesStore } from '../stores/mediaDevices'
 import { useWebrtcProducer } from '@/composables/webrtcProducer'

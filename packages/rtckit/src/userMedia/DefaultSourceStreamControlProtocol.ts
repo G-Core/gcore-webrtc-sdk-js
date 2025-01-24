@@ -1,4 +1,5 @@
-import { trace } from "../trace/index.js";
+import { trace } from "@gcorevideo/utils";
+
 import { SourceStreamControlProtocol, SourceStreamControlProtocolConnector, WebrtcStreamParams } from "./types.js";
 import { looseMediaDeviceConstraints } from "./utils.js";
 import { MediaKind } from "src/types.js";

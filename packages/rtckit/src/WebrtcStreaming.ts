@@ -1,7 +1,7 @@
+import { reportError, trace } from "@gcorevideo/utils";
 import EventLite from "event-lite";
 
 import { MediaDevicesHelper, MediaInputDeviceInfo, VideoResolution } from "./MediaDevicesHelper.js";
-import { reportError, trace } from "./trace/index.js";
 import { MediaKind } from "./types.js";
 import { DefaultSourceStreamControlProtocol } from "./userMedia/DefaultSourceStreamControlProtocol.js";
 import { SourceStreamControlProtocol, WebrtcStreamParams } from "./userMedia/types.js";
