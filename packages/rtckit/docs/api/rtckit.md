@@ -52,28 +52,6 @@ Some erroneous sequence of operations, e.g.: - attempt to double-produce/consume
 </td></tr>
 <tr><td>
 
-[Logger](./rtckit.logger.md)
-
-
-</td><td>
-
-**_(BETA)_** Logging utility with \[debug\](https://www.npmjs.com/package/debug)-like API
-
-
-</td></tr>
-<tr><td>
-
-[LogTracer](./rtckit.logtracer.md)
-
-
-</td><td>
-
-A tracer that logs to the console
-
-
-</td></tr>
-<tr><td>
-
 [MalformedResponseError](./rtckit.malformedresponseerror.md)
 
 
@@ -113,17 +91,6 @@ Network error during a WHIP/WHEP API request. Reasons: - no internet connection 
 </td><td>
 
 **_(BETA)_** Number of reconnect attempts exceeded. Reconects happen automatically when a WebRTC session is abruptly closed.
-
-
-</td></tr>
-<tr><td>
-
-[SentryTracer](./rtckit.sentrytracer.md)
-
-
-</td><td>
-
-**_(BETA)_**
 
 
 </td></tr>
@@ -292,32 +259,6 @@ Description
 </td></tr>
 </tbody></table>
 
-## Functions
-
-<table><thead><tr><th>
-
-Function
-
-
-</th><th>
-
-Description
-
-
-</th></tr></thead>
-<tbody><tr><td>
-
-[setTracer(t)](./rtckit.settracer.md)
-
-
-</td><td>
-
-Sets a tracer implementation, e.g., LogTracer or SentryTracer
-
-
-</td></tr>
-</tbody></table>
-
 ## Interfaces
 
 <table><thead><tr><th>
@@ -361,16 +302,6 @@ Description
 </td><td>
 
 **_(BETA)_**
-
-
-</td></tr>
-<tr><td>
-
-[Tracer](./rtckit.tracer.md)
-
-
-</td><td>
-
 
 
 </td></tr>
@@ -715,6 +646,16 @@ WebRTC streaming configuration options. See also [WhipClientOptions](./rtckit.wh
 </td></tr>
 <tr><td>
 
+[WhipClientEventListener](./rtckit.whipclienteventlistener.md)
+
+
+</td><td>
+
+
+
+</td></tr>
+<tr><td>
+
 [WhipClientEventTypes](./rtckit.whipclienteventtypes.md)
 
 
@@ -732,17 +673,6 @@ Event name =<!-- -->&gt; arguments mapping
 </td><td>
 
 Options affecting the behaviour of WhipClient
-
-
-</td></tr>
-<tr><td>
-
-[WriteFn](./rtckit.writefn.md)
-
-
-</td><td>
-
-**_(BETA)_**
 
 
 </td></tr>

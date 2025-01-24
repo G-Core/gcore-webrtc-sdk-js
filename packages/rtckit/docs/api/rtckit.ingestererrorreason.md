@@ -51,6 +51,22 @@ DuplicateStream
 </td></tr>
 <tr><td>
 
+StreamDeactivated
+
+
+</td><td>
+
+`2004`
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
+
 StreamNotExists
 
 

@@ -24,6 +24,7 @@
     "test:watch": "vitest --environment=jsdom watch"
   },
   "dependencies": {
+    "@microsoft/api-documenter": "^7.26.5",
     "cbor-x": "^1.5.9",
     "event-lite": "^1.0.0",
     "sdp-transform": "^2.14.2"
@@ -38,7 +39,6 @@
     "@types/debug": "^4.1.12",
     "@types/sdp-transform": "^2.4.9",
     "@types/sinonjs__fake-timers": "^8.1.5",
-    "api-documenter": "^99.99.99",
     "jsdom": "^25.0.0",
     "oxlint": "^0.11.1",
     "prettier": "^3.3.3",
