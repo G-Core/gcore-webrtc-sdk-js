@@ -1,6 +1,4 @@
 import {
-  LogTracer,
-  Logger,
   IngesterErrorHandler,
   IngesterErrorReason,
   StreamMeta,
@@ -8,9 +6,13 @@ import {
   WebrtcStreaming,
   WebrtcStreamingEvents,
   WhipClientEvents,
-  setTracer,
   version,
 } from '@gcorevideo/rtckit'
+import {
+  LogTracer,
+  Logger,
+  setTracer,
+} from '@gcorevideo/utils'
 
 // Get the endpoint URL from the CCP
 // Link path made of the integer stream ID and a token, which is a random hash value in hex format

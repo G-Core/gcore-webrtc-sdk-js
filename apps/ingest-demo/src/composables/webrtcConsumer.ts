@@ -1,6 +1,6 @@
 import { readonly, ref } from 'vue'
 import { WebRTCPlayer } from '@eyevinn/webrtc-player'
-import { reportError } from '@gcorevideo/rtckit/lib/trace'
+import { reportError } from '@gcorevideo/utils'
 
 type WebrtcConsumeParams = {
   iceServers?: RTCIceServer[]

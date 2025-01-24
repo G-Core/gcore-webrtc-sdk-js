@@ -5,7 +5,7 @@ import pkg from "../package-lock.json" with { type: "json" };
 import App from './App.vue'
 import router from './router'
 
-import { LogTracer, Logger, setTracer } from '@gcorevideo/rtckit';
+import { LogTracer, Logger, setTracer } from '@gcorevideo/utils';
 
 const rtckitVersion = pkg.packages["node_modules/@gcorevideo/rtckit"].version;
 
