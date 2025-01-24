@@ -12,6 +12,7 @@ export enum IngesterErrorReason {
   StreamNotExists = 2001,
   StreamTokenInvalid = 2002,
   DuplicateStream = 2003,
+  StreamDeactivated = 2004,
 }
 
 /**

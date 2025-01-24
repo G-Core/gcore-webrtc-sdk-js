@@ -8,4 +8,7 @@ export type LiveStreamDto = {
   push_url_whip: string;
   token: string;
   uri: string;
+  dash_url: string | null;
+  hls_cmaf_url: string | null;
+  hls_mpegts_url: string | null;
 };

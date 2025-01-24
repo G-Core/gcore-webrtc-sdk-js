@@ -9,12 +9,16 @@ export type WebrtcStream = {
   playerUrl: string;
   whepEndpoint: string;
   whipEndpoint: string;
+  dashUrl: string | null;
+  hlsCmafUrl: string | null;
+  hlsMpegtsUrl: string | null;
 };
 
-type CustomOptions = {}
+type CustomOptions = {};
 
 export class WebrtcApi {
-  private customOptions: CustomOptions = {};
+  private customOptions: CustomOptions =
+    {};
 
   constructor(
     private service: PlatformApiService,
@@ -23,16 +27,17 @@ export class WebrtcApi {
   async createStream(
     name: string,
   ): Promise<WebrtcStream> {
-    const r = (await this.service.request(
-      "streams",
-      {
-        method: "post",
-        data: {
-          active: true,
-          name,
+    const r =
+      (await this.service.request(
+        "streams",
+        {
+          method: "post",
+          data: {
+            active: true,
+            name,
+          },
         },
-      },
-    )) as LiveStreamDto;
+      )) as LiveStreamDto;
     return toWebrtcStream(r);
   }
 
@@ -47,7 +52,10 @@ export class WebrtcApi {
     );
   }
 
-  async toggleStream(id: StreamId, active: boolean) {
+  async toggleStream(
+    id: StreamId,
+    active: boolean,
+  ) {
     await this.service.request(
       `streams/${id}`,
       {
@@ -56,10 +64,12 @@ export class WebrtcApi {
           active,
         },
       },
-    )
+    );
   }
 
-  setCustomOptions(options: CustomOptions) {
+  setCustomOptions(
+    options: CustomOptions,
+  ) {
     this.customOptions = options;
   }
 }
@@ -73,5 +83,8 @@ function toWebrtcStream(
     playerUrl: r.iframe_url,
     whepEndpoint: "",
     whipEndpoint: r.push_url_whip,
+    dashUrl: r.dash_url,
+    hlsCmafUrl: r.hls_cmaf_url,
+    hlsMpegtsUrl: r.hls_mpegts_url,
   };
 }
