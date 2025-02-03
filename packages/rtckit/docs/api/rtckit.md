@@ -151,16 +151,6 @@ Timeout, see the message for the details.
 </td></tr>
 <tr><td>
 
-[VideoResolutionProbeError](./rtckit.videoresolutionprobeerror.md)
-
-
-</td><td>
-
-
-
-</td></tr>
-<tr><td>
-
 [WebrtcReporter](./rtckit.webrtcreporter.md)
 
 

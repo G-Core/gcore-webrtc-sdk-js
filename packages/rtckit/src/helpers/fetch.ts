@@ -89,6 +89,7 @@ export async function handleFetchResponse(
  * @returns
  */
 function handleFetchErrorResponse(e: Error): Promise<never> {
+  // TODO do something with CORS as it makes impossible to discern between network and server errors
   return Promise.reject(e instanceof TypeError ? new NetworkError(e.message) : e);
 }
 

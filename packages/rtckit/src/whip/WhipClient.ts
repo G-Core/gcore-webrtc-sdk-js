@@ -156,7 +156,7 @@ export class WhipClient {
     this.mediaStream = null;
   }
 
-  async start(mediaStream: MediaStream) {
+  async start(mediaStream: MediaStream): Promise<void> {
     if (this.pc) {
       throw new ConflictError("Already publishing");
     }
