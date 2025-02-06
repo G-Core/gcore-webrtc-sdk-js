@@ -55,7 +55,7 @@ export class WebrtcApi {
   async toggleStream(
     id: StreamId,
     active: boolean,
-  ) {
+  ): Promise<void> {
     await this.service.request(
       `streams/${id}`,
       {

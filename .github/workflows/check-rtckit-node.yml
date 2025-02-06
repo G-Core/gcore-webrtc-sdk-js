@@ -8,6 +8,9 @@ on:
       - 'packages/rtckit-node/package.json'
       - 'packages/rtckit-node/package-lock.json'
 
+permissions:
+  contents: read
+
 jobs:
   check-rtckit:
     runs-on:
