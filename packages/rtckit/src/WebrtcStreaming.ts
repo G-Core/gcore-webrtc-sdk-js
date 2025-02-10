@@ -38,9 +38,10 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
  *  See also {@link WebrtcStreaming.openSourceStream}, {@link MediaDevicesHelper.getAvailableVideoResolutions}
  */
 export type WebrtcStreamingOptions = WhipClientOptions & {
+  /**
+   * @beta
+   */
   mediaDevicesAutoSwitch?: boolean;
-  mediaDevicesAutoSwitchRefresh?: boolean; // deprecated (the logic is always enabled)
-  mediaDevicesMultiOpen?: boolean; // deprecated (the logic is always enabled)
   /**
    * @beta
    */
@@ -172,7 +173,7 @@ export class WebrtcStreaming {
     this.sscp.close();
   }
 
-  configure(endpoint: string, options?: WebrtcStreamingOptions) {
+  configure(endpoint: string, options?: Exclude<WebrtcStreamingOptions, "mediaDevicesAutoSwitch">) {
     trace(`${T} configure`, {
       endpoint: options?.debug ? endpoint : maskEndpoint(endpoint),
       options: maskOptions(options)
@@ -397,7 +398,7 @@ export class WebrtcStreaming {
   }
 
   private bindMediaDeviceAutoReconnect(stream: MediaStream) {
-    trace('bindMediaDeviceAutoReconnect', { autoSwitch: this.options?.mediaDevicesAutoSwitch });
+    trace('bindMediaDeviceAutoReconnect', { autoSwitch: !!this.options?.mediaDevicesAutoSwitch });
     if (!this.options?.mediaDevicesAutoSwitch) {
       return;
     }
