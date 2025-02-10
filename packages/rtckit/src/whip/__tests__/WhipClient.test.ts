@@ -5,7 +5,8 @@ import { createMockAudioContext, MockAudioContext } from "../../audio/testUtils.
 import { WhipClientPlugin } from "../types.js";
 import FakeTimers from "@sinonjs/fake-timers";
 
-import { LogTracer, Logger, MediaKind, ServerRequestError, setTracer } from "../../index.js";
+import { MediaKind, ServerRequestError, setTracer } from "../../index.js";
+import { Logger, LogTracer } from "@gcorevideo/utils";
 
 Logger.enable("*");
 
@@ -18,7 +19,7 @@ describe("WhipClient", () => {
   let pc: MockedObject<RTCPeerConnection>;
 
   beforeEach(() => {
-    setTracer(new LogTracer());
+    setTracer(new LogTracer("WhipClient.test"));
     mfetch = setupWhipWithoutPreflight();
     clock = FakeTimers.install();
   });

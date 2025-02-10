@@ -5,9 +5,7 @@ import { MediaDeviceSwitchInfo, MediaDeviceSwitchOffInfo, WebrtcStreaming, Webrt
 
 import { WhipClient } from "../whip/WhipClient.js";
 
-import { Logger } from "../Logger.js";
-import { LogTracer } from "../trace/LogTracer.js";
-import { setTracer } from "../trace/index.js";
+import { LogTracer, Logger, setTracer } from "@gcorevideo/utils";
 import {
   MockedMediaStream,
   MockedMediaStreamTrack,

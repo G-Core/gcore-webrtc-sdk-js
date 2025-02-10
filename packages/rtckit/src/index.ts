@@ -9,7 +9,7 @@ import pkg from "../package.json" with { type: "json" };
  */
 export const version = pkg.version;
 
-export * from "@gcorevideo/utils"; // TODO export only setTracer after the next minor release
+export { setTracer} from "@gcorevideo/utils";
 export * from "./MediaDevicesHelper.js";
 export * from "./WebrtcStreaming.js";
 export * from "./aux/IngesterErrorHandler.js";

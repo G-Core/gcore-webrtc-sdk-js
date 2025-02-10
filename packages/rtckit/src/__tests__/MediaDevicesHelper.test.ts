@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-// import { Logger } from "../Logger.js";
-import { LogTracer } from "../trace/LogTracer.js";
-import { setTracer } from "../trace/index.js";
+import { LogTracer, setTracer } from "@gcorevideo/utils";
 import { MediaDevicesHelper, MediaInputDeviceInfo } from "../MediaDevicesHelper.js";
 import {
   createMockMediaStream,
