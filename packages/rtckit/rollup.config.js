@@ -12,7 +12,7 @@ export default [
           "@gcorevideo/utils",
           "cbor-x",
           "debug",
-          "eventemitter3",
+          "event-lite",
           "ms",
           "sdp-transform",
         ],
