@@ -8,7 +8,7 @@
  */
 export { version } from "../package.json" with { type: "json" };
 
-export { setTracer} from "@gcorevideo/utils";
+export { LogTracer, Logger, SentryTracer, reportError, setTracer, trace } from "@gcorevideo/utils";
 export * from "./MediaDevicesHelper.js";
 export * from "./WebrtcStreaming.js";
 export * from "./aux/IngesterErrorHandler.js";
