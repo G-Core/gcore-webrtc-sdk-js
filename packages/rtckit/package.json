@@ -1,16 +1,15 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.89.9",
+  "version": "0.89.10",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
   "types": "lib/index.d.ts",
-  "main": "lib/index.js",
+  "main": "lib/index.esm.js",
   "files": [
     "lib"
   ],
   "type": "module",
-  "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "build:bundle": "rollup -c",

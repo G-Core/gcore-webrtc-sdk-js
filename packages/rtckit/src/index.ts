@@ -1,13 +1,12 @@
 /**
+ * @packageDocumentation
  * Gcore WebRTC Kit
  */
-
-import pkg from "../package.json" with { type: "json" };
 
 /**
  * @public
  */
-export const version = pkg.version;
+export { version } from "../package.json" with { type: "json" };
 
 export { setTracer} from "@gcorevideo/utils";
 export * from "./MediaDevicesHelper.js";
