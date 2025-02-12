@@ -3,10 +3,7 @@
  * Gcore WebRTC Kit
  */
 
-/**
- * @public
- */
-export { version } from "../package.json" with { type: "json" };
+import { version as v } from "../package.json" with { type: "json" };
 
 export { LogTracer, Logger, SentryTracer, reportError, setTracer, trace } from "@gcorevideo/utils";
 export * from "./MediaDevicesHelper.js";
@@ -20,6 +17,10 @@ export * from "./stats/WebrtcReporter.js";
 export * from "./stats/types.js";
 export * from "./types.js";
 export * from "./userMedia/types.js";
+/**
+ * @public
+ */
+export const version = v;
 export * from "./whip/WhipClient.js";
 export * from "./whip/errors.js";
 export * from "./whip/types.js";

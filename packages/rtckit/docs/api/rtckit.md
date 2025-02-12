@@ -4,6 +4,8 @@
 
 ## rtckit package
 
+Gcore WebRTC Kit
+
 ## Classes
 
 <table><thead><tr><th>
@@ -384,6 +386,17 @@ A codec match condition to filter the available codecs
 
 </td><td>
 
+
+
+</td></tr>
+<tr><td>
+
+[MediaDevicesHelperOptions](./rtckit.mediadeviceshelperoptions.md)
+
+
+</td><td>
+
+**_(BETA)_**
 
 
 </td></tr>

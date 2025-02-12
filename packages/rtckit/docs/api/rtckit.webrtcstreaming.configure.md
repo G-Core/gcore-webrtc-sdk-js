@@ -7,7 +7,7 @@
 **Signature:**
 
 ```typescript
-configure(endpoint: string, options?: WebrtcStreamingOptions): void;
+configure(endpoint: string, options?: Exclude<WebrtcStreamingOptions, "mediaDevicesAutoSwitch">): void;
 ```
 
 ## Parameters
@@ -49,7 +49,7 @@ options
 
 </td><td>
 
-[WebrtcStreamingOptions](./rtckit.webrtcstreamingoptions.md)
+Exclude&lt;[WebrtcStreamingOptions](./rtckit.webrtcstreamingoptions.md)<!-- -->, "mediaDevicesAutoSwitch"&gt;
 
 
 </td><td>

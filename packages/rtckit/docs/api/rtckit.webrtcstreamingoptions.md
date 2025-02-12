@@ -11,8 +11,6 @@ WebRTC streaming configuration options. See also [WhipClientOptions](./rtckit.wh
 ```typescript
 export type WebrtcStreamingOptions = WhipClientOptions & {
     mediaDevicesAutoSwitch?: boolean;
-    mediaDevicesAutoSwitchRefresh?: boolean;
-    mediaDevicesMultiOpen?: boolean;
     sourceStreamControlProtocol?: SourceStreamControlProtocol;
 };
 ```

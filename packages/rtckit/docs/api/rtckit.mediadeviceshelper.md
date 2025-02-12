@@ -12,6 +12,40 @@ A wrapper around browser's `navigator.mediaDevices` to simplify getting access t
 export declare class MediaDevicesHelper 
 ```
 
+## Constructors
+
+<table><thead><tr><th>
+
+Constructor
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[(constructor)(options)](./rtckit.mediadeviceshelper._constructor_.md)
+
+
+</td><td>
+
+
+</td><td>
+
+Constructs a new instance of the `MediaDevicesHelper` class
+
+
+</td></tr>
+</tbody></table>
+
 ## Methods
 
 <table><thead><tr><th>
