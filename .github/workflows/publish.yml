@@ -37,7 +37,7 @@ jobs:
             -a sha256 \
             ./*.js > ./SHA256.txt
           python $LIBDIR/upload-s3.py \
-            --endpoint 'https://$S3_HOSTNAME' \
+            --endpoint https://$S3_HOSTNAME \
             --bucket rtckit \
             . \
             ${{ github.ref_name }}
