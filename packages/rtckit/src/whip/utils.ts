@@ -6,8 +6,6 @@ import { CodecMatch } from "./types.js";
 type RtpPayloadDesc = MediaAttributes['rtp'][number];
 type RtpPayloadFormatDesc = MediaAttributes['fmtp'][number];
 
-// TODO test
-
 export function restrictCodecs(sdp: string, kind: "audio" | "video", codecs: Array<string | CodecMatch>): string {
   const parsed = sdpTransform.parse(sdp);
   const msection = parsed.media.find((m) => m.type === kind);

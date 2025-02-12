@@ -82,6 +82,7 @@ describe("WebrtcStreaming", () => {
     describe("open twice", () => {
       describe.each([
         [
+          'extra param',
           {
             audio: true,
             video: true,
@@ -100,6 +101,7 @@ describe("WebrtcStreaming", () => {
           }
         ],
         [
+          'different deviceId',
           {
             audio: true,
             video: true,
@@ -118,6 +120,7 @@ describe("WebrtcStreaming", () => {
           }
         ],
         [
+          'same params',
           {
             audio: true,
             video: true,
@@ -129,6 +132,7 @@ describe("WebrtcStreaming", () => {
           undefined,
         ],
         [
+          'same loosened params',
           {
             audio: "mic1",
             video: true,
@@ -140,6 +144,7 @@ describe("WebrtcStreaming", () => {
           undefined,
         ],
         [
+          'same loosened extra param',
           {
             audio: true,
             video: true,
@@ -151,7 +156,19 @@ describe("WebrtcStreaming", () => {
           },
           undefined,
         ],
-      ])("", (firstParams, secondParams, expectedConstraints) => {
+        [
+          'same real params',
+          {
+            audio: true,
+            video: true,
+          },
+          {
+            audio: "default", // @see setupGetUserMedia..createMockMediaStreamTrack..getSettings().deviceId
+            video: "default",
+          },
+          undefined,
+        ],
+      ])("%s", (_, firstParams, secondParams, expectedConstraints) => {
         beforeEach(async () => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
             debug: true,
@@ -180,7 +197,6 @@ describe("WebrtcStreaming", () => {
         }
       });
     });
-    // TODO test that device probes are always done at first openSourceStream call
     describe("hot track replacement", () => {
       describe("when the audio track is turned off", () => {
         let firstTimeTracks: MediaStreamTrack[];

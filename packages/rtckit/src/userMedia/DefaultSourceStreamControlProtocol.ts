@@ -18,13 +18,13 @@ export class DefaultSourceStreamControlProtocol implements SourceStreamControlPr
   async openSourceStreamError(e: Error, constraints: MediaStreamConstraints): Promise<MediaStream> {
     trace(`${T} openSourceStreamError`, { error: e.name, message: e.message, constraints });
     // TODO test this
-    // TODO in Firefox it's a MediaStreamError, in Chrome it's a DOMException
+    // TODO in Firefox it's a MediaStreamError, in Chrome it's a DOMException (as per spec)
     if (e.name === "OverconstrainedError"
       && (
         (constraints.video && typeof constraints.video === "object" && constraints.video.deviceId) ||
         (constraints.audio && typeof constraints.audio === "object" && constraints.audio.deviceId)
       )
-      // TODO handle NotFoundError
+      || e.name === "NotFoundError" // TODO test
     ) {
       trace(`${T} openSourceStreamError updateDevicesList`);
       await this.connector.updateDevicesList();

@@ -136,7 +136,7 @@ const T = "WebrtcStreaming";
  * ```
  */
 export class WebrtcStreaming {
-  public readonly mediaDevices = new MediaDevicesHelper();
+  public readonly mediaDevices;
 
   private emitter = new EventLite();
 
@@ -159,6 +159,9 @@ export class WebrtcStreaming {
 
   constructor(private endpoint: string, private options?: WebrtcStreamingOptions) {
     this.sscp = options?.sourceStreamControlProtocol || new DefaultSourceStreamControlProtocol();
+    this.mediaDevices = new MediaDevicesHelper({
+      debug: options?.debug,
+    });
     this.sscp.connect({
       closeStream: this.closeMediaStream.bind(this),
       openStream: this.openSourceStream.bind(this),
@@ -206,12 +209,15 @@ export class WebrtcStreaming {
     this.mediaStreamPromise = new Promise<MediaStream>((resolve, reject) => {
       if (this.mediaStream) {
         if (!params || sameStreamParams(this.streamParams, params)) {
-          trace(`${T} openSourceStream already opened with the same params`);
+          trace(`${T} openSourceStream already opened with the same params`, {
+            current: this.streamParams,
+            next: params,
+          });
           return resolve(this.mediaStream);
         }
       }
-
       if (params) {
+        // `video` and `audio` will be overridden by the actual device IDs, this is only for caching the multiple requests
         this.streamParams = { ...params };
       }
       this.openingStream = true;
@@ -503,18 +509,10 @@ export class WebrtcStreaming {
   }
 
   private updateCurrentStreamParams(stream: MediaStream) {
-    if (typeof this.streamParams.audio === "string") {
-      const devId = stream.getAudioTracks()[0]?.getSettings().deviceId;
-      if (devId && devId !== this.streamParams.audio) {
-        this.streamParams.audio = true;
-      }
-    }
-    if (typeof this.streamParams.video === "string") {
-      const devId = stream.getVideoTracks()[0]?.getSettings().deviceId;
-      if (devId && devId !== this.streamParams.video) {
-        this.streamParams.video = true;
-      }
-    }
+    trace(`${T} updateCurrentStreamParams before`, { streamParams: this.streamParams });
+    this.streamParams.audio = stream.getAudioTracks()[0]?.getSettings().deviceId;
+    this.streamParams.video = stream.getVideoTracks()[0]?.getSettings().deviceId;
+    trace(`${T} updateCurrentStreamParams after`, { streamParams: this.streamParams });
   }
 
   private toggleTracks(stream: MediaStream) {
@@ -547,7 +545,11 @@ function sameStreamParams(a: WebrtcStreamParams, b: WebrtcStreamParams): boolean
   return true;
 }
 
+// TODO test the openSourceStream that non-existent deviceId param is reset to true
 function buildAudioConstraints(params: WebrtcStreamParams, devicesList: MediaInputDeviceInfo[]): boolean | MediaTrackConstraints {
+  if (!params.audio || !devicesList.length) {
+    return false;
+  }
   if (typeof params.audio === "string") {
     const dev = devicesList.find((d) => d.deviceId === params.audio);
     if (!dev) {
@@ -558,8 +560,9 @@ function buildAudioConstraints(params: WebrtcStreamParams, devicesList: MediaInp
   return !!params.audio;
 }
 
+// TODO test the openSourceStream, see buildAudioConstraints
 function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInputDeviceInfo[], rlist: (deviceId: string) => VideoResolution[]): boolean | MediaTrackConstraints {
-  if (params.video === false) {
+  if (params.video === false || !devicesList.length) {
     return false;
   }
   const constraints: MediaTrackConstraints = {};

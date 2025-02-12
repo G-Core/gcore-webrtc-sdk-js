@@ -51,6 +51,13 @@ export type MediaInputDeviceInfo = {
 };
 
 /**
+ * @beta
+ */
+export type MediaDevicesHelperOptions = {
+  debug?: boolean;
+};
+
+/**
  * A wrapper around browser's `navigator.mediaDevices` to simplify getting access to the devices
  * @public
  */
@@ -60,6 +67,8 @@ export class MediaDevicesHelper {
   private videoResolutions: Record<string, VideoResolution[]> = {};
 
   private enumerateDevices = new NoCollisions(() => navigator.mediaDevices.enumerateDevices());
+
+  constructor(private options: MediaDevicesHelperOptions = {}) {}
 
   /**
    * Get a list of available video resolutions supported by the device
@@ -220,7 +229,11 @@ export class MediaDevicesHelper {
       })
       .then((devices) => {
         this.devices = devices.filter(({ deviceId }) => !!deviceId);
-        trace(`${T} updateDevices OK`, { devices: this.devices.map((d) => [d.kind, d.deviceId]) });
+        trace(`${T} updateDevices OK`, {
+          devices: this.options.debug
+            ? this.devices.map((d) => [d.kind, d.deviceId, d.label])
+            : this.devices.map((d) => [d.kind, d.deviceId]),
+        });
       });
   });
 
