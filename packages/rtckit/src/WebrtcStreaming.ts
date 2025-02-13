@@ -24,7 +24,7 @@ const NO_DEVICE: MediaInputDeviceInfo = Object.freeze({
  *
  * - `mediaDevicesAutoSwitch` - enable automatic switching to another media device when the current one is disconnected.
  *
- *  When a media device disconnect is detected, the client will attempt to reaqcuire the stream with the same constraints but 
+ *  When a media device disconnect is detected, the client will attempt to reaqcuire the stream with the same constraints but
  *  requesting any available device of that kind. If that succeeds, the client will replace the currently sent media tracks
  *  with those from the new stream. It will then emit a {@link WebrtcStreamingEvents.MediaDeviceSwitch} event, containing the
  *  information about the previous and new media devices. The application code should then reflect the changes in the UI,
@@ -46,7 +46,7 @@ export type WebrtcStreamingOptions = WhipClientOptions & {
    * @beta
    */
   sourceStreamControlProtocol?: SourceStreamControlProtocol;
-}
+};
 
 /**
  * @public
@@ -68,7 +68,7 @@ export enum WebrtcStreamingEvents {
 /**
  * @public
  * @remarks
- * 
+ *
  * - `kind` - media input kind of the device
  *
  * - `prev` - previous media input device info
@@ -79,13 +79,13 @@ export type MediaDeviceSwitchInfo = {
   kind: MediaKind;
   prev: MediaInputDeviceInfo;
   device: MediaInputDeviceInfo;
-}
+};
 
 /**
  * @public
- * 
+ *
  * @remarks
- * 
+ *
  * - `kind` - media input kind of the device
  *
  * - `device` - disconnected media input device info
@@ -93,7 +93,7 @@ export type MediaDeviceSwitchInfo = {
 export type MediaDeviceSwitchOffInfo = {
   kind: MediaKind;
   device: MediaInputDeviceInfo;
-}
+};
 
 /**
  * @public
@@ -101,18 +101,20 @@ export type MediaDeviceSwitchOffInfo = {
 export type MediaDeviceSelectInfo = {
   kind: MediaKind;
   device: MediaInputDeviceInfo;
-}
+};
 
 /**
  * @public
  */
 export type WebrtcStreamingEventTypes = {
-  [WebrtcStreamingEvents.MediaDeviceSelect]: [MediaDeviceSelectInfo],
-  [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDeviceSwitchInfo],
-  [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceSwitchOffInfo],
-}
+  [WebrtcStreamingEvents.MediaDeviceSelect]: [MediaDeviceSelectInfo];
+  [WebrtcStreamingEvents.MediaDeviceSwitch]: [MediaDeviceSwitchInfo];
+  [WebrtcStreamingEvents.MediaDeviceSwitchOff]: [MediaDeviceSwitchOffInfo];
+};
 
-type ReconnectDevicesSchedule = Partial<Record<MediaKind, [resolve: (device: MediaStreamTrack) => void, reject: (e: any) => void]>>;
+type ReconnectDevicesSchedule = Partial<
+  Record<MediaKind, [resolve: (device: MediaStreamTrack) => void, reject: (e: any) => void]>
+>;
 
 const DEFAULT_STREAM_PARAMS = Object.freeze({
   audio: true,
@@ -157,7 +159,10 @@ export class WebrtcStreaming {
 
   private sscp: SourceStreamControlProtocol;
 
-  constructor(private endpoint: string, private options?: WebrtcStreamingOptions) {
+  constructor(
+    private endpoint: string,
+    private options?: WebrtcStreamingOptions,
+  ) {
     this.sscp = options?.sourceStreamControlProtocol || new DefaultSourceStreamControlProtocol();
     this.mediaDevices = new MediaDevicesHelper({
       debug: options?.debug,
@@ -166,7 +171,7 @@ export class WebrtcStreaming {
       closeStream: this.closeMediaStream.bind(this),
       openStream: this.openSourceStream.bind(this),
       updateDevicesList: this.refreshMediaDevices.bind(this),
-    })
+    });
   }
 
   close() {
@@ -179,7 +184,7 @@ export class WebrtcStreaming {
   configure(endpoint: string, options?: Exclude<WebrtcStreamingOptions, "mediaDevicesAutoSwitch">) {
     trace(`${T} configure`, {
       endpoint: options?.debug ? endpoint : maskEndpoint(endpoint),
-      options: maskOptions(options)
+      options: maskOptions(options),
     });
     this.endpoint = endpoint;
     if (options) {
@@ -187,11 +192,17 @@ export class WebrtcStreaming {
     }
   }
 
-  off<E extends WebrtcStreamingEvents>(event: E, handler: (...args: WebrtcStreamingEventTypes[E]) => void) {
+  off<E extends WebrtcStreamingEvents>(
+    event: E,
+    handler: (...args: WebrtcStreamingEventTypes[E]) => void,
+  ) {
     this.emitter.off(event, handler);
   }
 
-  on<E extends WebrtcStreamingEvents>(event: E, handler: (...args: WebrtcStreamingEventTypes[E]) => void) {
+  on<E extends WebrtcStreamingEvents>(
+    event: E,
+    handler: (...args: WebrtcStreamingEventTypes[E]) => void,
+  ) {
     this.emitter.on(event, handler);
   }
 
@@ -205,7 +216,7 @@ export class WebrtcStreaming {
     trace(`${T} openSourceStream`, params);
     if (this.mediaStreamPromise) {
       return this.mediaStreamPromise.then(() => this.openSourceStream(params));
-    };
+    }
     this.mediaStreamPromise = new Promise<MediaStream>((resolve, reject) => {
       if (this.mediaStream) {
         if (!params || sameStreamParams(this.streamParams, params)) {
@@ -228,27 +239,32 @@ export class WebrtcStreaming {
           return this.closeMediaStream().then(resolve, reject);
         }
         resolve();
-      }).then(() => Promise.all([
-        this.mediaDevices.getMicrophones(),
-        this.mediaDevices.getCameras(),
-      ])).then(([mics, cameras]) => {
-        // TODO test deviceId restricted to the current devices list
-        const constraints = {
-          audio: buildAudioConstraints(this.streamParams, mics),
-          video: buildVideoContraints(this.streamParams, cameras, dev => this.mediaDevices.getAvailableVideoResolutions(dev)),
-        };
-        return navigator.mediaDevices.getUserMedia(constraints).catch(e => {
-          reportError(e);
-          return this.sscp.openSourceStreamError(e, constraints);
-        });
-      }).then(stream => this.replaceStream(stream).then(
-        () => {
-          this.emitDeviceSelect(stream);
-          this.bindMediaDeviceAutoReconnect(stream);
-          this.toggleTracks(stream);
-          resolve(stream);
-        },
-      )).catch(reject)
+      })
+        .then(() =>
+          Promise.all([this.mediaDevices.getMicrophones(), this.mediaDevices.getCameras()]),
+        )
+        .then(([mics, cameras]) => {
+          // TODO test deviceId restricted to the current devices list
+          const constraints = {
+            audio: buildAudioConstraints(this.streamParams, mics),
+            video: buildVideoContraints(this.streamParams, cameras, (dev) =>
+              this.mediaDevices.getAvailableVideoResolutions(dev),
+            ),
+          };
+          return navigator.mediaDevices.getUserMedia(constraints).catch((e) => {
+            reportError(e);
+            return this.sscp.openSourceStreamError(e, constraints);
+          });
+        })
+        .then((stream) =>
+          this.replaceStream(stream).then(() => {
+            this.emitDeviceSelect(stream);
+            this.bindMediaDeviceAutoReconnect(stream);
+            this.toggleTracks(stream);
+            resolve(stream);
+          }),
+        )
+        .catch(reject);
     }).finally(() => {
       this.mediaStreamPromise = null;
       this.openingStream = false;
@@ -258,7 +274,7 @@ export class WebrtcStreaming {
 
   private emitDeviceSelect(stream: MediaStream) {
     stream.getTracks().forEach((t) => {
-      this.getDeviceInfo(t).then(device => {
+      this.getDeviceInfo(t).then((device) => {
         this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSelect, {
           kind: t.kind as MediaKind,
           device: device || NO_DEVICE,
@@ -362,7 +378,12 @@ export class WebrtcStreaming {
   }
 
   private async closeMediaStream() {
-    trace(`${T} closeMediaStream`, { tracks: this.mediaStream?.getTracks().map(t => t.kind).join() });
+    trace(`${T} closeMediaStream`, {
+      tracks: this.mediaStream
+        ?.getTracks()
+        .map((t) => t.kind)
+        .join(),
+    });
     if (!this.mediaStream) {
       return;
     }
@@ -371,7 +392,7 @@ export class WebrtcStreaming {
       const whip = this.whipClient;
       for (const t of mediaStream.getTracks()) {
         await whip.removeTrack(t);
-      };
+      }
     }
     closeMediaStream(mediaStream);
     this.mediaStream = null;
@@ -384,33 +405,42 @@ export class WebrtcStreaming {
         return resolve();
       }
       const client = this.whipClient;
-      return Promise.all(
-        stream.getTracks().map((track) => client.replaceTrack(track))
-      ).then(() => {
-        trace(`${T} replaceStream OK`, { client: !!this.whipClient });
+      return Promise.all(stream.getTracks().map((track) => client.replaceTrack(track)))
+        .then(() => {
+          trace(`${T} replaceStream OK`, { client: !!this.whipClient });
 
-        resolve();
-      }).catch(reject);
-    }).then(() => {
-      return this.closeMediaStream(); // TODO drop as it's always closed in the beginning of the openSourceStream
-    }).then(() => {
-      this.mediaStream = stream;
-      this.updateCurrentStreamParams(stream);
-    }).catch((e) => {
-      closeMediaStream(stream);
-      reportError(e);
-      return Promise.reject(e);
-    });
+          resolve();
+        })
+        .catch(reject);
+    })
+      .then(() => {
+        return this.closeMediaStream(); // TODO drop as it's always closed in the beginning of the openSourceStream
+      })
+      .then(() => {
+        this.mediaStream = stream;
+        this.updateCurrentStreamParams(stream);
+      })
+      .catch((e) => {
+        closeMediaStream(stream);
+        reportError(e);
+        return Promise.reject(e);
+      });
   }
 
   private bindMediaDeviceAutoReconnect(stream: MediaStream) {
-    trace('bindMediaDeviceAutoReconnect', { autoSwitch: !!this.options?.mediaDevicesAutoSwitch });
+    trace("bindMediaDeviceAutoReconnect", { autoSwitch: !!this.options?.mediaDevicesAutoSwitch });
     if (!this.options?.mediaDevicesAutoSwitch) {
       return;
     }
     stream.getTracks().forEach((track) => {
       track.addEventListener("ended", async () => {
-        trace(`${T} track ended, auto reconnect`, { kind: track.kind, openingStream: this.openingStream });
+        trace(`${T} track ended, auto reconnect`, {
+          kind: track.kind,
+          openingStream: this.openingStream,
+        });
+        if (this.options?.debug) {
+          this.reportMediaDeviceDisconnected(track);
+        }
         // Safari: previous audio track is forcefully stopped when another one is requested, so we silence this event
         if (this.openingStream) {
           return;
@@ -421,32 +451,48 @@ export class WebrtcStreaming {
         } catch (e) {
           reportError(e);
         }
-        this.scheduleInputReconnect(track, prevDevice).then(
-          (newTrack) => this.getDeviceInfo(newTrack).then(device => {
-            trace(`${T} media device auto reconnect OK`, {
-              kind: newTrack.kind,
-              track: newTrack.id,
-              device: formatMediaDevice(device, !!this.options?.debug),
-              prevDevice: formatMediaDevice(prevDevice, !!this.options?.debug),
-            });
+        this.scheduleInputReconnect(track, prevDevice)
+          .then((newTrack) =>
+            this.getDeviceInfo(newTrack).then((device) => {
+              trace(`${T} media device auto reconnect OK`, {
+                kind: newTrack.kind,
+                track: newTrack.id,
+                device: formatMediaDevice(device, !!this.options?.debug),
+                prevDevice: formatMediaDevice(prevDevice, !!this.options?.debug),
+              });
+              setTimeout(() => {
+                this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSwitch, {
+                  kind: newTrack.kind as MediaKind,
+                  device: device,
+                  prev: prevDevice || NO_DEVICE,
+                });
+              }, 0);
+            }),
+          )
+          .catch((e: any) => {
+            reportError(e);
             setTimeout(() => {
-              this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSwitch, {
-                kind: newTrack.kind as MediaKind,
-                device: device,
-                prev: prevDevice || NO_DEVICE,
+              this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSwitchOff, {
+                kind: track.kind as MediaKind,
+                device: prevDevice || NO_DEVICE,
               });
             }, 0);
-          })
-        ).catch((e: any) => {
-          reportError(e);
-          setTimeout(() => {
-            this.emitter.emit(WebrtcStreamingEvents.MediaDeviceSwitchOff, {
-              kind: track.kind as MediaKind,
-              device: prevDevice || NO_DEVICE,
-            });
-          }, 0);
-        });
+          });
       });
+    });
+  }
+
+  private reportMediaDeviceDisconnected(track: MediaStreamTrack) {
+    const pdevs =
+      track.kind === "audio" ? this.mediaDevices.getMicrophones() : this.mediaDevices.getCameras();
+    pdevs.then((devs) => {
+      const deviceId = track.getSettings().deviceId;
+      reportError(
+        new MediaDeviceDisconnectedError(
+          track,
+          deviceId ? devs.find((d) => d.deviceId === deviceId) : undefined,
+        ),
+      );
     });
   }
 
@@ -455,7 +501,9 @@ export class WebrtcStreaming {
     if (!settings.deviceId) {
       return;
     }
-    const devices = await (track.kind === "audio" ? this.mediaDevices.getMicrophones() : this.mediaDevices.getCameras());
+    const devices = await (track.kind === "audio"
+      ? this.mediaDevices.getMicrophones()
+      : this.mediaDevices.getCameras());
     return devices.find((d) => d.deviceId === settings.deviceId);
   }
 
@@ -465,23 +513,29 @@ export class WebrtcStreaming {
     await this.mediaDevices.getMicrophones().then(() => this.mediaDevices.getCameras());
   }
 
-  private async scheduleInputReconnect(track: MediaStreamTrack, prevDevice?: MediaInputDeviceInfo): Promise<MediaStreamTrack> {
+  private async scheduleInputReconnect(
+    track: MediaStreamTrack,
+    prevDevice?: MediaInputDeviceInfo,
+  ): Promise<MediaStreamTrack> {
     return new Promise<MediaStreamTrack>((resolve, reject) => {
-      trace(
-        `${T} scheduleInputReconnect enter`,
-        {
-          kind: track.kind,
-          prevDevice: formatMediaDevice(prevDevice, !!this.options?.debug),
-          reconnectDevices: this.reconnectDevices ? Object.keys(this.reconnectDevices).join() : "-"
-        },
-      );
+      trace(`${T} scheduleInputReconnect enter`, {
+        kind: track.kind,
+        prevDevice: formatMediaDevice(prevDevice, !!this.options?.debug),
+        reconnectDevices: this.reconnectDevices ? Object.keys(this.reconnectDevices).join() : "-",
+      });
       if (!this.reconnectDevices) {
-        const rd: ReconnectDevicesSchedule = {}
+        const rd: ReconnectDevicesSchedule = {};
         this.reconnectDevices = rd;
         setTimeout(async () => {
-          trace(`${T} scheduleInputReconnect run`, { reconnectDevices: Object.keys(rd).join(), streamParams: this.streamParams });
+          trace(`${T} scheduleInputReconnect run`, {
+            reconnectDevices: Object.keys(rd).join(),
+            streamParams: this.streamParams,
+          });
           try {
-            const newStream = await this.sscp.reconnectDevices(Object.keys(rd) as Array<MediaKind>, this.streamParams);
+            const newStream = await this.sscp.reconnectDevices(
+              Object.keys(rd) as Array<MediaKind>,
+              this.streamParams,
+            );
             const resolved: Array<() => void> = [];
 
             for (const [kind, [res]] of Object.entries(rd)) {
@@ -546,7 +600,10 @@ function sameStreamParams(a: WebrtcStreamParams, b: WebrtcStreamParams): boolean
 }
 
 // TODO test the openSourceStream that non-existent deviceId param is reset to true
-function buildAudioConstraints(params: WebrtcStreamParams, devicesList: MediaInputDeviceInfo[]): boolean | MediaTrackConstraints {
+function buildAudioConstraints(
+  params: WebrtcStreamParams,
+  devicesList: MediaInputDeviceInfo[],
+): boolean | MediaTrackConstraints {
   if (!params.audio || !devicesList.length) {
     return false;
   }
@@ -561,7 +618,11 @@ function buildAudioConstraints(params: WebrtcStreamParams, devicesList: MediaInp
 }
 
 // TODO test the openSourceStream, see buildAudioConstraints
-function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInputDeviceInfo[], rlist: (deviceId: string) => VideoResolution[]): boolean | MediaTrackConstraints {
+function buildVideoContraints(
+  params: WebrtcStreamParams,
+  devicesList: MediaInputDeviceInfo[],
+  rlist: (deviceId: string) => VideoResolution[],
+): boolean | MediaTrackConstraints {
   if (params.video === false || !devicesList.length) {
     return false;
   }
@@ -571,7 +632,9 @@ function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInpu
       constraints.deviceId = { exact: params.video };
       if (params.resolution) {
         const items = rlist(params.video);
-        const parsed = items.find(item => item.height === params.resolution || item.width === params.resolution);
+        const parsed = items.find(
+          (item) => item.height === params.resolution || item.width === params.resolution,
+        );
         if (parsed) {
           const { width, height } = parsed;
           if (width > height) {
@@ -601,7 +664,7 @@ function buildVideoContraints(params: WebrtcStreamParams, devicesList: MediaInpu
 
 function maskEndpoint(endpoint: string): string {
   const u = new URL(endpoint);
-  return `${u.origin}/${u.pathname.split('/')[1].split('_')[0]}`;
+  return `${u.origin}/${u.pathname.split("/")[1].split("_")[0]}`;
 }
 
 function maskOptions(options?: WebrtcStreamingOptions): Record<string, unknown> | undefined {
@@ -626,5 +689,14 @@ function formatMediaDevice(device: MediaInputDeviceInfo | undefined, debug: bool
   if (!device) {
     return "-";
   }
-  return debug ? '***' : device.label || device.deviceId;
+  return debug ? "***" : device.label || device.deviceId;
+}
+
+class MediaDeviceDisconnectedError extends Error {
+  constructor(track: MediaStreamTrack, device?: MediaInputDeviceInfo) {
+    const deviceId = device ? device.deviceId : track.getSettings().deviceId;
+    const deviceLabel = device ? device.label : "?";
+    super(`Media device disconnected: ${track.kind} ${deviceLabel} (${deviceId})`);
+    this.name = "MediaDeviceDisconnectedError";
+  }
 }
