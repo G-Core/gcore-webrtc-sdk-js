@@ -5,10 +5,13 @@ on:
     tags:
       - "*.*.*"
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     runs-on:
-      - self-hosted-ubuntu-22-04-regular-x64
+      - ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
