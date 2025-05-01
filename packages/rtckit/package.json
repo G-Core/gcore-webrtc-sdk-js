@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.89.13",
+  "version": "0.89.14",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc",
     "build:bundle": "rollup -c",
+    "build:all": "npm run build && npm run build:bundle",
     "docs": "npm run docs:extract && npm run docs:build",
     "docs:extract": "api-extractor run --local --verbose",
     "docs:build": "api-documenter markdown --input-folder=temp --output-folder=docs/api",

@@ -146,7 +146,7 @@ export class WebrtcStreaming {
 
   private mediaStreamPromise: Promise<MediaStream> | null = null;
 
-  private streamParams: WebrtcStreamParams = DEFAULT_STREAM_PARAMS;
+  private streamParams: WebrtcStreamParams = {...DEFAULT_STREAM_PARAMS};
 
   private whipClient: WhipClient | null = null;
 
@@ -564,6 +564,7 @@ export class WebrtcStreaming {
 
   private updateCurrentStreamParams(stream: MediaStream) {
     trace(`${T} updateCurrentStreamParams before`, { streamParams: this.streamParams });
+    // TODO test non-frozen streamParams
     this.streamParams.audio = stream.getAudioTracks()[0]?.getSettings().deviceId;
     this.streamParams.video = stream.getVideoTracks()[0]?.getSettings().deviceId;
     trace(`${T} updateCurrentStreamParams after`, { streamParams: this.streamParams });
