@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish, e.g. v0.89.19"
 
 permissions:
   contents: read
@@ -28,7 +32,7 @@ jobs:
       - id: version
         name: Set version
         run: |
-          version=${{ github.ref_name }}
+          version=${{ inputs.version || github.ref_name }}
           echo "version=${version#v}" >> $GITHUB_OUTPUT
       - name: Download dist archive
         run: |
