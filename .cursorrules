@@ -1,0 +1,189 @@
+# Cursor AI Rules - Gcore WebRTC SDK
+
+You are helping developers build applications using the Gcore WebRTC SDK.
+
+## Project Context
+
+- **SDK Purpose**: Real-time video/audio streaming to Gcore's cloud via WebRTC
+- **Target Users**: External developers building streaming applications
+- **Main Package**: `@gcorevideo/rtckit` (browser) and `@gcorevideo/rtckit-node` (server)
+- **Protocol**: WHIP (WebRTC HTTP Ingestion Protocol)
+
+## Key Documentation
+
+Read these files when needed:
+- `AI_DEVELOPMENT_GUIDE.md` - Comprehensive guide for AI-assisted development
+- `CLAUDE.md` - General AI instructions and SDK usage patterns
+- `DOCS.md` - Technical architecture and API reference
+- `examples/COMMON_PATTERNS.md` - Copy-paste code patterns
+- `examples/AI_USAGE_EXAMPLES.md` - Complete working examples
+
+## Code Style Preferences
+
+### Imports
+- Use ES modules: `import { WebrtcStreaming } from '@gcorevideo/rtckit'`
+- CDN import: `https://rtckit.gvideo.io/0.89.12/index.esm.js`
+
+### SDK Initialization Pattern
+```javascript
+const webrtc = new WebrtcStreaming(whipUrl, {
+  videoCodecs: ['H264'],
+  mediaDevicesAutoSwitch: true,
+});
+```
+
+### Streaming Workflow
+```javascript
+// 1. Open stream
+const stream = await webrtc.openSourceStream({ video: true, audio: true });
+
+// 2. Preview
+await webrtc.preview(videoElement);
+
+// 3. Start streaming
+const whipClient = await webrtc.run();
+
+// 4. Handle events
+whipClient.on('connected', () => {});
+whipClient.on('disconnected', () => {});
+
+// 5. Stop
+webrtc.close();
+```
+
+## Default Behaviors
+
+### When user asks to create a streaming app:
+1. Provide complete, runnable HTML file
+2. Include CDN import of SDK
+3. Add device selection (camera/mic dropdowns)
+4. Implement start/stop buttons
+5. Show connection status
+6. Handle permissions errors
+
+### When user asks about errors:
+1. Reference error handling patterns from `examples/COMMON_PATTERNS.md`
+2. Always handle: NotAllowedError, NotFoundError, NotReadableError
+3. Add user-friendly error messages
+4. Use `IngesterErrorHandler` plugin for stream errors
+
+### When user asks about devices:
+1. Use `webrtc.mediaDevices.getCameras()` / `getMicrophones()`
+2. Request permissions first to get device labels
+3. Populate dropdowns with device names
+4. Handle device changes with `openSourceStream()` re-calls
+
+## Quick Response Templates
+
+### "How do I start streaming?"
+→ Provide complete HTML example from `examples/AI_USAGE_EXAMPLES.md#basic-streaming-setup`
+
+### "How do I switch cameras?"
+→ Use pattern from `examples/COMMON_PATTERNS.md#streaming-control`
+
+### "My camera doesn't work"
+→ Check error handling pattern, verify permissions, suggest browser console check
+
+### "How do I create streams server-side?"
+→ Use Node.js example from `examples/AI_USAGE_EXAMPLES.md#server-side`
+
+## Key APIs to Remember
+
+### WebrtcStreaming (Browser)
+- `openSourceStream(params)` - Get media with constraints
+- `preview(videoElement)` - Show local video
+- `run()` - Start streaming, returns WhipClient
+- `close()` - Stop everything
+- `toggleVideo(enabled)` / `toggleAudio(enabled)` - Mute controls
+- `mediaDevices` - Device enumeration helper
+
+### WhipClient (Browser)
+- Events: 'connected', 'disconnected', 'connection_failed'
+- `restart()` - Manual reconnect
+
+### GcoreApi (Node.js)
+- `api.webrtc.createStream(name)` - Create stream, get WHIP URL
+- `api.webrtc.deleteStream(id)` - Delete stream
+- `api.webrtc.listStreams()` - Get all streams
+
+## Common Mistakes to Avoid
+
+❌ Don't suggest WebSocket signaling (SDK uses WHIP/HTTP)
+❌ Don't create SDP manually (SDK handles it)
+❌ Don't use getUserMedia directly (use `openSourceStream()`)
+❌ Don't forget error handling for permissions
+❌ Don't skip `preview()` before `run()` (users want to see preview)
+
+✅ Do use SDK's device helpers
+✅ Do handle all getUserMedia errors
+✅ Do use plugins for advanced features
+✅ Do reference working demo when unsure
+
+## Plugin Usage
+
+### For error handling:
+```javascript
+import { IngesterErrorHandler, IngesterErrorReason } from '@gcorevideo/rtckit';
+
+plugins: [
+  new IngesterErrorHandler((reason) => {
+    // Handle: StreamNotExists, StreamTokenInvalid, DuplicateStream
+  })
+]
+```
+
+### For quality monitoring:
+```javascript
+import { VideoResolutionChangeDetector } from '@gcorevideo/rtckit';
+
+plugins: [
+  new VideoResolutionChangeDetector(({ degraded, height, srcHeight }) => {
+    // Show quality indicator
+  })
+]
+```
+
+## When Suggesting Code
+
+1. **Provide complete code** - not snippets
+2. **Include HTML/CSS/JS** - not just JS
+3. **Add comments** - explain key steps
+4. **Handle errors** - always include try/catch
+5. **Show validation** - tell user how to test it
+
+## Priority Order for Information
+
+1. **Working examples** - adapt from `examples/AI_USAGE_EXAMPLES.md`
+2. **Common patterns** - copy from `examples/COMMON_PATTERNS.md`
+3. **API reference** - check `DOCS.md`
+4. **General web dev** - standard practices
+
+## Reference Links
+
+- Working Demo: https://stackblitz.com/edit/stackblitz-starters-j2r9ar
+- Gcore Docs: https://gcore.com/docs/streaming-platform/api/real-time-video-api-tutorial
+- WHIP Spec: https://datatracker.ietf.org/doc/draft-ietf-wish-whip/
+
+## Special Instructions
+
+### For React/Vue/Framework users:
+- Wrap SDK initialization in useEffect/onMounted
+- Store webrtc instance in ref/reactive
+- Clean up in component unmount
+
+### For debugging:
+```javascript
+import { Logger, LogTracer, setTracer } from '@gcorevideo/rtckit';
+setTracer(new LogTracer());
+Logger.enable('*');
+```
+
+### For production:
+- Use environment variables for WHIP endpoints
+- Add beforeunload handler to close stream
+- Implement proper error recovery
+- Show reconnection status to users
+
+---
+
+**Remember**: Developers want copy-paste solutions that work immediately. Prioritize complete, runnable code over explanations.
