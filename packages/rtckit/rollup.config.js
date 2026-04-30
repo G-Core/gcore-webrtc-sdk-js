@@ -10,7 +10,6 @@ export default [
       resolve({
         resolveOnly: [
           "@gcorevideo/utils",
-          "cbor-x",
           "debug",
           "event-lite",
           "ms",

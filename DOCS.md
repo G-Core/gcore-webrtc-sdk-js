@@ -480,7 +480,6 @@ describe('WebrtcStreaming', () => {
 | Library | Purpose | Notes |
 |---------|---------|-------|
 | `event-lite` | Event emitter | Minimal, no dependencies |
-| `cbor-x` | Binary encoding | For efficient metadata |
 | `sdp-transform` | SDP parsing | Modify SDP for codec filtering |
 | `@gcorevideo/utils` | Shared utilities | Logging, error reporting |
 | `axios` (node) | HTTP client | Server-side API calls |

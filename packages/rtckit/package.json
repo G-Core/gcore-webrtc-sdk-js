@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@gcorevideo/utils": "^0.6.0",
-    "cbor-x": "^1.5.9",
     "event-lite": "^1.0.0",
     "sdp-transform": "^2.14.2"
   },
