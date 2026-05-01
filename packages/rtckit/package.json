@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.89.20",
+  "version": "0.89.21",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
@@ -34,7 +34,7 @@
     "@rollup/plugin-commonjs": "^28.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
-    "@sentry/types": "^9.12.0",
+    "@sentry/types": "^10.51.0",
     "@sinonjs/fake-timers": "^14.0.0",
     "@types/debug": "^4.1.12",
     "@types/sdp-transform": "^2.4.9",
@@ -43,7 +43,7 @@
     "oxlint": "^1.7.0",
     "prettier": "^3.3.3",
     "rollup": "^4.19.1",
-    "typescript": "^5.7.2",
+    "typescript": "^6.0.3",
     "vitest": "^3.0.5"
   }
 }
