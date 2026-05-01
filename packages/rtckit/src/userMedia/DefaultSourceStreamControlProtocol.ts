@@ -2,7 +2,7 @@ import { trace } from "@gcorevideo/utils";
 
 import { SourceStreamControlProtocol, SourceStreamControlProtocolConnector, WebrtcStreamParams } from "./types.js";
 import { looseMediaDeviceConstraints } from "./utils.js";
-import { MediaKind } from "src/types.js";
+import { MediaKind } from "../types.js";
 
 const T = 'DefaultSourceStreamControlProtocol';
 

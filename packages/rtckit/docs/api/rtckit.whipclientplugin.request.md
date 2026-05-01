@@ -63,6 +63,7 @@ the `fetch` request options, including method, headers and body
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 void

@@ -45,6 +45,7 @@ _(Optional)_ If not specified, will use the default parameters, requesting both 
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 Promise&lt;MediaStream&gt;

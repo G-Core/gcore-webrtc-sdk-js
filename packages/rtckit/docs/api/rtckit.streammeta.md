@@ -18,6 +18,40 @@ export declare class StreamMeta extends WhipClientPluginBase implements WhipClie
 
 **Implements:** [WhipClientPlugin](./rtckit.whipclientplugin.md)
 
+## Constructors
+
+<table><thead><tr><th>
+
+Constructor
+
+
+</th><th>
+
+Modifiers
+
+
+</th><th>
+
+Description
+
+
+</th></tr></thead>
+<tbody><tr><td>
+
+[(constructor)(meta)](./rtckit.streammeta._constructor_.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_** Constructs a new instance of the `StreamMeta` class
+
+
+</td></tr>
+</tbody></table>
+
 ## Methods
 
 <table><thead><tr><th>
@@ -37,6 +71,20 @@ Description
 
 </th></tr></thead>
 <tbody><tr><td>
+
+[addMeta(key, value)](./rtckit.streammeta.addmeta.md)
+
+
+</td><td>
+
+
+</td><td>
+
+**_(BETA)_**
+
+
+</td></tr>
+<tr><td>
 
 [init(pc)](./rtckit.streammeta.init.md)
 
@@ -65,3 +113,4 @@ Description
 
 </td></tr>
 </tbody></table>
+

@@ -13,7 +13,7 @@ import {
 } from "../errors.js";
 import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js";
 import { whipIngesterErrorParser, withRetries } from "../helpers/fetch.js";
-import { MediaKind } from "src/types.js";
+import { MediaKind } from "../types.js";
 
 const T = "WhipClient";
 

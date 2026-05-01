@@ -49,6 +49,7 @@ ID of the camera device from [MediaDevicesHelper.getCameras()](./rtckit.mediadev
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 [VideoResolution](./rtckit.videoresolution.md)<!-- -->\[\]

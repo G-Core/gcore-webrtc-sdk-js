@@ -47,6 +47,7 @@ The RTCPeerConnection to be used by the client
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 void

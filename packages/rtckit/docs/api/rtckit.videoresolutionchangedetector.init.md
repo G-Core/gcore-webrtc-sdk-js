@@ -48,6 +48,7 @@ A WebRTC Peer connection to watch
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 void

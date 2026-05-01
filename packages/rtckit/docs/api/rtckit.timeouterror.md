@@ -50,3 +50,4 @@ Constructs a new instance of the `TimeoutError` class
 
 </td></tr>
 </tbody></table>
+

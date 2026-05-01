@@ -46,6 +46,7 @@ params
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 Promise&lt;MediaStream&gt;

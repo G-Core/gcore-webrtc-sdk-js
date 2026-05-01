@@ -46,3 +46,4 @@ Constructs a new instance of the `MalformedResponseError` class
 
 </td></tr>
 </tbody></table>
+

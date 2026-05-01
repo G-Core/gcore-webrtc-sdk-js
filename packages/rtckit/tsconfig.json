@@ -3,7 +3,6 @@
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,
-    "baseUrl": ".",
     "target": "es2022",
 
     "strict": true,

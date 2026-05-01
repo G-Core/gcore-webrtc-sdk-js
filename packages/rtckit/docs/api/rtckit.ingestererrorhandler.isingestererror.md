@@ -46,6 +46,7 @@ Error
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 e is [IngesterError](./rtckit.ingestererror.md)

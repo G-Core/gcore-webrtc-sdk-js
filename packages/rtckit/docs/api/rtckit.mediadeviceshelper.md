@@ -123,3 +123,4 @@ Resets the cached information about the devices
 
 </td></tr>
 </tbody></table>
+

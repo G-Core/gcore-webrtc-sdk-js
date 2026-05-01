@@ -43,6 +43,7 @@ MediaStreamTrack
 
 </td></tr>
 </tbody></table>
+
 **Returns:**
 
 Promise&lt;boolean&gt;
