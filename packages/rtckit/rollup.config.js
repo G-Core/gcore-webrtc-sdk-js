@@ -19,6 +19,6 @@ export default [
       commonjs(),
       json(),
     ],
-    output: [{ file: "lib/index.esm.js", format: "es" }],
+    output: [{ file: "dist/index.esm.js", format: "es" }],
   },
 ];

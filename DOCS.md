@@ -499,15 +499,15 @@ describe('WebrtcStreaming', () => {
 
 ```bash
 cd packages/rtckit
-npm run build        # Compile TS → lib/
-npm run build:bundle # Rollup → lib/bundle.js
-npm run build:all    # Both
+npm run build:ts     # Compile TS → lib/
+npm run build:bundle # Rollup → dist/bundle.js
+npm run build    # Both
 ```
 
 **Outputs**:
-- `lib/index.esm.js` - ES module (tree-shakeable)
+- `lib/index.js` - ES module (tree-shakeable)
 - `lib/index.d.ts` - TypeScript definitions
-- `lib/bundle.js` - UMD bundle (standalone)
+- `dist/index.esm.js` - ESM bundle (standalone)
 
 ### Node SDK Build
 
