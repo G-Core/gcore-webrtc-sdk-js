@@ -1,0 +1,27 @@
+name: Checks
+
+on:
+  push:
+    paths:
+      - packages/*/package-lock.json
+      - .github/workflows/checks.yaml
+      - .github/workflows/license-check.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+  check-licenses-rtckit:
+    needs: setup
+    uses: ./.github/workflows/license-check.yaml
+    with:
+      package: rtckit
+  check-licenses-rtckit-node:
+    needs: setup
+    uses: ./.github/workflows/license-check.yaml
+    with:
+      package: rtckit-node

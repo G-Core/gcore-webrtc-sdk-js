@@ -1,0 +1,31 @@
+name: License check
+
+on:
+  workflow_call:
+    inputs:
+      package:
+        type: string
+        description: The package to check (rtckit)
+        required: true
+        default: rtckit
+
+jobs:
+  license-check:
+    env:
+      PACKAGE: ${{ inputs.package }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: |
+            package-lock.json
+            packages/${{ env.PACKAGE }}/package-lock.json
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci -C packages/${{ env.PACKAGE }}
+      - name: Check licenses
+        run: npm run check:license packages/${{ env.PACKAGE }}

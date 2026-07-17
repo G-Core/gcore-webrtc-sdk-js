@@ -1,0 +1,37 @@
+name: Release
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write # Required for OIDC from npm.yaml
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        description: 'Select the version to release'
+        options:
+          - 'latest'
+      skip_npm:
+        type: boolean
+        description: 'Skip the NPM upload step'
+        default: false
+
+jobs:
+  npm:
+    uses: ./.github/workflows/npm.yaml
+    secrets: inherit # pragma: allowlist secret
+    with:
+      version: ${{ inputs.version || github.ref_name }}
+      dry_run: ${{ inputs.skip_npm }}
+  cdn:
+    needs: npm
+    uses: ./.github/workflows/publish.yaml
+    secrets: inherit # pragma: allowlist secret
+    with:
+      version: ${{ needs.npm.outputs.version }}
+      latest: true

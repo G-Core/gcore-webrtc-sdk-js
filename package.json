@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:license": "./node_modules/.bin/license-checker --onlyAllow \"Apache-2.0;0BSD;BSD-2-Clause;BSD-3-Clause;ISC;MIT;BlueOak-1.0.0;Python-2.0\" --summary --start"
   },
   "devDependencies": {
     "husky": "^9.0.11",
