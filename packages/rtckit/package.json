@@ -1,6 +1,6 @@
 {
   "name": "@gcorevideo/rtckit",
-  "version": "0.89.25",
+  "version": "0.89.26",
   "private": false,
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
@@ -8,6 +8,9 @@
   "main": "lib/index.esm.js",
   "files": [
     "lib"
+  ],
+  "keywords": [
+    "video streaming"
   ],
   "type": "module",
   "scripts": {
@@ -23,6 +26,15 @@
     "test": "vitest --environment=jsdom run",
     "test:watch": "vitest --environment=jsdom watch"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/G-Core/gcore-webrtc-sdk-js.git"
+  },
+  "author": "Gcore",
+  "bugs": {
+    "url": "https://github.com/G-Core/gcore-webrtc-sdk-js/issues"
+  },
+  "homepage": "https://github.com/G-Core/gcore-webrtc-sdk-js#readme",
   "dependencies": {
     "@gcorevideo/utils": "^0.7.1",
     "event-lite": "^1.0.0",
