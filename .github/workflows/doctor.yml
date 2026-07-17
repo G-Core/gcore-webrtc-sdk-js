@@ -92,7 +92,8 @@ jobs:
       analyze_day: ${{ steps.collect.outputs.analyze_day }}
       report_tz: ${{ steps.collect.outputs.report_tz }}
       observed_findings_present: ${{ steps.collect.outputs.observed_findings_present }}
-      findings_artifact_name: ${{ steps.collect.outputs.findings_artifact_name }}
+      source_ref: ${{ steps.collect.outputs.source_ref }}
+      source_channel: ${{ steps.collect.outputs.source_channel }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -102,11 +103,55 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Resolve toolkit source ref
+        id: source_ref
+        shell: bash
+        env:
+          DOCTOR_STABLE_REF: ${{ vars.DOCTOR_STABLE_REF || 'doctor-v1' }}
+          DOCTOR_CANARY_REF: ${{ vars.DOCTOR_CANARY_REF || '' }}
+          DOCTOR_SOURCE_REF: ${{ vars.DOCTOR_SOURCE_REF || '' }}
+        run: |
+          set -eu
+
+          stable_ref="${DOCTOR_STABLE_REF:-}"
+          canary_ref="${DOCTOR_CANARY_REF:-}"
+          override_ref="${DOCTOR_SOURCE_REF:-}"
+          source_ref="$stable_ref"
+          source_channel="stable"
+
+          if [ -n "$canary_ref" ]; then
+            source_ref="$canary_ref"
+            source_channel="canary"
+          fi
+          if [ -n "$override_ref" ]; then
+            source_ref="$override_ref"
+            source_channel="override"
+          fi
+
+          validate_ref() {
+            value="$1"
+            case "$value" in
+              ""|main|master|develop|trunk|refs/heads/*|*/*|*..*|*:*)
+                echo "::error::invalid Doctor source ref '$value'"
+                exit 1
+                ;;
+            esac
+            if ! printf '%s\n' "$value" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]$'; then
+              echo "::error::invalid Doctor source ref '$value'"
+              exit 1
+            fi
+          }
+
+          validate_ref "$source_ref"
+          echo "source_ref=$source_ref" >> "$GITHUB_OUTPUT"
+          echo "source_channel=$source_channel" >> "$GITHUB_OUTPUT"
+          echo "::notice::doctor source channel=$source_channel ref=$source_ref"
+
       - name: Checkout toolkit source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.SOURCE_REPO }}
-          ref: doctor-v1
+          ref: ${{ steps.source_ref.outputs.source_ref }}
           path: .doctor-source
           token: ${{ secrets[vars.DOCTOR_SOURCE_TOKEN_SECRET_NAME || 'ORG_GH_TOKEN_CI'] || secrets.ORG_GH_TOKEN_CI || secrets.TOOLKIT_READ_TOKEN || secrets.GITHUB_TOKEN }}
 
@@ -119,7 +164,8 @@ jobs:
           DOCTOR_REPO_FULL_NAME: ${{ github.repository }}
           DOCTOR_REPO_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           DOCTOR_SOURCE_REPO: ${{ env.SOURCE_REPO }}
-          DOCTOR_SOURCE_BRANCH: doctor-v1
+          DOCTOR_SOURCE_REF: ${{ steps.source_ref.outputs.source_ref }}
+          DOCTOR_SOURCE_CHANNEL: ${{ steps.source_ref.outputs.source_channel }}
           DOCTOR_ANALYZE_DAY: ${{ env.ANALYZE_DAY }}
           DOCTOR_REPORT_TZ: ${{ env.REPORT_TZ }}
         run: python .doctor-source/workflows/runtime/collect.py
@@ -128,7 +174,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.collect.outputs.findings_artifact_name }}
+          name: doctor-findings
           path: ${{ runner.temp }}/doctor/doctor-findings.json
           if-no-files-found: error
 
@@ -149,14 +195,14 @@ jobs:
       - name: Download doctor-findings artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.collect.outputs.findings_artifact_name }}
+          name: doctor-findings
           path: ${{ runner.temp }}/doctor-findings
 
       - name: Checkout toolkit source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.SOURCE_REPO }}
-          ref: doctor-v1
+          ref: ${{ needs.collect.outputs.source_ref }}
           path: .doctor-source
           token: ${{ secrets[vars.DOCTOR_SOURCE_TOKEN_SECRET_NAME || 'ORG_GH_TOKEN_CI'] || secrets.ORG_GH_TOKEN_CI || secrets.TOOLKIT_READ_TOKEN || secrets.GITHUB_TOKEN }}
 
@@ -177,6 +223,8 @@ jobs:
           DOCTOR_ACT_REASON: ${{ needs.collect.outputs.act_reason }}
           DOCTOR_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           DOCTOR_SOURCE_REPO: ${{ env.SOURCE_REPO }}
+          DOCTOR_SOURCE_REF: ${{ needs.collect.outputs.source_ref }}
+          DOCTOR_SOURCE_CHANNEL: ${{ needs.collect.outputs.source_channel }}
           DOCTOR_WORKFLOW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: python .doctor-source/workflows/act.py
 
@@ -214,7 +262,7 @@ jobs:
       report_tz: ${{ needs.collect.outputs.report_tz }}
       issues_enabled: ${{ github.event.repository.has_issues && 'true' || 'false' }}
       observed_findings_present: ${{ needs.collect.outputs.observed_findings_present }}
-      findings_artifact_name: ${{ needs.collect.outputs.findings_artifact_name }}
+      findings_artifact_name: doctor-findings
       source_sha: ${{ needs.collect.outputs.source_sha }}
       installed_source_sha: ${{ needs.collect.outputs.installed_source_sha }}
       installed_runtime_sha: ${{ needs.collect.outputs.installed_runtime_sha }}
@@ -238,7 +286,7 @@ jobs:
       issues: write
       pull-requests: write
       discussions: write
-    uses: G-Core/agent-toolkit/.github/workflows/doctor-analyze-codex.lock.yml@main
+    uses: G-Core/agent-toolkit/.github/workflows/doctor-analyze-codex.lock.yml@doctor-v1
     secrets:
       CODEX_API_KEY: ${{ secrets[vars.DOCTOR_OPENAI_SECRET_NAME || 'OPENAI_API_KEY'] || secrets.OPENAI_API_KEY }}
       OPENAI_API_KEY: ${{ secrets[vars.DOCTOR_OPENAI_SECRET_NAME || 'OPENAI_API_KEY'] || secrets.OPENAI_API_KEY }}
@@ -250,7 +298,7 @@ jobs:
       report_tz: ${{ needs.collect.outputs.report_tz }}
       issues_enabled: ${{ github.event.repository.has_issues && 'true' || 'false' }}
       observed_findings_present: ${{ needs.collect.outputs.observed_findings_present }}
-      findings_artifact_name: ${{ needs.collect.outputs.findings_artifact_name }}
+      findings_artifact_name: doctor-findings
       source_sha: ${{ needs.collect.outputs.source_sha }}
       installed_source_sha: ${{ needs.collect.outputs.installed_source_sha }}
       installed_runtime_sha: ${{ needs.collect.outputs.installed_runtime_sha }}
