@@ -396,7 +396,6 @@ A codec match condition to filter the available codecs
 
 </td><td>
 
-**_(BETA)_**
 
 
 </td></tr>

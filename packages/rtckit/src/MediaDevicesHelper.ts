@@ -51,7 +51,7 @@ export type MediaInputDeviceInfo = {
 };
 
 /**
- * @beta
+ * @public
  */
 export type MediaDevicesHelperOptions = {
   debug?: boolean;
