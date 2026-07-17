@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/debug": "^4.1.12",
     "oxlint": "^1.1.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@gcorevideo/utils": "^0.7.1",
