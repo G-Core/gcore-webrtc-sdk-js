@@ -30,4 +30,5 @@ packages/*/.vscode/*
 *.sw?
 
 tsconfig.tsbuildinfo
+packages/*/dist/
 packages/*/lib/

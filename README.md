@@ -403,6 +403,7 @@ gcore-webrtc-sdk-js/
 │   ├── rtckit/              # Browser SDK
 │   │   ├── src/             # TypeScript source
 │   │   ├── lib/             # Compiled output
+│   │   ├── dist/            # Bundled output
 │   │   └── docs/            # API documentation
 │   └── rtckit-node/         # Node.js SDK
 │       ├── src/             # TypeScript source
