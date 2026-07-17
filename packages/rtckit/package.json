@@ -5,7 +5,7 @@
   "description": "A WebRTC client for Gcore Streaming Platform",
   "license": "Apache-2.0",
   "types": "lib/index.d.ts",
-  "main": "lib/index.js",
+  "main": "dist/index.esm.js",
   "files": [
     "lib"
   ],
