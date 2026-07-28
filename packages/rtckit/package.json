@@ -38,7 +38,7 @@
   "dependencies": {
     "@gcorevideo/utils": "^0.7.1",
     "event-lite": "^1.0.0",
-    "sdp-transform": "^2.14.2"
+    "sdp-transform": "^3.0.0"
   },
   "devDependencies": {
     "@microsoft/api-documenter": "^7.26.8",
@@ -49,7 +49,7 @@
     "@sentry/types": "^10.51.0",
     "@sinonjs/fake-timers": "^14.0.0",
     "@types/debug": "^4.1.12",
-    "@types/sdp-transform": "^2.4.9",
+    "@types/sdp-transform": "^3.0.0",
     "@types/sinonjs__fake-timers": "^8.1.5",
     "jsdom": "^29.1.1",
     "oxlint": "^1.7.0",
