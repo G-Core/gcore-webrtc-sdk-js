@@ -46,6 +46,7 @@ jobs:
         id: version
         run: |
           version=${{ inputs.version }}
+          version=${version#v}
           pkg_version=$(jq -r '.version' packages/${{ env.PACKAGE }}/package.json)
           case "$version" in
             "" | "latest" | "$pkg_version")
