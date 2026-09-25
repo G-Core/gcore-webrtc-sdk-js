@@ -50,7 +50,9 @@ export type WhipClientEventTypes = {
 /**
  * @public
  */
-export type WhipClientEventListener<E extends WhipClientEvents> = (...args: WhipClientEventTypes[E]) => void;
+export type WhipClientEventListener<E extends WhipClientEvents> = (
+  ...args: WhipClientEventTypes[E]
+) => void;
 
 /**
  * WHIP client for streaming with WebRTC from a browser
@@ -105,7 +107,10 @@ export class WhipClient {
 
   private senders: Partial<Record<MediaKind, RTCRtpSender>> = {};
 
-  constructor(private endpoint: string, private options?: WhipClientOptions) {
+  constructor(
+    private endpoint: string,
+    private options?: WhipClientOptions,
+  ) {
     if (options?.canTrickleIce === false) {
       this.canTrickleIce = false;
     }
@@ -157,6 +162,7 @@ export class WhipClient {
   }
 
   async start(mediaStream: MediaStream): Promise<void> {
+    trace(`${T} start`);
     if (this.pc) {
       throw new ConflictError("Already publishing");
     }
@@ -195,7 +201,7 @@ export class WhipClient {
       }
     }
     trace(`${T} replaceTrack: no transceiver found`, {
-      kind: track.kind
+      kind: track.kind,
     });
     return false;
   }
@@ -224,10 +230,7 @@ export class WhipClient {
     }
   }
 
-  on<E extends WhipClientEvents>(
-    event: E,
-    listener: WhipClientEventListener<E>,
-  ) {
+  on<E extends WhipClientEvents>(event: E, listener: WhipClientEventListener<E>) {
     this.emitter.on(event, listener);
   }
 
@@ -236,7 +239,7 @@ export class WhipClient {
    */
   async restart() {
     if (this.options?.noRestart) {
-      throw new WontRestartError()
+      throw new WontRestartError();
     }
     if (this.closed) {
       trace(`${T} restart: client is closed`);
@@ -296,7 +299,7 @@ export class WhipClient {
   private async closeSession() {
     trace(`${T} closeSession`, { pc: !!this.pc });
     if (this.pc) {
-      this.runPlugins(p => p.close());
+      this.runPlugins((p) => p.close());
       this.pc.close();
       this.pc = null;
       // TODO remove senders
@@ -323,44 +326,42 @@ export class WhipClient {
     config.iceTransportPolicy = this.options?.iceTransportPolicy || "all";
     const pc = new RTCPeerConnection(config);
     let audioTrack: MediaStreamTrack | undefined;
-    stream.getTracks().forEach(
-      (track) => {
-        switch (track.kind) {
-          case "video":
-            if (!track.contentHint && this.options?.videoPreserveInitialResolution) {
-              track.contentHint = "detail";
-            }
-            break;
-          case "audio":
-            audioTrack = track;
-            break;
-          default:
-            trace(`${T} runStart: unknown track kind`, { kind: track.kind });
-            return;
-        }
-        if (this.options?.encodingParameters) {
-          const t = pc.addTransceiver(track, {
-            direction: "sendonly",
-            sendEncodings: this.options?.encodingParameters,
-            streams: [stream],
-          });
-          this.senders[track.kind] = t.sender;
-        } else {
-          this.senders[track.kind] = pc.addTrack(track, stream)
-        }
+    stream.getTracks().forEach((track) => {
+      switch (track.kind) {
+        case "video":
+          if (!track.contentHint && this.options?.videoPreserveInitialResolution) {
+            track.contentHint = "detail";
+          }
+          break;
+        case "audio":
+          audioTrack = track;
+          break;
+        default:
+          trace(`${T} runStart: unknown track kind`, { kind: track.kind });
+          return;
       }
-    );
+      if (this.options?.encodingParameters) {
+        const t = pc.addTransceiver(track, {
+          direction: "sendonly",
+          sendEncodings: this.options?.encodingParameters,
+          streams: [stream],
+        });
+        this.senders[track.kind] = t.sender;
+      } else {
+        this.senders[track.kind] = pc.addTrack(track, stream);
+      }
+    });
 
     if (audioTrack) {
       trace(`${T} runStart audio track is found`);
     } else {
-      trace(`${T} runStart audio track not found`);
+      trace(`${T} runStart audio track not found, insert silent audio track`);
       await this.insertSilentAudioTrack(pc);
     }
 
     this.pc = pc;
 
-    this.runPlugins(p => p.init(pc));
+    this.runPlugins((p) => p.init(pc));
 
     this.pc.onconnectionstatechange = () => {
       trace(`${T} onconnectionstatechange`, {
@@ -426,8 +427,10 @@ export class WhipClient {
   }
 
   private waitIceCandidates(): Promise<void> {
+    trace(`${T} waitIceCandidates enter`);
     return new Promise((resolve, reject) => {
       if (this.canResolveWaitCandidates()) {
+        trace(`${T} waitIceCandidates can resolve immediately`);
         return resolve();
       }
       this.cbResolveCandidates = resolve;
@@ -457,6 +460,7 @@ export class WhipClient {
   }
 
   private async runInit(pc: RTCPeerConnection) {
+    trace(`${T} runInit enter`);
     const headers = { "content-type": "application/sdp" };
 
     const sdp = pc.localDescription?.sdp;
@@ -465,6 +469,7 @@ export class WhipClient {
     }
 
     const resp = await this.fetch(new URL(this.endpoint), "POST", headers, this.mungeOffer(sdp));
+    trace(`${T} runInit WHIP sent`);
     const loc = resp.headers.get("location");
     if (!loc) {
       throw new MalformedResponseError("Response missing location header");
@@ -491,6 +496,7 @@ export class WhipClient {
       pc.setConfiguration(config);
     }
     await pc.setRemoteDescription({ type: "answer", sdp: mungedAnswer });
+    trace(`${T} runInit remote description set, leave`);
   }
 
   private clearIceTrickleTimeout() {
@@ -653,10 +659,9 @@ export class WhipClient {
       body,
       signal: abort.signal,
     };
-    this.runPlugins(p => p.request(url, requestInit));
+    this.runPlugins((p) => p.request(url, requestInit));
     return withRetries(
-      () =>
-        fetch(url, requestInit),
+      () => fetch(url, requestInit),
       this.options?.maxWhipRetries,
       undefined,
       undefined,
@@ -668,7 +673,7 @@ export class WhipClient {
           error: String(e),
           url: String(url),
         });
-        this.runPlugins(p => p.requestError(url, requestInit, e));
+        this.runPlugins((p) => p.requestError(url, requestInit, e));
         return Promise.reject(e);
       })
       .finally(() => {
@@ -690,6 +695,7 @@ export class WhipClient {
 
   private getIceServers(fetched: Response) {
     if (this.iceServers.length) {
+      trace(`${T} getIceServers, already have, skipping fetch`);
       return;
     }
     const links = getLinks(fetched);
@@ -717,13 +723,16 @@ export class WhipClient {
         })
         .filter((s) => s) as RTCIceServer[];
     }
+    trace(`${T} getIceServers, leave`, {
+      iceServices: this.iceServers.length,
+    });
   }
 
   private useIceServers(): RTCIceServer[] {
     if (this.options?.icePreferTcp) {
       const filtered = this.iceServers.filter((s) => {
         if (typeof s.urls === "string") {
-          return isTcpIceServer(s.urls)
+          return isTcpIceServer(s.urls);
         }
         return s.urls.some(isTcpIceServer);
       });
@@ -746,7 +755,7 @@ export class WhipClient {
   private processAnswer(sdp: string): string {
     // TODO test
     if (this.options?.icePreferTcp && this.options?.iceTransportPolicy !== "relay") {
-      const candidates = sdp.matchAll(/^a=candidate:(.*)$/mg);
+      const candidates = sdp.matchAll(/^a=candidate:(.*)$/gm);
       if (candidates) {
         const tcpCandidates: string[] = [];
         const udpCandidates: string[] = [];
@@ -776,8 +785,9 @@ export class WhipClient {
   }
 
   private async runPreflight() {
+    trace(`${T} runPreflight enter`);
     if (!this.needPreflight()) {
-      trace(`${T} runPreflight skipping`);
+      trace(`${T} runPreflight skip`);
       return;
     }
     try {
@@ -789,6 +799,7 @@ export class WhipClient {
         error: String(e),
       });
     }
+    trace(`${T} runPreflight leave`);
   }
 
   private needPreflight() {
@@ -798,11 +809,10 @@ export class WhipClient {
     // TODO add an option to TURN off preflight,
     // e.g., when a server will accept valid STUN requests from unknown ICE candidates sources
     return (
-      (
-        !this.iceServers.length && !this.canTrickleIce
-      ) || (
-        this.options?.iceTransportPolicy === "relay" && !this.iceServers.length && this.canTrickleIce
-      )
+      (!this.iceServers.length && !this.canTrickleIce) ||
+      (this.options?.iceTransportPolicy === "relay" &&
+        !this.iceServers.length &&
+        this.canTrickleIce)
     );
   }
 
@@ -813,6 +823,9 @@ export class WhipClient {
   }
 
   private resolveCandidatesPromise() {
+    trace(`${T} resolveCandidatesPromise`, {
+      callback: !!this.cbResolveCandidates,
+    });
     if (this.cbResolveCandidates) {
       const cb = this.cbResolveCandidates;
       this.cbResolveCandidates = null;
@@ -821,6 +834,7 @@ export class WhipClient {
   }
 
   private async runTrickleIce() {
+    trace(`${T} runTrickleIce`);
     try {
       await this.updateResource();
     } catch (e) {
@@ -832,6 +846,10 @@ export class WhipClient {
   }
 
   private async scheduleTrickleIce(delay: number) {
+    trace(`${T} scheduleTrickleIce`, {
+      delay,
+      trickleIceTimer: !!this.trickleIceTimer,
+    });
     if (this.trickleIceTimer) {
       return;
     }
@@ -847,6 +865,7 @@ export class WhipClient {
   }
 
   private connected() {
+    trace(`${T} connected`);
     this.reconnects = 0;
     this.emitter.emit(WhipClientEvents.Connected);
   }
