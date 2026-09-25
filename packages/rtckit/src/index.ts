@@ -11,6 +11,7 @@ export * from "./WebrtcStreaming.js";
 export * from "./aux/IngesterErrorHandler.js";
 export * from "./aux/plugins.js";
 export * from "./aux/StreamMeta.js";
+export * from "./aux/StreamProfiler.js";
 export * from "./aux/VideoResolutionChangeDetector.js";
 export * from "./errors.js";
 export * from "./stats/WebrtcReporter.js";
