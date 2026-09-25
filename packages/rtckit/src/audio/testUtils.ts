@@ -15,7 +15,7 @@ export function createMockAudioContext(): MockAudioContext {
   };
 }
 
-export function createMockConstantSourceNode() {
+export function createMockConstantSourceNode(): ConstantSourceNode {
   return {
     connect: vi.fn(),
     disconnect: vi.fn(),
@@ -25,10 +25,10 @@ export function createMockConstantSourceNode() {
       setValueAtTime: vi.fn(),
       value: 0,
     },
-  };
+  } as any;
 }
 
-export function createMockGainNode() {
+export function createMockGainNode(): MockGainNode {
   return {
     connect: vi.fn(),
     disconnect: vi.fn(),
