@@ -93,7 +93,7 @@ export function createMockMediaStreamTrack(
   return track;
 }
 
-export function createMockMediaStream(tracks: MediaStreamTrack[]) {
+export function createMockMediaStream(tracks: MediaStreamTrack[]): MediaStream {
   const privateTracks = tracks.slice();
   return {
     active: true,
@@ -121,7 +121,7 @@ export function createMockMediaStream(tracks: MediaStreamTrack[]) {
   };
 }
 
-export function setupDefaultMockUserMedia(devices: MediaDeviceInfo[] = []) {
+export function setupDefaultMockUserMedia(devices: MediaDeviceInfo[] = []): [MediaStream, MockedMediaStreamTrack, MockedMediaStreamTrack] {
   const audioTrack = createMockMediaStreamTrack("audio");
   const videoTrack = createMockMediaStreamTrack("video");
   const mockStream = createMockMediaStream([
