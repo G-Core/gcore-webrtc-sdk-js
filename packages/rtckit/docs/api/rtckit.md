@@ -131,6 +131,17 @@ Any API server (WHIP, WHEP or any other) request error response, that is, 4xx an
 </td></tr>
 <tr><td>
 
+[StreamProfiler](./rtckit.streamprofiler.md)
+
+
+</td><td>
+
+**_(BETA)_** Is used to record time of certain events in a stream to debug timing-related issues. It works by inspecting WebRTC stats and detects: - first iframe sent in a stream for a video track (timestamp) - the fact of a packet acknowledgement by the remote peer
+
+
+</td></tr>
+<tr><td>
+
 [TimeoutError](./rtckit.timeouterror.md)
 
 
@@ -228,6 +239,17 @@ Description
 </td><td>
 
 **_(BETA)_** The reason of the ingester request failure
+
+
+</td></tr>
+<tr><td>
+
+[StreamProfileEventType](./rtckit.streamprofileeventtype.md)
+
+
+</td><td>
+
+**_(BETA)_**
 
 
 </td></tr>
@@ -437,6 +459,17 @@ TODO rename
 
 </td><td>
 
+
+
+</td></tr>
+<tr><td>
+
+[StreamProfileEvent](./rtckit.streamprofileevent.md)
+
+
+</td><td>
+
+**_(BETA)_**
 
 
 </td></tr>

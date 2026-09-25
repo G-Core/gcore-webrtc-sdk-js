@@ -7,5 +7,5 @@
 **Signature:**
 
 ```typescript
-readonly detail?: unknown | undefined;
+readonly detail?: unknown;
 ```
