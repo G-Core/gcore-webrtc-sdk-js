@@ -15,7 +15,7 @@ import { ReconnectAttemptsExceededError, SessionClosedError } from "./errors.js"
 import { whipIngesterErrorParser, withRetries } from "../helpers/fetch.js";
 import { MediaKind } from "../types.js";
 
-const T = "WhipClient";
+const T = "rtckit.WhipClient";
 
 const ICE_CANDIDATES_WAIT_TIME = 5000;
 

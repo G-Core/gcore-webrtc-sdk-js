@@ -35,7 +35,7 @@ export const STD_VIDEORES: Record<string, VideoResolution> = {
   },
 };
 
-const T = "MediaDevicesHelper";
+const T = "rtckit.MediaDevicesHelper";
 
 /**
  * Information about a media input device.

@@ -121,7 +121,7 @@ const DEFAULT_STREAM_PARAMS = Object.freeze({
   video: true,
 });
 
-const T = "WebrtcStreaming";
+const T = "rtckit.WebrtcStreaming";
 
 /**
  * A wrapper around WhipClient to facilitate creating WebRTC streams in a browser
@@ -146,7 +146,7 @@ export class WebrtcStreaming {
 
   private mediaStreamPromise: Promise<MediaStream> | null = null;
 
-  private streamParams: WebrtcStreamParams = {...DEFAULT_STREAM_PARAMS};
+  private streamParams: WebrtcStreamParams = { ...DEFAULT_STREAM_PARAMS };
 
   private whipClient: WhipClient | null = null;
 

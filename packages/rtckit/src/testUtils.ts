@@ -28,7 +28,7 @@ type MediaStreamTrackProps = {
 export function createMockMediaStreamTrack(
   kind: "audio" | "video",
   id = nextTrackId(),
-  props: Partial<MediaStreamTrackProps> = {}
+  props: Partial<MediaStreamTrackProps> = {},
 ): MockedMediaStreamTrack {
   let readyState = "live";
   const track: MockedMediaStreamTrack = {
@@ -37,7 +37,7 @@ export function createMockMediaStreamTrack(
     muted: false,
     enabled: true,
     get readyState() {
-      return readyState
+      return readyState;
     },
     ...props,
     id,
@@ -50,7 +50,7 @@ export function createMockMediaStreamTrack(
     clone: vi.fn().mockImplementation(() => createMockMediaStreamTrack(kind)),
     getCapabilities: vi.fn(),
     getConstraints: vi.fn(),
-    getSettings: vi.fn().mockReturnValue({ deviceId: "default"}),
+    getSettings: vi.fn().mockReturnValue({ deviceId: "default" }),
     removeEventListener: vi.fn(),
     stop: vi.fn().mockImplementation(function () {
       readyState = "ended";
@@ -58,7 +58,7 @@ export function createMockMediaStreamTrack(
     dispatchEvent(name: "ended" | "mute" | "unmute") {
       const handler = this[`on${name}`];
       const event = new CustomEvent(name);
-      if (handler)  {
+      if (handler) {
         try {
           handler.call(this, event);
         } catch (e) {
@@ -74,15 +74,10 @@ export function createMockMediaStreamTrack(
           }
         }
       });
-    }
+    },
   } as any;
   track.clone.mockImplementation(() => {
-    const {
-      enabled,
-      label,
-      muted,
-      readyState,
-    } = track;
+    const { enabled, label, muted, readyState } = track;
     return createMockMediaStreamTrack(kind, undefined, {
       enabled,
       label,
@@ -121,13 +116,12 @@ export function createMockMediaStream(tracks: MediaStreamTrack[]): MediaStream {
   };
 }
 
-export function setupDefaultMockUserMedia(devices: MediaDeviceInfo[] = []): [MediaStream, MockedMediaStreamTrack, MockedMediaStreamTrack] {
+export function setupDefaultMockUserMedia(
+  devices: MediaDeviceInfo[] = [],
+): [MediaStream, MockedMediaStreamTrack, MockedMediaStreamTrack] {
   const audioTrack = createMockMediaStreamTrack("audio");
   const videoTrack = createMockMediaStreamTrack("video");
-  const mockStream = createMockMediaStream([
-    audioTrack as any,
-    videoTrack as any,
-  ]);
+  const mockStream = createMockMediaStream([audioTrack as any, videoTrack as any]);
   setupMockMediaDevices(devices);
   // @ts-ignore
   window.navigator.mediaDevices.getUserMedia.mockResolvedValueOnce(mockStream);
@@ -139,7 +133,7 @@ export function setupMockMediaDevices(devices: MediaDeviceInfo[]): MockedObject<
   const md = {
     enumerateDevices: vi.fn().mockResolvedValue(devices),
     getUserMedia: vi.fn(),
-  }
+  };
   // @ts-ignore
   window.navigator.mediaDevices = md;
   // @ts-ignore
@@ -164,7 +158,7 @@ export function setupDefaultGetUserMedia(constraints: GetUserMediaContraints) {
 type GetUserMediaContraints = {
   audio?: boolean | MediaTrackConstraints;
   video?: boolean | MediaTrackConstraints;
-}
+};
 
 export function setupGetUserMedia(constraints: GetUserMediaContraints): MockedMediaStreamTrack[] {
   const tracks: MockedMediaStreamTrack[] = [];
@@ -187,6 +181,7 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
     remoteDescription: null,
     onicecandidate: null,
 
+    addEventListener: vi.fn(),
     addTrack: vi.fn(),
     addTransceiver: vi.fn(),
     createAnswer: vi.fn().mockReturnValue({
@@ -219,7 +214,7 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
       this.configuration = config;
     }),
     setLocalDescription(ld: any) {
-      this.localDescription = ld
+      this.localDescription = ld;
     },
     setRemoteDescription: vi.fn().mockImplementation(function (this: any, rd: any) {
       this.remoteDescription = rd;
@@ -232,7 +227,7 @@ export function MockRTCPeerConnection(configuration: RTCConfiguration = {}) {
 export function setupVideoResolutionProbes() {
   // 5 standard video resolutions 240..1080
   for (let i = 0; i < 5; i++) {
-    setupGetUserMedia({ video: true})
+    setupGetUserMedia({ video: true });
   }
 }
 

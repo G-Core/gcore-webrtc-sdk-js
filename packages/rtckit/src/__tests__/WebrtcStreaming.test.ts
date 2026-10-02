@@ -1,7 +1,21 @@
-import { MockedFunction, MockedObject, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  MockedFunction,
+  MockedObject,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import * as FakeTimers from "@sinonjs/fake-timers";
 
-import { MediaDeviceSwitchInfo, MediaDeviceSwitchOffInfo, WebrtcStreaming, WebrtcStreamingEvents } from "../WebrtcStreaming.js";
+import {
+  MediaDeviceSwitchInfo,
+  MediaDeviceSwitchOffInfo,
+  WebrtcStreaming,
+  WebrtcStreamingEvents,
+} from "../WebrtcStreaming.js";
 
 import { WhipClient } from "../whip/WhipClient.js";
 
@@ -22,31 +36,35 @@ vi.mock("../whip/WhipClient.js", () => ({
   WhipClient: vi.fn(),
 }));
 
-const MOCK_MEDIA_DEVICES = [{
-  kind: "audioinput" as MediaDeviceKind,
-  deviceId: "mic1",
-  label: "Built-in microphone (default)",
-  groupId: "",
-  toJSON() {
-    return {};
+const MOCK_MEDIA_DEVICES = [
+  {
+    kind: "audioinput" as MediaDeviceKind,
+    deviceId: "mic1",
+    label: "Built-in microphone (default)",
+    groupId: "",
+    toJSON() {
+      return {};
+    },
   },
-}, {
-  kind: "audioinput" as MediaDeviceKind,
-  deviceId: "mic2",
-  label: "AirPods Pro",
-  groupId: "",
-  toJSON() {
-    return {};
+  {
+    kind: "audioinput" as MediaDeviceKind,
+    deviceId: "mic2",
+    label: "AirPods Pro",
+    groupId: "",
+    toJSON() {
+      return {};
+    },
   },
-}, {
-  kind: "videoinput" as MediaDeviceKind,
-  deviceId: "camera1",
-  label: "FaceTime HD Camera (Built-in)",
-  groupId: "",
-  toJSON() {
-    return {};
+  {
+    kind: "videoinput" as MediaDeviceKind,
+    deviceId: "camera1",
+    label: "FaceTime HD Camera (Built-in)",
+    groupId: "",
+    toJSON() {
+      return {};
+    },
   },
-}];
+];
 
 describe("WebrtcStreaming", () => {
   let webrtc: WebrtcStreaming;
@@ -82,7 +100,7 @@ describe("WebrtcStreaming", () => {
     describe("open twice", () => {
       describe.each([
         [
-          'extra param',
+          "extra param",
           {
             audio: true,
             video: true,
@@ -98,10 +116,10 @@ describe("WebrtcStreaming", () => {
               width: { ideal: 1920 },
               height: { ideal: 1080 },
             },
-          }
+          },
         ],
         [
-          'different deviceId',
+          "different deviceId",
           {
             audio: true,
             video: true,
@@ -115,12 +133,12 @@ describe("WebrtcStreaming", () => {
             video: {
               deviceId: {
                 exact: "camera1",
-              }
+              },
             },
-          }
+          },
         ],
         [
-          'same params',
+          "same params",
           {
             audio: true,
             video: true,
@@ -132,7 +150,7 @@ describe("WebrtcStreaming", () => {
           undefined,
         ],
         [
-          'same loosened params',
+          "same loosened params",
           {
             audio: "mic1",
             video: true,
@@ -144,7 +162,7 @@ describe("WebrtcStreaming", () => {
           undefined,
         ],
         [
-          'same loosened extra param',
+          "same loosened extra param",
           {
             audio: true,
             video: true,
@@ -157,7 +175,7 @@ describe("WebrtcStreaming", () => {
           undefined,
         ],
         [
-          'same real params',
+          "same real params",
           {
             audio: true,
             video: true,
@@ -180,7 +198,7 @@ describe("WebrtcStreaming", () => {
           await webrtc.openSourceStream(firstParams);
           setupGetUserMedia({
             audio: !!(secondParams ?? firstParams.audio),
-            video: !!(secondParams.video ?? firstParams.video)
+            video: !!(secondParams.video ?? firstParams.video),
           });
           await webrtc.openSourceStream(secondParams);
         });
@@ -188,7 +206,10 @@ describe("WebrtcStreaming", () => {
           it("should call getUserMedia second time with the new constraints", () => {
             // permissions request + 5 video resolutions + 2 distinct openSourceStream calls
             expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(8);
-            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(8, expectedConstraints);
+            expect(window.navigator.mediaDevices.getUserMedia).toHaveBeenNthCalledWith(
+              8,
+              expectedConstraints,
+            );
           });
         } else {
           it("should not call getUserMedia second time", () => {
@@ -211,7 +232,13 @@ describe("WebrtcStreaming", () => {
           setupGetUserMedia({ audio: false, video: true });
           mockWhipClient = createMockWhipClient();
           // @ts-ignore
-          WhipClient.mockReturnValueOnce(mockWhipClient);
+          WhipClient.mockImplementation(
+            class {
+              constructor(...args: any[]) {
+                return mockWhipClient;
+              }
+            },
+          );
         });
         it("should gracefully remove current audio track", async () => {
           await webrtc.openSourceStream({
@@ -258,7 +285,7 @@ describe("WebrtcStreaming", () => {
         await webrtc.mediaDevices.getCameras(); // to properly arrange calls to getUserMedia
 
         firstTimeTracks = setupGetUserMedia({ audio: true, video: true });
-        endedTrack = firstTimeTracks[0]
+        endedTrack = firstTimeTracks[0];
         endedTrack.getSettings.mockReturnValue({
           deviceId: "mic2",
         });
@@ -277,7 +304,13 @@ describe("WebrtcStreaming", () => {
 
         mockWhipClient = createMockWhipClient();
         // @ts-ignore
-        WhipClient.mockReturnValueOnce(mockWhipClient);
+        WhipClient.mockImplementation(
+          class {
+            constructor() {
+              return mockWhipClient;
+            }
+          },
+        );
         onPlug = vi.fn();
         onUnplug = vi.fn();
         webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, onPlug);
@@ -310,8 +343,14 @@ describe("WebrtcStreaming", () => {
         expect(mockWhipClient.replaceTrack).toHaveBeenCalledTimes(2);
         autoReplaceTracks.forEach((t) => {
           const oldTrack = firstTimeTracks.find((ot) => ot.kind === t.kind);
-          expect(mockWhipClient.removeTrack, `old ${t.kind} track should be removed`).toHaveBeenCalledWith(oldTrack);
-          expect(mockWhipClient.replaceTrack, `new ${t.kind} track should be replaced`).toHaveBeenCalledWith(t);
+          expect(
+            mockWhipClient.removeTrack,
+            `old ${t.kind} track should be removed`,
+          ).toHaveBeenCalledWith(oldTrack);
+          expect(
+            mockWhipClient.replaceTrack,
+            `new ${t.kind} track should be replaced`,
+          ).toHaveBeenCalledWith(t);
         });
       });
       it("should emit notification", () => {
@@ -327,50 +366,62 @@ describe("WebrtcStreaming", () => {
             label: "AirPods Pro",
             groupId: "",
           }),
-        })
+        });
       });
     });
     describe("errors", () => {
       describe.each([
-        ["replaceTrack", (whipClient) => {
-          whipClient.replaceTrack.mockRejectedValueOnce(new Error("Renegotiation needed"));
-        }],
-        ["getUserMedia", (_) => {
-          // @ts-ignore
-          window.navigator.mediaDevices.getUserMedia.mockReset().mockRejectedValueOnce(new MockOverconstrainedError("deviceId"));
-          setupVideoResolutionProbes(); // after the OverconstrainedError
-        }]
+        [
+          "replaceTrack",
+          (whipClient) => {
+            whipClient.replaceTrack.mockRejectedValueOnce(new Error("Renegotiation needed"));
+          },
+        ],
+        [
+          "getUserMedia",
+          (_) => {
+            // @ts-ignore
+            window.navigator.mediaDevices.getUserMedia
+              .mockReset()
+              .mockRejectedValueOnce(new MockOverconstrainedError("deviceId"));
+            setupVideoResolutionProbes(); // after the OverconstrainedError
+          },
+        ],
       ])("%s", (_, setup) => {
         beforeEach(async () => {
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
             debug: true,
             mediaDevicesAutoSwitch: true,
           });
-          setupMockMediaDevices([{
-            kind: "audioinput",
-            deviceId: "mic1",
-            label: "Built-in microphone (default)",
-            groupId: "",
-            toJSON() {
-              return {};
+          setupMockMediaDevices([
+            {
+              kind: "audioinput",
+              deviceId: "mic1",
+              label: "Built-in microphone (default)",
+              groupId: "",
+              toJSON() {
+                return {};
+              },
             },
-          }, {
-            kind: "audioinput",
-            deviceId: "mic2",
-            label: "AirPods Pro",
-            groupId: "",
-            toJSON() {
-              return {};
+            {
+              kind: "audioinput",
+              deviceId: "mic2",
+              label: "AirPods Pro",
+              groupId: "",
+              toJSON() {
+                return {};
+              },
             },
-          }, {
-            kind: "videoinput",
-            deviceId: "camera1",
-            label: "FaceTime HD Camera (Built-in)",
-            groupId: "",
-            toJSON() {
-              return {};
+            {
+              kind: "videoinput",
+              deviceId: "camera1",
+              label: "FaceTime HD Camera (Built-in)",
+              groupId: "",
+              toJSON() {
+                return {};
+              },
             },
-          }]);
+          ]);
 
           setupGetUserMedia({ audio: true, video: true }); // MediaDevices.updateDevices initial permissions request
           setupVideoResolutionProbes();
@@ -389,7 +440,13 @@ describe("WebrtcStreaming", () => {
 
           mockWhipClient = createMockWhipClient();
           // @ts-ignore
-          WhipClient.mockReturnValueOnce(mockWhipClient);
+          WhipClient.mockImplementation(
+            class {
+              constructor() {
+                return mockWhipClient;
+              }
+            },
+          );
           onPlug = vi.fn();
           onUnplug = vi.fn();
           webrtc.on(WebrtcStreamingEvents.MediaDeviceSwitch, onPlug);
@@ -421,7 +478,7 @@ describe("WebrtcStreaming", () => {
             }),
           });
         });
-      })
+      });
     });
     describe("when a streaming device disconnects", () => {
       let initialTracks: MockedMediaStreamTrack[];
@@ -440,31 +497,35 @@ describe("WebrtcStreaming", () => {
           label: "Built-in microphone (0aeb)",
           groupId: "",
           toJSON: () => null,
-        }, {
+        },
+        {
           kind: "audioinput" as MediaDeviceKind,
           deviceId: "mic2",
           label: "USB camera mic (4040)",
           groupId: "0aec",
           toJSON: () => null,
-        }, {
+        },
+        {
           kind: "videoinput" as MediaDeviceKind,
           deviceId: "default (0aeb)",
           label: "Default camera (0aeb)",
           groupId: "",
           toJSON: () => null,
-        }, {
+        },
+        {
           kind: "videoinput" as MediaDeviceKind,
           deviceId: "camera1",
           label: "Built-in camera (0aeb)",
           groupId: "",
           toJSON: () => null,
-        }, {
+        },
+        {
           kind: "videoinput" as MediaDeviceKind,
           deviceId: "camera2",
           label: "USB camera (4040)",
           groupId: "0aec",
           toJSON: () => null,
-        }
+        },
       ];
       describe("basically", () => {
         beforeEach(async () => {
@@ -495,7 +556,13 @@ describe("WebrtcStreaming", () => {
 
           mockWhipClient = createMockWhipClient();
           // @ts-ignore
-          WhipClient.mockReturnValueOnce(mockWhipClient);
+          WhipClient.mockImplementation(
+            class {
+              constructor() {
+                return mockWhipClient;
+              }
+            },
+          );
 
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
             debug: true,
@@ -505,9 +572,13 @@ describe("WebrtcStreaming", () => {
           stream = await webrtc.openSourceStream({
             audio: true,
             video: true,
-          })
+          });
           await webrtc.run(); // will use the stream
-          (globalThis.navigator.mediaDevices.enumerateDevices as MockedFunction<() => Promise<InputDeviceInfo[]>>).mockClear();
+          (
+            globalThis.navigator.mediaDevices.enumerateDevices as MockedFunction<
+              () => Promise<InputDeviceInfo[]>
+            >
+          ).mockClear();
           initialTracks[0].dispatchEvent("ended");
           await clock.tickAsync(0);
         });
@@ -523,7 +594,9 @@ describe("WebrtcStreaming", () => {
       describe("mediaDevicesAutoSwitchRefresh", () => {
         beforeEach(async () => {
           const md = setupMockMediaDevices([]);
-          const nextDevices = devices.filter((d) => d.deviceId !== "mic2" && d.deviceId !== "camera2");
+          const nextDevices = devices.filter(
+            (d) => d.deviceId !== "mic2" && d.deviceId !== "camera2",
+          );
           md.enumerateDevices.mockResolvedValueOnce(devices);
           md.enumerateDevices.mockResolvedValueOnce(devices);
           setupGetUserMedia({ audio: true, video: true }); // initial permissions request
@@ -554,7 +627,13 @@ describe("WebrtcStreaming", () => {
 
           mockWhipClient = createMockWhipClient();
           // @ts-ignore
-          WhipClient.mockReturnValueOnce(mockWhipClient);
+          WhipClient.mockImplementation(
+            class {
+              constructor() {
+                return mockWhipClient;
+              }
+            },
+          );
 
           webrtc = new WebrtcStreaming("http://localhost:8080/whip/s1", {
             debug: true,
@@ -564,7 +643,7 @@ describe("WebrtcStreaming", () => {
           stream = await webrtc.openSourceStream({
             audio: true,
             video: true,
-          })
+          });
           await webrtc.run(); // will use the stream
           initialTracks[0].dispatchEvent("ended");
         });
@@ -611,4 +690,3 @@ function createMockWhipClient(): MockedWhipClient {
     start: vi.fn(),
   } as MockedWhipClient;
 }
-
