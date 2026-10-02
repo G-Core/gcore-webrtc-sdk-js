@@ -21,10 +21,14 @@ export const enum StreamProfileEventType {
 
 /**
  * @beta
+ * @remark
+ * delta - time elapsed since the previous event (in milliseconds).
+ *   The first event counts from the time connection is established.
  */
 export type StreamProfileEvent = {
   eventType: StreamProfileEventType;
   timestamp: DOMHighResTimeStamp;
+  delta: number;
 };
 
 /**
@@ -42,6 +46,8 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
   private packetAcknowledged = false;
 
   private videoTrackAcked = false;
+
+  private prevTimestamp: DOMHighResTimeStamp = 0;
 
   /**
    * @param onchange - The callback to be called when the resolution change is detected
@@ -67,6 +73,7 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
 
   private startPolling(pc: RTCPeerConnection) {
     const setAt = Date.now();
+    this.prevTimestamp = setAt;
     this.timerId = setInterval(() => {
       pc.getSenders()
         .filter((s) => s.track && s.track.kind === "video")
@@ -77,10 +84,7 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
                 if (!this.firstFrameSent) {
                   const { framesSent = 0, timestamp } = report as RTCOutboundRtpStreamStats;
                   if (framesSent >= 1) {
-                    this.send({
-                      eventType: StreamProfileEventType.FirstFrameSent,
-                      timestamp,
-                    });
+                    this.send(StreamProfileEventType.FirstFrameSent, timestamp);
                     this.firstFrameSent = true;
                   }
                 }
@@ -94,24 +98,15 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
                   timestamp,
                 } = report as RTCReceivedRtpStreamStats as any;
                 if (packetsReceived > 0 && !this.packetAcknowledged) {
-                  this.send({
-                    eventType: StreamProfileEventType.FirstPacketAcknowledged,
-                    timestamp,
-                  });
+                  this.send(StreamProfileEventType.FirstPacketAcknowledged, timestamp);
                   this.packetAcknowledged = true;
                 }
                 if (roundTripTimeMeasurements > 0 && !this.videoTrackAcked) {
-                  this.send({
-                    eventType: StreamProfileEventType.VideoTrackAcknowledged,
-                    timestamp,
-                  });
+                  this.send(StreamProfileEventType.VideoTrackAcknowledged, timestamp);
                   this.videoTrackAcked = true;
                 }
                 if (fractionLost) {
-                  this.send({
-                    eventType: StreamProfileEventType.PacketLoss,
-                    timestamp,
-                  });
+                  this.send(StreamProfileEventType.PacketLoss, timestamp);
                 }
                 continue;
               }
@@ -124,24 +119,30 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
             }
           });
         });
-      if (Date.now() - setAt > MAX_POLLING_DURATION) {
+      const elapsed = Date.now() - setAt;
+      if (elapsed > MAX_POLLING_DURATION) {
         trace(`${T} Stopping polling`, {
-          elapsed: Date.now() - setAt,
+          elapsed,
         });
         this.stopPolling();
       }
     }, CHECK_INTERVAL);
   }
 
-  private send(event: StreamProfileEvent) {
+  private send(eventType: StreamProfileEventType, timestamp: DOMHighResTimeStamp) {
     queueMicrotask(() => {
-      this.onevent(event);
+      this.onevent({
+        eventType,
+        timestamp,
+        delta: timestamp - this.prevTimestamp,
+      });
+      this.prevTimestamp = timestamp;
     });
   }
 
   private stopPolling() {
     if (this.timerId) {
-      clearTimeout(this.timerId);
+      clearInterval(this.timerId);
       this.timerId = null;
     }
   }
