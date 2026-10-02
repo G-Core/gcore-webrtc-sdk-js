@@ -1,7 +1,13 @@
+import { trace } from "@gcorevideo/utils";
+
 import { WhipClientPluginBase } from "./plugins.js";
 import type { WhipClientPlugin } from "../whip/types.js";
 
 const CHECK_INTERVAL = 1000;
+
+const MAX_POLLING_DURATION = 60000; // 60 seconds
+
+const T = "StreamProfiler";
 
 /**
  * @beta
@@ -9,6 +15,8 @@ const CHECK_INTERVAL = 1000;
 export const enum StreamProfileEventType {
   FirstFrameSent = "first-frame-sent",
   FirstPacketAcknowledged = "first-packet-acknowledged",
+  PacketLoss = "packet-loss",
+  VideoTrackAcknowledged = "video-track-acknowledged",
 }
 
 /**
@@ -29,9 +37,13 @@ export type StreamProfileEvent = {
 export class StreamProfiler extends WhipClientPluginBase implements WhipClientPlugin {
   private timerId: number | null = null;
 
-  private firstFrameSentReported = false;
+  private firstFrameSent = false;
 
-  private firstPacketAckedReported = false;
+  private packetAcknowledged = false;
+
+  private videoTrackAcked = false;
+
+  private lastFractionLost = 0;
 
   /**
    * @param onchange - The callback to be called when the resolution change is detected
@@ -56,43 +68,70 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
   }
 
   private startPolling(pc: RTCPeerConnection) {
+    const setAt = Date.now();
     this.timerId = setInterval(() => {
       pc.getSenders()
         .filter((s) => s.track && s.track.kind === "video")
         .forEach((s) => {
           s.getStats().then((stats) => {
             for (const report of stats.values()) {
-              if (!this.firstFrameSentReported && report.type === "outbound-rtp") {
-                const { framesSent = 0, timestamp } = report as RTCOutboundRtpStreamStats;
-                if (framesSent >= 1) {
-                  this.send({
-                    eventType: StreamProfileEventType.FirstFrameSent,
-                    timestamp,
-                  });
-                  this.firstFrameSentReported = true;
-                  if (this.firstPacketAckedReported) {
-                    this.stopPolling();
-                    break;
+              if (report.type === "outbound-rtp") {
+                if (!this.firstFrameSent) {
+                  const { framesSent = 0, timestamp } = report as RTCOutboundRtpStreamStats;
+                  if (framesSent >= 1) {
+                    this.send({
+                      eventType: StreamProfileEventType.FirstFrameSent,
+                      timestamp,
+                    });
+                    this.firstFrameSent = true;
                   }
                 }
+                continue;
               }
-              if (!this.firstPacketAckedReported && report.type === "remote-inbound-rtp") {
-                const { packetsReceived = 0, timestamp } = report as RTCReceivedRtpStreamStats;
-                if (packetsReceived > 0) {
+              if (report.type === "remote-inbound-rtp") {
+                const {
+                  fractionLost = 0,
+                  packetsReceived = 0,
+                  roundTripTimeMeasurements = 0,
+                  timestamp,
+                } = report as RTCReceivedRtpStreamStats as any;
+                if (packetsReceived > 0 && !this.packetAcknowledged) {
                   this.send({
                     eventType: StreamProfileEventType.FirstPacketAcknowledged,
                     timestamp,
                   });
-                  this.firstPacketAckedReported = true;
-                  if (this.firstFrameSentReported) {
-                    this.stopPolling();
-                    break;
-                  }
+                  this.packetAcknowledged = true;
                 }
+                if (roundTripTimeMeasurements > 0 && !this.videoTrackAcked) {
+                  this.send({
+                    eventType: StreamProfileEventType.VideoTrackAcknowledged,
+                    timestamp,
+                  });
+                  this.videoTrackAcked = true;
+                }
+                if (fractionLost) {
+                  this.send({
+                    eventType: StreamProfileEventType.PacketLoss,
+                    timestamp,
+                  });
+                }
+                continue;
+              }
+              if (report.type === "inbound-rtp") {
+                trace(`${T} Inbound RTP report`, {
+                  report,
+                });
+                continue;
               }
             }
           });
         });
+      if (Date.now() - setAt > MAX_POLLING_DURATION) {
+        trace(`${T} Stopping polling`, {
+          elapsed: Date.now() - setAt,
+        });
+        this.stopPolling();
+      }
     }, CHECK_INTERVAL);
   }
 
