@@ -23,15 +23,18 @@ export type VideoResolutionChangeEventData = {
   height: number;
   srcWidth: number;
   srcHeight: number;
-}
+};
 
-const T = "VideoResolutionChangeDetector";
+const T = "rtckit.aux.VideoResolutionChangeDetector";
 
 /**
  * Detects the degradation and recovery of the outgoing stream video resolution
  * @beta
  */
-export class VideoResolutionChangeDetector extends WhipClientPluginBase implements WhipClientPlugin {
+export class VideoResolutionChangeDetector
+  extends WhipClientPluginBase
+  implements WhipClientPlugin
+{
   private timerId: number | null = null;
 
   private ssrcState: Record<number, { width: number; height: number }> = {};
@@ -44,6 +47,9 @@ export class VideoResolutionChangeDetector extends WhipClientPluginBase implemen
   }
 
   close() {
+    trace(`${T} close`, {
+      polling: !!this.timerId,
+    });
     if (this.timerId) {
       clearTimeout(this.timerId);
       this.timerId = null;
@@ -55,34 +61,50 @@ export class VideoResolutionChangeDetector extends WhipClientPluginBase implemen
    */
   init(pc: RTCPeerConnection) {
     // TODO stop timer when the connection closes
+    pc.addEventListener("connectionstatechange", () => {
+      if (pc.connectionState === "closed") {
+        trace(`${T} connection closed`);
+        this.close();
+      }
+    });
     this.timerId = setInterval(() => {
       pc.getSenders()
-        .filter(s => s.track && s.track.kind === "video")
+        .filter((s) => s.track && s.track.kind === "video")
         .forEach((s) => {
           const track = s.track as MediaStreamTrack;
           const { width, height } = track.getSettings();
           if (!width || !height) {
+            trace(`${T} broken video track`, { height, width });
             return;
           }
-          s.getStats().then(stats => {
+          s.getStats().then((stats) => {
             for (const report of stats.values()) {
               if (report.type === "outbound-rtp") {
-                const {frameHeight, frameWidth, ssrc} = report as RTCOutboundRtpStreamStats;
+                const { frameHeight, frameWidth, ssrc } = report as RTCOutboundRtpStreamStats;
                 if (!frameWidth || !frameHeight) {
-                  trace(`${T} no frame size`, {frameHeight, frameWidth, ssrc});
+                  trace(`${T} no frame size`, { frameHeight, frameWidth, ssrc });
                   return;
                 }
                 this.detectStreamResolutionChange(ssrc, frameWidth, frameHeight, width, height);
               }
             }
           });
-        })
+        });
     }, CHECK_INTERVAL);
   }
 
-  private detectStreamResolutionChange(ssrc: number, width: number, height: number, srcWidth: number, srcHeight: number) {
+  private detectStreamResolutionChange(
+    ssrc: number,
+    width: number,
+    height: number,
+    srcWidth: number,
+    srcHeight: number,
+  ) {
     const degraded = width < srcWidth || height < srcHeight;
     const prevState = this.ssrcState[ssrc];
+    if (!prevState) {
+      trace(`${T} frame size initialized`, { width, height, ssrc });
+    }
     this.ssrcState[ssrc] = {
       width,
       height,

@@ -7,7 +7,7 @@ const CHECK_INTERVAL = 1000;
 
 const MAX_POLLING_DURATION = 60000; // 60 seconds
 
-const T = "StreamProfiler";
+const T = "rtckit.aux.StreamProfiler";
 
 /**
  * @beta
@@ -42,8 +42,6 @@ export class StreamProfiler extends WhipClientPluginBase implements WhipClientPl
   private packetAcknowledged = false;
 
   private videoTrackAcked = false;
-
-  private lastFractionLost = 0;
 
   /**
    * @param onchange - The callback to be called when the resolution change is detected
